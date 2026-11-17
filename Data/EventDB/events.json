@@ -1,0 +1,2873 @@
+[
+  {
+    "provider": ".NET Runtime",
+    "id": 1026,
+    "log": "Application",
+    "severity": "watch",
+    "title": ".NET program crashed",
+    "meaning": "A program built with .NET closed because of an error it didn't handle. The details show the program and the error type.",
+    "steps": [
+      "Update or reinstall the program.",
+      "Repair/install the required .NET version."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "ACPI",
+    "aliases": [
+      "Microsoft-Windows-ACPI"
+    ],
+    "id": 13,
+    "log": "System",
+    "severity": "watch",
+    "title": "Embedded controller timeout",
+    "meaning": "The laptop's embedded controller (the small chip handling battery, keyboard, fans and lid) didn't answer in time. Can cause battery or fan misreadings; usually a BIOS/firmware bug.",
+    "steps": [
+      "Update the BIOS/EC firmware from the laptop maker."
+    ],
+    "page": "Power"
+  },
+  {
+    "provider": "ACPI",
+    "aliases": [
+      "Microsoft-Windows-ACPI"
+    ],
+    "id": 15,
+    "log": "System",
+    "severity": "watch",
+    "title": "Embedded controller unexpected data",
+    "meaning": "The laptop's embedded controller sent data nobody asked for, usually because the BIOS talks to it without coordinating with Windows. Normally a firmware bug.",
+    "steps": [
+      "Update the BIOS/EC firmware from the laptop maker."
+    ],
+    "page": "Power"
+  },
+  {
+    "provider": "Application Error",
+    "aliases": [
+      "Microsoft-Windows-Application Error"
+    ],
+    "id": 1000,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Program crashed",
+    "meaning": "A program closed unexpectedly. The details name the program and the module (DLL) where the crash happened.",
+    "steps": [
+      "Update or reinstall the program.",
+      "If the module is a driver/overlay DLL, update or remove it.",
+      "Frequent crashes in many apps: test RAM."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Application Hang",
+    "aliases": [
+      "Microsoft-Windows-Application Hang"
+    ],
+    "id": 1002,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Program stopped responding",
+    "meaning": "A program froze and was closed (or the user closed it).",
+    "steps": [
+      "Update the program.",
+      "Check for slow disk or low memory if many apps hang."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Application Popup",
+    "aliases": [
+      "Microsoft-Windows-Application Popup"
+    ],
+    "id": 26,
+    "log": "System",
+    "severity": "watch",
+    "title": "System popup message",
+    "meaning": "Windows showed a pop-up message. Its meaning depends on the text (for example 'Delayed Write Failed' or a missing file).",
+    "steps": [
+      "Read the popup text in the details."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "BTHUSB",
+    "aliases": [
+      "Microsoft-Windows-BTHUSB"
+    ],
+    "id": 17,
+    "log": "System",
+    "severity": "watch",
+    "title": "Bluetooth adapter failed",
+    "meaning": "The Bluetooth adapter failed and Windows stopped using it. Often after sleep; Bluetooth devices stop working.",
+    "steps": [
+      "Restart the PC (full shutdown).",
+      "Update or reinstall the Bluetooth driver.",
+      "Disable power saving for the Bluetooth adapter."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "BTHUSB",
+    "aliases": [
+      "Microsoft-Windows-BTHUSB"
+    ],
+    "id": 34,
+    "log": "System",
+    "severity": "routine",
+    "title": "Bluetooth connection refused",
+    "meaning": "A connection attempt to a paired Bluetooth device failed or was rejected, often because the device is off or out of range. Harmless unless the device won't connect.",
+    "steps": []
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 7,
+    "log": "System",
+    "severity": "serious",
+    "title": "Disk has a bad block",
+    "meaning": "The drive reported a bad block (a damaged area that can't be read reliably). Data on it may be lost and the drive may be failing.",
+    "steps": [
+      "Back up important data now.",
+      "Check SMART status and run a surface scan on the Disk page.",
+      "Plan to replace the drive if bad blocks grow."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 11,
+    "log": "System",
+    "severity": "serious",
+    "title": "Disk controller error",
+    "meaning": "Windows got an error talking to the drive. Common causes: a failing drive, a loose or bad SATA/USB cable, a bad port, or a power problem.",
+    "steps": [
+      "Reseat or replace the data/power cable; try another port.",
+      "Check SMART on the Disk page.",
+      "Update the storage/chipset driver."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 15,
+    "log": "System",
+    "severity": "watch",
+    "title": "Disk not ready",
+    "meaning": "A drive was not ready when Windows tried to use it. Often a USB drive or card reader that is slow to wake or was just connected.",
+    "steps": [
+      "If it's an internal drive, check cables and power.",
+      "Check SMART on the Disk page."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 51,
+    "log": "System",
+    "severity": "watch",
+    "title": "Error during paging to disk",
+    "meaning": "An error happened while moving memory data to or from the disk. One entry after unplugging a USB drive is harmless; repeated entries on an internal drive can mean a failing drive or cable.",
+    "steps": [
+      "Check which disk is named (Harddisk0 is usually the system disk).",
+      "Check SMART and cables on the Disk page."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 52,
+    "log": "System",
+    "severity": "serious",
+    "title": "Disk predicts it will fail",
+    "meaning": "The drive's own health monitoring (SMART) says it is likely to fail soon.",
+    "steps": [
+      "Back up all data immediately.",
+      "Replace the drive.",
+      "Confirm SMART values on the Disk page."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 153,
+    "log": "System",
+    "severity": "watch",
+    "title": "Disk operation retried",
+    "meaning": "A read/write request to the disk took too long or failed and Windows retried it. Occasional entries are tolerable; many point to a slow, failing drive, cable or controller issue.",
+    "steps": [
+      "Check SMART and response times on the Disk page.",
+      "Check cables; update storage driver and SSD firmware."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 154,
+    "log": "System",
+    "severity": "serious",
+    "title": "Disk hardware error",
+    "meaning": "A read/write request failed because the drive reported a hardware error. The drive is likely damaged.",
+    "steps": [
+      "Back up data now.",
+      "Run SMART check and surface scan on the Disk page.",
+      "Replace the drive if errors continue."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "disk",
+    "aliases": [
+      "Disk"
+    ],
+    "id": 157,
+    "log": "System",
+    "severity": "watch",
+    "title": "Disk was removed suddenly",
+    "meaning": "A drive disappeared without being safely removed. Normal if a USB drive was unplugged; on an internal drive it points to a power, cable or drive failure.",
+    "steps": [
+      "If internal: check cables, power supply and SMART.",
+      "For USB: use 'Safely Remove Hardware' before unplugging."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Display",
+    "aliases": [
+      "Microsoft-Windows-Display"
+    ],
+    "id": 4101,
+    "log": "System",
+    "severity": "watch",
+    "title": "Graphics driver recovered",
+    "meaning": "The graphics driver stopped responding and Windows restarted it (screen may have gone black briefly). Occasional is tolerable; frequent means driver, overheating, overclock or GPU/PSU problems.",
+    "steps": [
+      "Clean-install the latest (or previous stable) graphics driver.",
+      "Check GPU temperature; remove GPU overclock.",
+      "Run a GPU stress test."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "e1dexpress",
+    "aliases": [
+      "e1iexpress",
+      "e1rexpress",
+      "e1cexpress"
+    ],
+    "id": 27,
+    "log": "System",
+    "severity": "watch",
+    "title": "Network cable disconnected",
+    "meaning": "The Intel wired network adapter lost its link (cable unplugged, router off, or link dropped). Frequent drops point to a bad cable, port or power saving.",
+    "steps": [
+      "Replace the network cable; try another router port.",
+      "Disable 'Energy Efficient Ethernet' in adapter settings.",
+      "Update the Intel network driver."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "e1dexpress",
+    "aliases": [
+      "e1iexpress",
+      "e1rexpress",
+      "e1cexpress"
+    ],
+    "id": 32,
+    "log": "System",
+    "severity": "routine",
+    "title": "Network link established",
+    "meaning": "The Intel wired network adapter connected; the message shows the speed (e.g. 1 Gbps full duplex). If the speed is lower than expected, check the cable.",
+    "steps": []
+  },
+  {
+    "provider": "ESENT",
+    "id": 455,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Database log file error",
+    "meaning": "A program's small internal database (often the browser/Web cache WebCacheV01 or Search) couldn't open a log file. Usually harmless; Windows recreates it.",
+    "steps": []
+  },
+  {
+    "provider": "ESENT",
+    "id": 916,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Database feature notice",
+    "meaning": "Informational message about an internal database feature being enabled. Harmless.",
+    "steps": []
+  },
+  {
+    "provider": "EventLog",
+    "aliases": [
+      "Microsoft-Windows-EventLog"
+    ],
+    "id": 6005,
+    "log": "System",
+    "severity": "routine",
+    "title": "Event Log service started",
+    "meaning": "The event log service started, which happens at every boot. Handy as a 'PC turned on' marker.",
+    "steps": []
+  },
+  {
+    "provider": "EventLog",
+    "aliases": [
+      "Microsoft-Windows-EventLog"
+    ],
+    "id": 6006,
+    "log": "System",
+    "severity": "routine",
+    "title": "Event Log service stopped",
+    "meaning": "The event log service stopped during a clean shutdown. Handy as a 'PC shut down normally' marker.",
+    "steps": []
+  },
+  {
+    "provider": "EventLog",
+    "aliases": [
+      "Microsoft-Windows-EventLog"
+    ],
+    "id": 6008,
+    "log": "System",
+    "severity": "watch",
+    "title": "Previous shutdown was unexpected",
+    "meaning": "The last shutdown was not clean: power loss, freeze, forced power-off or a crash. Usually appears together with Kernel-Power 41.",
+    "steps": [
+      "Look for Kernel-Power 41 and BugCheck 1001 at the same time.",
+      "Check the Crash page for a blue screen."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "iaStorA",
+    "aliases": [
+      "iaStorAC",
+      "iaStorAVC",
+      "iaStorV"
+    ],
+    "id": 129,
+    "log": "System",
+    "severity": "watch",
+    "title": "Storage device was reset",
+    "meaning": "The Intel RST storage driver reset a drive because a request didn't finish in time. Repeated resets cause freezes and point to a failing drive, bad cable, power-saving issues or outdated firmware/driver.",
+    "steps": [
+      "Check SMART on the Disk page.",
+      "Update SSD firmware and the storage/chipset driver.",
+      "For SATA, replace the cable; try disabling link power saving."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "LsaSrv",
+    "aliases": [
+      "Microsoft-Windows-LSA"
+    ],
+    "id": 40960,
+    "log": "System",
+    "severity": "watch",
+    "title": "Authentication error",
+    "meaning": "The security system got an authentication error talking to a server (often a domain controller or network share).",
+    "steps": [
+      "Check network, time sync and saved credentials."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft Office 16 Alerts",
+    "aliases": [
+      "Microsoft Office Alerts",
+      "Microsoft Office 15 Alerts"
+    ],
+    "id": 300,
+    "log": "OAlerts",
+    "severity": "routine",
+    "title": "Office showed a message",
+    "meaning": "An Office app showed a dialog to the user (e.g. 'Do you want to save?'). The text of the dialog is in the details.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-CAPI2",
+    "aliases": [
+      "CAPI2"
+    ],
+    "id": 513,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Crypto backup notice",
+    "meaning": "Cryptographic Services couldn't back up a system file for the backup writer (often about a network driver). Known harmless message.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-CAPI2",
+    "aliases": [
+      "CAPI2"
+    ],
+    "id": 4107,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Root certificate list update failed",
+    "meaning": "Windows couldn't extract an updated list of trusted root certificates, usually a temporary download or clock issue. Harmless if websites open normally.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Dhcp-Client",
+    "aliases": [
+      "Dhcp-Client"
+    ],
+    "id": 1001,
+    "log": "System",
+    "severity": "watch",
+    "title": "No IP address from DHCP",
+    "meaning": "The network adapter didn't get an address from the router/DHCP server. Common at startup or after waking; repeated means no connection.",
+    "steps": [
+      "Check the cable/Wi-Fi connection and restart the router.",
+      "Run 'ipconfig /renew'."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-Dhcp-Client",
+    "aliases": [
+      "Dhcp-Client"
+    ],
+    "id": 1002,
+    "log": "System",
+    "severity": "watch",
+    "title": "IP lease denied",
+    "meaning": "The router/DHCP server refused the address this PC asked for (DHCPNACK). Usually harmless when moving between networks; Windows then asks for a new address.",
+    "steps": [
+      "If no connection follows, restart the router and run 'ipconfig /renew'."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-Dhcp-Client",
+    "aliases": [
+      "Dhcp-Client"
+    ],
+    "id": 50036,
+    "log": "System",
+    "severity": "routine",
+    "title": "DHCP client started",
+    "meaning": "The DHCPv4 client service started (logged at boot). Normal.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Diagnostics-Performance",
+    "aliases": [
+      "Diagnostics-Performance"
+    ],
+    "id": 100,
+    "log": "Microsoft-Windows-Diagnostics-Performance/Operational",
+    "severity": "routine",
+    "title": "Boot time measured",
+    "meaning": "Windows recorded how long startup took (Boot Duration, in milliseconds). Useful to track slow boots.",
+    "steps": [],
+    "page": "Startup"
+  },
+  {
+    "provider": "Microsoft-Windows-Diagnostics-Performance",
+    "aliases": [
+      "Diagnostics-Performance"
+    ],
+    "id": 101,
+    "log": "Microsoft-Windows-Diagnostics-Performance/Operational",
+    "severity": "watch",
+    "title": "App slowed down startup",
+    "meaning": "A program took longer than usual to start during boot and slowed it down.",
+    "steps": [
+      "Disable the named program on the Startup page if not needed."
+    ],
+    "page": "Startup"
+  },
+  {
+    "provider": "Microsoft-Windows-Diagnostics-Performance",
+    "aliases": [
+      "Diagnostics-Performance"
+    ],
+    "id": 102,
+    "log": "Microsoft-Windows-Diagnostics-Performance/Operational",
+    "severity": "watch",
+    "title": "Driver slowed down startup",
+    "meaning": "A driver took longer than usual to initialize during boot.",
+    "steps": [
+      "Update or remove the named driver."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-Diagnostics-Performance",
+    "aliases": [
+      "Diagnostics-Performance"
+    ],
+    "id": 103,
+    "log": "Microsoft-Windows-Diagnostics-Performance/Operational",
+    "severity": "watch",
+    "title": "Service slowed down startup",
+    "meaning": "A startup service took longer than usual to start.",
+    "steps": [
+      "Check or delay the named service on the Services page."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Microsoft-Windows-Diagnostics-Performance",
+    "aliases": [
+      "Diagnostics-Performance"
+    ],
+    "id": 200,
+    "log": "Microsoft-Windows-Diagnostics-Performance/Operational",
+    "severity": "routine",
+    "title": "Shutdown time measured",
+    "meaning": "Windows recorded how long shutdown took.",
+    "steps": [],
+    "page": "Startup"
+  },
+  {
+    "provider": "Microsoft-Windows-DistributedCOM",
+    "aliases": [
+      "DistributedCOM",
+      "DCOM"
+    ],
+    "id": 10005,
+    "log": "System",
+    "severity": "routine",
+    "title": "DCOM couldn't start a service",
+    "meaning": "A component asked for a service that is disabled or can't start. Error 1058 means the service is disabled, often on purpose. Usually harmless.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-DistributedCOM",
+    "aliases": [
+      "DistributedCOM",
+      "DCOM"
+    ],
+    "id": 10010,
+    "log": "System",
+    "severity": "routine",
+    "title": "Component didn't register in time",
+    "meaning": "A background component was started but didn't check in within the time limit. Very common and usually harmless unless a specific app fails at the same time.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-DistributedCOM",
+    "aliases": [
+      "DistributedCOM",
+      "DCOM"
+    ],
+    "id": 10016,
+    "log": "System",
+    "severity": "routine",
+    "title": "DCOM permission notice",
+    "meaning": "A Windows component tried to use another component without the needed permission. Microsoft states this is expected and can be ignored; it doesn't affect how Windows works.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-DistributedCOM",
+    "aliases": [
+      "DistributedCOM",
+      "DCOM"
+    ],
+    "id": 10028,
+    "log": "System",
+    "severity": "watch",
+    "title": "DCOM couldn't reach a computer",
+    "meaning": "Windows couldn't talk to another computer over the network via DCOM, often a printer, server or PC that no longer exists or is offline.",
+    "steps": [
+      "Remove old printers/servers that point to the named computer.",
+      "Check network/firewall if the computer should be reachable."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-DNS-Client",
+    "aliases": [
+      "DNS Client Events",
+      "DNS-Client"
+    ],
+    "id": 1014,
+    "log": "System",
+    "severity": "routine",
+    "title": "Name lookup timed out",
+    "meaning": "A DNS name lookup (turning a name into an address) got no answer. For the name 'wpad' this is normal noise. Many lookups failing for real sites means a DNS or internet problem.",
+    "steps": [],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-DriverFrameworks-UserMode",
+    "aliases": [
+      "DriverFrameworks-UserMode"
+    ],
+    "id": 10110,
+    "log": "System",
+    "severity": "watch",
+    "title": "User-mode driver crashed",
+    "meaning": "A driver running outside the kernel (for USB devices, sensors, phones, printers, etc.) had a problem and its host process was stopped.",
+    "steps": [
+      "Find the device in the details; reconnect it.",
+      "Update or reinstall its driver."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-DriverFrameworks-UserMode",
+    "aliases": [
+      "DriverFrameworks-UserMode"
+    ],
+    "id": 10111,
+    "log": "System",
+    "severity": "watch",
+    "title": "Device went offline",
+    "meaning": "A device using a user-mode driver went offline and was disabled after errors, often a USB device disconnecting.",
+    "steps": [
+      "Reconnect the device; try another USB port or cable.",
+      "Update its driver."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "aliases": [
+      "Eventlog"
+    ],
+    "id": 104,
+    "log": "System",
+    "severity": "watch",
+    "title": "Event log was cleared",
+    "meaning": "Someone or some program cleared an event log. Normal after cleanup tools; unexpected clearing can hide problems or intrusion.",
+    "steps": [
+      "Check which user did it (details) and whether it was intended."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "aliases": [
+      "Eventlog"
+    ],
+    "id": 1102,
+    "log": "Security",
+    "severity": "watch",
+    "title": "Security log was cleared",
+    "meaning": "The Security audit log was cleared. Normal if done by an admin; otherwise it can hide traces of an intrusion.",
+    "steps": [
+      "Confirm with the user/admin that the clearing was intended."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1054,
+    "log": "System",
+    "severity": "watch",
+    "title": "Can't find domain controller",
+    "meaning": "Group Policy couldn't get the name of a domain controller, usually a network or DNS problem on a domain PC.",
+    "steps": [
+      "Check the network and that DNS points to the domain's DNS servers."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1055,
+    "log": "System",
+    "severity": "watch",
+    "title": "Can't resolve computer name",
+    "meaning": "Group Policy couldn't resolve the computer name, usually a DNS or domain membership problem.",
+    "steps": [
+      "Check DNS settings; run 'gpupdate /force'."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1058,
+    "log": "System",
+    "severity": "watch",
+    "title": "Can't read policy files",
+    "meaning": "Group Policy couldn't read policy files from the domain controller (gpt.ini). Network, DNS or permission problem.",
+    "steps": [
+      "Check network access to the domain; run 'gpupdate /force'."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1085,
+    "log": "System",
+    "severity": "watch",
+    "title": "Policy settings not applied",
+    "meaning": "Windows failed to apply one group of policy settings (named in the message).",
+    "steps": [
+      "Run 'gpresult /h report.html' to see the error."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1129,
+    "log": "System",
+    "severity": "watch",
+    "title": "No network for Group Policy",
+    "meaning": "Group Policy failed because there was no network connection to a domain controller. Common at startup on Wi-Fi or VPN; a problem if it repeats.",
+    "steps": [
+      "Check network connection; run 'gpupdate /force' once connected."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-GroupPolicy",
+    "aliases": [
+      "GroupPolicy"
+    ],
+    "id": 1130,
+    "log": "System",
+    "severity": "watch",
+    "title": "Policy script failed",
+    "meaning": "A startup, shutdown, logon or logoff script from Group Policy failed to run.",
+    "steps": [
+      "Check the script path and permissions in the details."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Hyper-V-Hypervisor",
+    "aliases": [
+      "Hyper-V-Hypervisor"
+    ],
+    "id": 41,
+    "log": "System",
+    "severity": "watch",
+    "title": "Hypervisor didn't start",
+    "meaning": "Hyper-V (virtualization) couldn't start because hardware virtualization (Intel VT-x / AMD-V) is off in the BIOS or not available.",
+    "steps": [
+      "Enable virtualization (VT-x/AMD-V/SVM) in the BIOS if Hyper-V, WSL or VBS is needed."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Boot",
+    "aliases": [
+      "Kernel-Boot"
+    ],
+    "id": 20,
+    "log": "System",
+    "severity": "routine",
+    "title": "Last shutdown/boot status",
+    "meaning": "Records whether the previous shutdown and boot completed. If either status is 'false', the previous session ended badly; look for Kernel-Power 41 nearby.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Boot",
+    "aliases": [
+      "Kernel-Boot"
+    ],
+    "id": 27,
+    "log": "System",
+    "severity": "routine",
+    "title": "Boot type",
+    "meaning": "Records the startup type: 0x0 is a full (cold) boot, 0x1 is a Fast Startup resume, 0x2 is resume from hibernation.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-EventTracing",
+    "aliases": [
+      "Kernel-EventTracing"
+    ],
+    "id": 3,
+    "log": "Microsoft-Windows-Kernel-EventTracing/Admin",
+    "severity": "routine",
+    "title": "Trace session stopped",
+    "meaning": "An internal diagnostic tracing session stopped with an error, typically 'ReadyBoot' with 0xC0000188 (log full). Harmless.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-General",
+    "aliases": [
+      "Kernel-General"
+    ],
+    "id": 1,
+    "log": "System",
+    "severity": "routine",
+    "title": "System time changed",
+    "meaning": "The clock was changed, usually by time synchronization or on resume. Large or frequent jumps can point to a weak CMOS battery.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-General",
+    "aliases": [
+      "Kernel-General"
+    ],
+    "id": 12,
+    "log": "System",
+    "severity": "routine",
+    "title": "Windows started",
+    "meaning": "The operating system started. Marks the beginning of each boot.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-General",
+    "aliases": [
+      "Kernel-General"
+    ],
+    "id": 13,
+    "log": "System",
+    "severity": "routine",
+    "title": "Windows shut down",
+    "meaning": "The operating system is shutting down. Its absence before a 12 means the last shutdown was not clean.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-PnP",
+    "aliases": [
+      "Kernel-PnP"
+    ],
+    "id": 219,
+    "log": "System",
+    "severity": "watch",
+    "title": "Driver failed to load for device",
+    "meaning": "A driver didn't load for a device during startup. Very often harmless (e.g. WudfRd for a device that loads later); investigate if a device isn't working.",
+    "steps": [
+      "Check Device Manager / Drivers page for devices with errors.",
+      "Reinstall or update the driver for the named device."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-PnP",
+    "aliases": [
+      "Kernel-PnP"
+    ],
+    "id": 225,
+    "log": "System",
+    "severity": "routine",
+    "title": "App blocked device removal",
+    "meaning": "A program was using a device (usually a USB drive) and stopped it from being ejected. The details name the program.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-PnP",
+    "aliases": [
+      "Kernel-PnP"
+    ],
+    "id": 411,
+    "log": "Microsoft-Windows-Kernel-PnP/Configuration",
+    "severity": "watch",
+    "title": "Device had a problem starting",
+    "meaning": "A device failed to start. The details include the device and a problem code (the same as the Device Manager error code).",
+    "steps": [
+      "Check the device on the Drivers page.",
+      "Reinstall or update its driver; for USB try another port."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 41,
+    "log": "System",
+    "severity": "serious",
+    "title": "Unexpected restart",
+    "meaning": "The PC restarted without shutting down properly first: power was lost, the system froze and was reset, or it crashed. If BugcheckCode in the details is not 0, there was a blue screen; if it is 0, power was cut or the PC was hard-reset.",
+    "steps": [
+      "Check the Crash page for a blue screen at the same time.",
+      "If BugcheckCode is 0: check PSU, power cable, overheating, or a held power button.",
+      "Run a stress test to see if the PC shuts off under load."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 42,
+    "log": "System",
+    "severity": "routine",
+    "title": "Entering sleep",
+    "meaning": "Windows is going to sleep or hibernation. The details show why (button, lid, idle timer, or an app request).",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 86,
+    "log": "System",
+    "severity": "serious",
+    "title": "Shutdown: critical temperature",
+    "meaning": "Windows turned the PC off because a temperature sensor (thermal zone) reported a critical level. This protects the hardware from heat damage.",
+    "steps": [
+      "Check CPU/GPU temperatures under load.",
+      "Clean dust from fans and heatsinks; check that all fans spin.",
+      "Renew thermal paste if temperatures stay high."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 107,
+    "log": "System",
+    "severity": "routine",
+    "title": "Resumed from sleep",
+    "meaning": "The system woke up from sleep or hibernation. Normal.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 109,
+    "log": "System",
+    "severity": "routine",
+    "title": "Shutdown started",
+    "meaning": "The kernel power manager started a shutdown or restart. Logged on every normal shutdown.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 137,
+    "log": "System",
+    "severity": "routine",
+    "title": "Firmware changed CPU settings on resume",
+    "meaning": "The BIOS/UEFI changed some processor memory settings (MTRRs) while the PC was hibernating. Harmless if the PC wakes up and runs normally.",
+    "steps": [],
+    "page": "Power"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 187,
+    "log": "System",
+    "severity": "routine",
+    "title": "App requested sleep/shutdown",
+    "meaning": "A program asked Windows to change the power state (sleep, hibernate or shut down) through a system function. The details name the program.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 506,
+    "log": "System",
+    "severity": "routine",
+    "title": "Entering Modern Standby",
+    "meaning": "The device is entering Modern Standby (screen-off, low-power mode on newer laptops and tablets). Normal.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "aliases": [
+      "Kernel-Power"
+    ],
+    "id": 507,
+    "log": "System",
+    "severity": "routine",
+    "title": "Exiting Modern Standby",
+    "meaning": "The device woke from Modern Standby. The details show how long it slept and what woke it.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Processor-Power",
+    "aliases": [
+      "Kernel-Processor-Power"
+    ],
+    "id": 37,
+    "log": "System",
+    "severity": "watch",
+    "title": "CPU speed limited by firmware",
+    "meaning": "The BIOS/firmware is holding a processor below its normal speed, usually because of heat, a weak power supply/charger, or a power-saving setting. Occasional entries are common on laptops.",
+    "steps": [
+      "Check CPU temperature and throttling on the Stress page.",
+      "On laptops, test with the original charger plugged in.",
+      "Update the BIOS if it repeats while cool."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "Microsoft-Windows-MemoryDiagnostics-Results",
+    "aliases": [
+      "MemoryDiagnostics-Results"
+    ],
+    "id": 1101,
+    "log": "System",
+    "severity": "routine",
+    "title": "Memory test: no errors",
+    "meaning": "Windows Memory Diagnostic finished and found no errors.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-MemoryDiagnostics-Results",
+    "aliases": [
+      "MemoryDiagnostics-Results"
+    ],
+    "id": 1102,
+    "log": "System",
+    "severity": "serious",
+    "title": "Memory test found errors",
+    "meaning": "Windows Memory Diagnostic detected hardware errors in RAM.",
+    "steps": [
+      "Test modules one at a time to find the bad stick.",
+      "Replace the faulty module."
+    ],
+    "page": "Ram"
+  },
+  {
+    "provider": "Microsoft-Windows-MemoryDiagnostics-Results",
+    "aliases": [
+      "MemoryDiagnostics-Results"
+    ],
+    "id": 1201,
+    "log": "System",
+    "severity": "routine",
+    "title": "Memory test: no errors",
+    "meaning": "Windows Memory Diagnostic finished and found no errors (logged after the next sign-in).",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-MemoryDiagnostics-Results",
+    "aliases": [
+      "MemoryDiagnostics-Results"
+    ],
+    "id": 1202,
+    "log": "System",
+    "severity": "serious",
+    "title": "Memory test found errors",
+    "meaning": "Windows Memory Diagnostic detected hardware errors in RAM (logged after the next sign-in).",
+    "steps": [
+      "Test modules one at a time to find the bad stick.",
+      "Replace the faulty module."
+    ],
+    "page": "Ram"
+  },
+  {
+    "provider": "Microsoft-Windows-Ntfs",
+    "aliases": [
+      "Ntfs"
+    ],
+    "id": 50,
+    "log": "System",
+    "severity": "serious",
+    "title": "Delayed write failed",
+    "meaning": "Windows couldn't finish saving data to a drive, so some data may be lost. Typical with a USB drive unplugged too early, or a failing drive/cable.",
+    "steps": [
+      "Run chkdsk on the drive named in the message.",
+      "Check SMART and cables on the Disk page."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-Ntfs",
+    "aliases": [
+      "Ntfs"
+    ],
+    "id": 55,
+    "log": "System",
+    "severity": "serious",
+    "title": "File system is corrupted",
+    "meaning": "The file system structure on a drive is damaged and can't be used safely. Caused by power loss, forced shutdowns, or a failing disk.",
+    "steps": [
+      "Run 'chkdsk X: /f' on the named drive (restart may be needed).",
+      "Check SMART on the Disk page.",
+      "Back up important data."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-Ntfs",
+    "aliases": [
+      "Ntfs"
+    ],
+    "id": 98,
+    "log": "System",
+    "severity": "watch",
+    "title": "Volume health check",
+    "meaning": "Windows checked a drive's file system. If the message says the volume is healthy, nothing is needed. If it says it needs an offline scan/repair (chkdsk), the file system has errors.",
+    "steps": [
+      "If repair is needed: run 'chkdsk X: /f' and restart.",
+      "Check SMART if it keeps coming back."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-Ntfs",
+    "aliases": [
+      "Ntfs"
+    ],
+    "id": 137,
+    "log": "System",
+    "severity": "watch",
+    "title": "Transaction manager error",
+    "meaning": "The part of NTFS that tracks transactions on a volume hit an error it can't retry. Often related to file system damage or removable drives.",
+    "steps": [
+      "Run 'chkdsk X: /f' on the named volume.",
+      "Run 'sfc /scannow' if it's the system drive."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-Ntfs",
+    "aliases": [
+      "Ntfs"
+    ],
+    "id": 140,
+    "log": "System",
+    "severity": "watch",
+    "title": "Failed to flush transaction log",
+    "meaning": "Windows couldn't write file system bookkeeping to a volume; data corruption may follow. Very common with USB drives removed early or disks going to sleep.",
+    "steps": [
+      "Identify the volume (HarddiskVolumeN) in the details.",
+      "Run chkdsk on it; check SMART on the Disk page."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-Power-Troubleshooter",
+    "aliases": [
+      "Power-Troubleshooter"
+    ],
+    "id": 1,
+    "log": "System",
+    "severity": "routine",
+    "title": "Woke from sleep",
+    "meaning": "The PC returned from sleep. 'Wake Source' shows what woke it (power button, mouse, network adapter, timer).",
+    "steps": [],
+    "page": "Power"
+  },
+  {
+    "provider": "Microsoft-Windows-Resource-Exhaustion-Detector",
+    "aliases": [
+      "Resource-Exhaustion-Detector"
+    ],
+    "id": 2004,
+    "log": "System",
+    "severity": "serious",
+    "title": "Low memory detected",
+    "meaning": "Windows diagnosed a low virtual memory condition. The details list the programs using the most memory.",
+    "steps": [
+      "Close or fix the program using the most memory.",
+      "Make sure the page file is enabled.",
+      "Consider adding RAM."
+    ],
+    "page": "Ram"
+  },
+  {
+    "provider": "Microsoft-Windows-RestartManager",
+    "aliases": [
+      "RestartManager"
+    ],
+    "id": 10000,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Restart Manager session started",
+    "meaning": "An installer started a session to close/restart apps using files it needs to update. Normal during installs.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-RestartManager",
+    "aliases": [
+      "RestartManager"
+    ],
+    "id": 10001,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Restart Manager session ended",
+    "meaning": "The installer's Restart Manager session ended. Normal.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Search",
+    "aliases": [
+      "Search"
+    ],
+    "id": 3036,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Search can't reach location",
+    "meaning": "Windows Search couldn't access one of its indexed locations (often Offline Files or a disconnected drive). Harmless.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "aliases": [
+      "Security-Auditing"
+    ],
+    "id": 4624,
+    "log": "Security",
+    "severity": "routine",
+    "title": "Successful sign-in",
+    "meaning": "An account signed in successfully (includes system and network sign-ins).",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "aliases": [
+      "Security-Auditing"
+    ],
+    "id": 4625,
+    "log": "Security",
+    "severity": "watch",
+    "title": "Failed sign-in",
+    "meaning": "A sign-in attempt failed (wrong password or unknown user). Many in a short time can mean password guessing or a saved wrong password.",
+    "steps": [
+      "Check the account name and source address in the details."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "aliases": [
+      "Security-Auditing"
+    ],
+    "id": 4720,
+    "log": "Security",
+    "severity": "watch",
+    "title": "User account created",
+    "meaning": "A new user account was created. Check it was intended.",
+    "steps": [
+      "Confirm the new account is known to the owner."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "aliases": [
+      "Security-Auditing"
+    ],
+    "id": 4740,
+    "log": "Security",
+    "severity": "watch",
+    "title": "Account locked out",
+    "meaning": "An account was locked after too many failed sign-ins.",
+    "steps": [
+      "Find the device using an old password (details show the source)."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Kerberos",
+    "aliases": [
+      "Security-Kerberos",
+      "Kerberos"
+    ],
+    "id": 4,
+    "log": "System",
+    "severity": "watch",
+    "title": "Kerberos: wrong server identity",
+    "meaning": "A domain sign-in ticket was rejected by a server (KRB_AP_ERR_MODIFIED). Usually duplicate or stale DNS records or computer names on a domain network.",
+    "steps": [
+      "Check DNS records for the named server.",
+      "Rejoin the computer to the domain if its account is broken."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-SPP",
+    "aliases": [
+      "Security-SPP"
+    ],
+    "id": 1014,
+    "log": "Application",
+    "severity": "routine",
+    "title": "License acquisition failed",
+    "meaning": "Windows couldn't obtain a license from Microsoft's servers, usually because the network wasn't ready. Harmless if Windows shows as activated.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Security-SPP",
+    "aliases": [
+      "Security-SPP"
+    ],
+    "id": 8198,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Activation failed",
+    "meaning": "Windows activation failed. The hr= code shows why (no internet, invalid key, or activation server unreachable).",
+    "steps": [
+      "Check activation status in Settings > System > Activation."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-SPP",
+    "aliases": [
+      "Security-SPP"
+    ],
+    "id": 16384,
+    "log": "Application",
+    "severity": "routine",
+    "title": "License service rescheduled",
+    "meaning": "The Software Protection service scheduled itself to restart later. Normal.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Servicing",
+    "aliases": [
+      "Servicing"
+    ],
+    "id": 2,
+    "log": "Setup",
+    "severity": "routine",
+    "title": "Package change finished",
+    "meaning": "An update package changed state (e.g. Installed). The result code shows success or failure.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Servicing",
+    "aliases": [
+      "Servicing"
+    ],
+    "id": 4,
+    "log": "Setup",
+    "severity": "routine",
+    "title": "Restart needed for package",
+    "meaning": "A restart is required before an update package can finish installing.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Time-Service",
+    "aliases": [
+      "Time-Service",
+      "W32Time"
+    ],
+    "id": 36,
+    "log": "System",
+    "severity": "watch",
+    "title": "Clock not synced for a long time",
+    "meaning": "The clock hasn't been synchronized for a long time (often 24 hours) because no time source answered. The clock may drift.",
+    "steps": [
+      "Check internet access.",
+      "Run 'w32tm /resync' as administrator."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-Time-Service",
+    "aliases": [
+      "Time-Service",
+      "W32Time"
+    ],
+    "id": 47,
+    "log": "System",
+    "severity": "watch",
+    "title": "No reply from time server",
+    "meaning": "The configured time server didn't answer after several tries. Harmless when offline; repeated with internet may mean a firewall blocks time (UDP port 123).",
+    "steps": [
+      "Check that the clock is correct.",
+      "Try another time server in Date & Time settings."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-Time-Service",
+    "aliases": [
+      "Time-Service",
+      "W32Time"
+    ],
+    "id": 129,
+    "log": "System",
+    "severity": "routine",
+    "title": "No domain time source found",
+    "meaning": "The PC tried to find a domain controller for time and couldn't. Normal on home PCs not in a domain, and at startup before the network is up.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Time-Service",
+    "aliases": [
+      "Time-Service",
+      "W32Time"
+    ],
+    "id": 134,
+    "log": "System",
+    "severity": "routine",
+    "title": "Time server name not resolved",
+    "meaning": "The time server name (e.g. time.windows.com) couldn't be looked up, usually because the network wasn't ready yet. Harmless if the clock is correct.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Time-Service",
+    "aliases": [
+      "Time-Service",
+      "W32Time"
+    ],
+    "id": 158,
+    "log": "System",
+    "severity": "routine",
+    "title": "VM time provider not used",
+    "meaning": "The virtual-machine time provider says it isn't needed because this isn't a virtual machine. Normal on physical PCs.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-TPM-WMI",
+    "aliases": [
+      "TPM-WMI"
+    ],
+    "id": 1795,
+    "log": "System",
+    "severity": "watch",
+    "title": "Firmware rejected Secure Boot update",
+    "meaning": "The BIOS/UEFI returned an error while Windows tried to update Secure Boot certificates.",
+    "steps": [
+      "Update the BIOS/UEFI from the PC maker."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-TPM-WMI",
+    "aliases": [
+      "TPM-WMI"
+    ],
+    "id": 1796,
+    "log": "System",
+    "severity": "watch",
+    "title": "Secure Boot update error",
+    "meaning": "An unexpected error happened while updating Secure Boot data; Windows retries at the next restart. Also logged when Secure Boot is disabled.",
+    "steps": [
+      "Restart and check if the event returns.",
+      "Update the BIOS; check Secure Boot is enabled."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-TPM-WMI",
+    "aliases": [
+      "TPM-WMI"
+    ],
+    "id": 1801,
+    "log": "System",
+    "severity": "watch",
+    "title": "Secure Boot certs not yet applied",
+    "meaning": "New Secure Boot certificates are ready but haven't been written to the firmware yet. Part of Microsoft's certificate rollout (old 2011 certificates expire in 2026).",
+    "steps": [
+      "Install Windows updates and a current BIOS; restart."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-TPM-WMI",
+    "aliases": [
+      "TPM-WMI"
+    ],
+    "id": 1808,
+    "log": "System",
+    "severity": "routine",
+    "title": "Secure Boot certificates updated",
+    "meaning": "This device has installed the updated Secure Boot certificates/keys. Good.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-User Profiles Service",
+    "aliases": [
+      "User Profile Service",
+      "Userenv"
+    ],
+    "id": 1511,
+    "log": "Application",
+    "severity": "serious",
+    "title": "Signed in with temporary profile",
+    "meaning": "Windows couldn't load the user's profile and signed in with a temporary one. Files and settings seem missing and changes will be lost at sign-out.",
+    "steps": [
+      "Don't save work in the temporary profile.",
+      "Fix the profile's registry entry (ProfileList) or restore from backup.",
+      "Check disk health."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Microsoft-Windows-User Profiles Service",
+    "aliases": [
+      "User Profile Service",
+      "Userenv"
+    ],
+    "id": 1530,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Profile file still in use",
+    "meaning": "At sign-out, some program still held the user's registry file; Windows unloaded it anyway. Normal and harmless.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-UserPnp",
+    "aliases": [
+      "UserPnp"
+    ],
+    "id": 20001,
+    "log": "System",
+    "severity": "routine",
+    "title": "Driver installed for device",
+    "meaning": "Windows finished installing a driver for a device. Status 0x0 means success; any other status means the install failed.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WER-SystemErrorReporting",
+    "aliases": [
+      "BugCheck"
+    ],
+    "id": 1001,
+    "log": "System",
+    "severity": "serious",
+    "title": "Blue screen (crash) occurred",
+    "meaning": "The PC restarted after a blue screen (bugcheck). The message shows the stop code and where a crash dump was saved.",
+    "steps": [
+      "Open the Crash page to see the stop code and the likely driver.",
+      "Update or roll back the driver named in the dump.",
+      "Test RAM and disk if crashes have different codes."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 1,
+    "log": "System",
+    "severity": "serious",
+    "title": "Fatal hardware error recorded",
+    "meaning": "After a restart, Windows logged a fatal hardware error saved from the previous crash. The details name the component (processor, memory, PCI Express).",
+    "steps": [
+      "Note the component and error source in the details.",
+      "Remove overclocks/undervolts and load BIOS defaults.",
+      "Test RAM and run a CPU stress test."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 17,
+    "log": "System",
+    "severity": "watch",
+    "title": "Corrected PCI Express error",
+    "meaning": "A PCI Express link (to GPU, NVMe SSD, network card, etc.) had an error that was fixed automatically. Often harmless noise caused by power saving (ASPM); many per minute can slow the system.",
+    "steps": [
+      "Note the device ID in the details to find which card it is.",
+      "Update BIOS and chipset drivers.",
+      "Reseat the card or try another slot."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 18,
+    "log": "System",
+    "severity": "serious",
+    "title": "Fatal CPU/hardware error",
+    "meaning": "The processor reported an uncorrectable hardware error (machine check), which crashes the system. Common causes: unstable overclock/undervolt, overheating, bad CPU, RAM or motherboard.",
+    "steps": [
+      "Load BIOS defaults and remove any overclock or undervolt.",
+      "Check temperatures and run a stress test.",
+      "Update the BIOS; test RAM."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 19,
+    "log": "System",
+    "severity": "watch",
+    "title": "Corrected CPU error",
+    "meaning": "The processor detected and fixed an internal error (cache or bus). A few are harmless; frequent ones suggest an unstable overclock/undervolt, heat, or hardware starting to fail.",
+    "steps": [
+      "Remove overclock/undervolt and load BIOS defaults.",
+      "Update the BIOS; run a CPU stress test."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 46,
+    "log": "System",
+    "severity": "serious",
+    "title": "Memory hardware error",
+    "meaning": "A memory error was reported through the processor's error reporting (machine check). Usually faulty or unstable RAM, or wrong RAM timings/XMP/EXPO settings.",
+    "steps": [
+      "Disable XMP/EXPO and test with default RAM speed.",
+      "Run a RAM test; test one module at a time."
+    ],
+    "page": "Ram"
+  },
+  {
+    "provider": "Microsoft-Windows-WHEA-Logger",
+    "aliases": [
+      "WHEA-Logger"
+    ],
+    "id": 47,
+    "log": "System",
+    "severity": "watch",
+    "title": "Corrected memory error",
+    "meaning": "A memory error was detected and fixed. Occasional ones may be tolerated; repeated ones point to failing or unstable RAM (often too-aggressive XMP/EXPO settings).",
+    "steps": [
+      "Run a RAM test.",
+      "Try default RAM settings (disable XMP/EXPO)."
+    ],
+    "page": "Ram"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 1116,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "serious",
+    "title": "Malware detected",
+    "meaning": "Microsoft Defender found malware or unwanted software. The details show the threat name and file path.",
+    "steps": [
+      "Check that event 1117 (action taken) follows.",
+      "Run a full scan; review the file path."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 1117,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "Malware action taken",
+    "meaning": "Microsoft Defender took action on a threat (quarantined, removed or allowed).",
+    "steps": [
+      "Review Protection history to confirm the threat is resolved."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 1118,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "serious",
+    "title": "Malware action failed",
+    "meaning": "Microsoft Defender tried to remove a threat but failed (non-critical failure). The threat may still be present.",
+    "steps": [
+      "Run a full scan or a Microsoft Defender Offline scan."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 1119,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "serious",
+    "title": "Malware action critical fail",
+    "meaning": "Microsoft Defender hit a critical error while acting on a threat. The threat is likely still present.",
+    "steps": [
+      "Run a Microsoft Defender Offline scan.",
+      "Consider a second-opinion scanner."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 2001,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "Definition update failed",
+    "meaning": "Microsoft Defender couldn't update its security intelligence (virus definitions). Protection gets outdated if it keeps failing.",
+    "steps": [
+      "Check internet access; update Defender manually from Windows Security."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 2004,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "New definitions failed to load",
+    "meaning": "New security intelligence couldn't be loaded, so Defender went back to the previous version.",
+    "steps": [
+      "Update Defender manually; restart the PC."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 3002,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "Real-time protection error",
+    "meaning": "A part of real-time protection hit an error and stopped.",
+    "steps": [
+      "Restart the PC; update Defender.",
+      "Check for conflicting antivirus software."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 5001,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "Real-time protection off",
+    "meaning": "Real-time protection was turned off. Normal if another antivirus is installed; otherwise the PC is less protected.",
+    "steps": [
+      "Turn it back on in Windows Security unless another antivirus is active."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 5007,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "routine",
+    "title": "Defender settings changed",
+    "meaning": "A Microsoft Defender setting changed. Very frequent and normal (updates change settings); unexpected exclusions added can be a sign of malware.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "aliases": [
+      "Windows Defender",
+      "Microsoft Defender Antivirus"
+    ],
+    "id": 5008,
+    "log": "Microsoft-Windows-Windows Defender/Operational",
+    "severity": "watch",
+    "title": "Antivirus engine stopped",
+    "meaning": "The Microsoft Defender engine stopped because of an unexpected error.",
+    "steps": [
+      "Update Defender and restart; check for conflicting antivirus."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 19,
+    "log": "System",
+    "severity": "routine",
+    "title": "Update installed",
+    "meaning": "Windows Update installed an update successfully.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 20,
+    "log": "System",
+    "severity": "watch",
+    "title": "Update failed to install",
+    "meaning": "An update failed to install. The error code (0x8...) tells why. Windows usually retries later.",
+    "steps": [
+      "Note the KB number and error code.",
+      "Run Windows Update troubleshooter; free disk space.",
+      "Run 'DISM /Online /Cleanup-Image /RestoreHealth' then 'sfc /scannow'."
+    ],
+    "page": "Events"
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 25,
+    "log": "System",
+    "severity": "watch",
+    "title": "Update check failed",
+    "meaning": "Windows Update couldn't check for updates. Usually network or proxy problems.",
+    "steps": [
+      "Check internet/proxy settings; retry later."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 31,
+    "log": "System",
+    "severity": "watch",
+    "title": "Update download failed",
+    "meaning": "Windows Update failed to download an update. Often network issues, a proxy, or a damaged update cache.",
+    "steps": [
+      "Check internet connection and free space.",
+      "Reset the update cache (SoftwareDistribution folder)."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 43,
+    "log": "System",
+    "severity": "routine",
+    "title": "Update install started",
+    "meaning": "Windows Update started installing an update.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WindowsUpdateClient",
+    "aliases": [
+      "WindowsUpdateClient"
+    ],
+    "id": 44,
+    "log": "System",
+    "severity": "routine",
+    "title": "Update download started",
+    "meaning": "Windows Update started downloading an update.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Winlogon",
+    "aliases": [
+      "Winlogon"
+    ],
+    "id": 6005,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Sign-in step is slow",
+    "meaning": "A sign-in component (often Group Policy) is taking a long time. Repeated entries explain slow sign-ins.",
+    "steps": [
+      "See event 6006 for how long it took.",
+      "Check network and startup programs."
+    ],
+    "page": "Startup"
+  },
+  {
+    "provider": "Microsoft-Windows-Winlogon",
+    "aliases": [
+      "Winlogon"
+    ],
+    "id": 6006,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Sign-in step took long",
+    "meaning": "A sign-in component (often Group Policy) took a long time to finish. The details show how many seconds.",
+    "steps": [
+      "Check network/domain connectivity if it's GPClient."
+    ],
+    "page": "Startup"
+  },
+  {
+    "provider": "Microsoft-Windows-Winlogon",
+    "aliases": [
+      "Winlogon"
+    ],
+    "id": 7001,
+    "log": "System",
+    "severity": "routine",
+    "title": "User signed in",
+    "meaning": "A user signed in to Windows. Useful to see when the PC was used.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-Winlogon",
+    "aliases": [
+      "Winlogon"
+    ],
+    "id": 7002,
+    "log": "System",
+    "severity": "routine",
+    "title": "User signed out",
+    "meaning": "A user signed out of Windows.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 4003,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "watch",
+    "title": "Wi-Fi limited, auto-recovery",
+    "meaning": "Windows detected limited Wi-Fi connectivity and tried to recover by resetting the adapter.",
+    "steps": [
+      "Update the Wi-Fi driver.",
+      "Disable power saving for the Wi-Fi adapter.",
+      "Check router signal and channel."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 8001,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "routine",
+    "title": "Wi-Fi connected",
+    "meaning": "The PC connected to a wireless network. Details show the network name and security type.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 8002,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "watch",
+    "title": "Wi-Fi connection failed",
+    "meaning": "Connecting to a wireless network failed. The details give the reason (wrong password, weak signal, network not found).",
+    "steps": [
+      "Check the reason in the details.",
+      "Forget the network and reconnect."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 8003,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "routine",
+    "title": "Wi-Fi disconnected",
+    "meaning": "The PC disconnected from a wireless network. Normal when leaving or sleeping; many unexpected disconnects point to signal or driver issues.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 10002,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "watch",
+    "title": "Wi-Fi vendor module stopped",
+    "meaning": "A Wi-Fi add-on module from the adapter vendor stopped. Often linked to Wi-Fi driver problems.",
+    "steps": [
+      "Update or reinstall the Wi-Fi driver."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WLAN-AutoConfig",
+    "aliases": [
+      "WLAN-AutoConfig"
+    ],
+    "id": 11006,
+    "log": "Microsoft-Windows-WLAN-AutoConfig/Operational",
+    "severity": "watch",
+    "title": "Wi-Fi security failed",
+    "meaning": "The wireless security step (password/authentication) failed while connecting.",
+    "steps": [
+      "Re-enter the Wi-Fi password.",
+      "Update the Wi-Fi driver; check router security mode."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Microsoft-Windows-WMI",
+    "aliases": [
+      "WMI"
+    ],
+    "id": 10,
+    "log": "Application",
+    "severity": "routine",
+    "title": "WMI event filter not reactivated",
+    "meaning": "A WMI event filter (a query left by software such as old OEM tools) couldn't be reactivated. Usually harmless.",
+    "steps": []
+  },
+  {
+    "provider": "Microsoft-Windows-WMI-Activity",
+    "aliases": [
+      "WMI-Activity"
+    ],
+    "id": 5858,
+    "log": "Microsoft-Windows-WMI-Activity/Operational",
+    "severity": "routine",
+    "title": "WMI query error",
+    "meaning": "A program's WMI query (system information request) returned an error. Very frequent and normally harmless.",
+    "steps": []
+  },
+  {
+    "provider": "MsiInstaller",
+    "id": 1033,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Program installed",
+    "meaning": "Windows Installer installed a product. 'Success or error status: 0' means success; any other number is an error code.",
+    "steps": []
+  },
+  {
+    "provider": "MsiInstaller",
+    "id": 1034,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Program removed",
+    "meaning": "Windows Installer removed a product. Status 0 means success.",
+    "steps": []
+  },
+  {
+    "provider": "MsiInstaller",
+    "id": 11707,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Installation completed",
+    "meaning": "A product was installed successfully by Windows Installer.",
+    "steps": []
+  },
+  {
+    "provider": "MsiInstaller",
+    "id": 11708,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Installation failed",
+    "meaning": "A Windows Installer setup failed. Look at events just before it (often 11xxx with an error number) for the reason.",
+    "steps": [
+      "Run the installer again as administrator.",
+      "Check free disk space; remove old versions first."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "MsiInstaller",
+    "id": 11724,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Program removal completed",
+    "meaning": "A product was removed successfully by Windows Installer.",
+    "steps": []
+  },
+  {
+    "provider": "NETLOGON",
+    "aliases": [
+      "Microsoft-Windows-NETLOGON"
+    ],
+    "id": 3095,
+    "log": "System",
+    "severity": "routine",
+    "title": "Netlogon not needed",
+    "meaning": "This PC is in a workgroup, not a domain, so the Netlogon service isn't needed. Harmless.",
+    "steps": []
+  },
+  {
+    "provider": "NETLOGON",
+    "aliases": [
+      "Microsoft-Windows-NETLOGON"
+    ],
+    "id": 5719,
+    "log": "System",
+    "severity": "routine",
+    "title": "No domain controller at startup",
+    "meaning": "The PC couldn't set up a secure session with a domain controller. Common at boot before the network is ready. If it repeats later on a domain PC, sign-in and policies may fail.",
+    "steps": []
+  },
+  {
+    "provider": "nvlddmkm",
+    "id": 13,
+    "log": "System",
+    "severity": "watch",
+    "title": "NVIDIA graphics exception",
+    "meaning": "The NVIDIA driver reported a GPU error ('Graphics Exception', also called an Xid error). Often from an unstable overclock, bad driver, overheating or a failing GPU.",
+    "steps": [
+      "Clean-install the NVIDIA driver.",
+      "Remove GPU overclock; check temps under load."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "nvlddmkm",
+    "id": 14,
+    "log": "System",
+    "severity": "watch",
+    "title": "NVIDIA GPU error",
+    "meaning": "The NVIDIA driver logged a GPU error with codes for NVIDIA's own diagnostics. Repeated entries point to driver, power or GPU hardware problems.",
+    "steps": [
+      "Clean-install the NVIDIA driver.",
+      "Check GPU power cables and PSU; run a GPU stress test."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "nvlddmkm",
+    "id": 153,
+    "log": "System",
+    "severity": "watch",
+    "title": "NVIDIA GPU error occurred",
+    "meaning": "The NVIDIA driver reported an error on the GPU ('Error occurred on GPUID'), often together with a driver reset (Display 4101) or a crash.",
+    "steps": [
+      "Clean-install the NVIDIA driver.",
+      "Remove overclock; check temps and power cables."
+    ],
+    "page": "Stress"
+  },
+  {
+    "provider": "partmgr",
+    "aliases": [
+      "Microsoft-Windows-Partition"
+    ],
+    "id": 58,
+    "log": "System",
+    "severity": "watch",
+    "title": "Duplicate disk signature",
+    "meaning": "Two disks have the same identity (signature), usually after cloning a drive. Windows takes one of them offline.",
+    "steps": [
+      "Bring the disk online in Disk Management (this gives it a new signature)."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Perflib",
+    "aliases": [
+      "Microsoft-Windows-Perflib"
+    ],
+    "id": 1008,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Performance counter didn't open",
+    "meaning": "A performance counter provider (e.g. for BITS or a service) failed to open. Harmless for normal use; only monitoring tools are affected.",
+    "steps": []
+  },
+  {
+    "provider": "Perflib",
+    "aliases": [
+      "Microsoft-Windows-Perflib"
+    ],
+    "id": 1023,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Performance counter DLL not loaded",
+    "meaning": "Windows couldn't load a performance counter library. Harmless for normal use; can be fixed with 'lodctr /r' if monitoring tools need it.",
+    "steps": []
+  },
+  {
+    "provider": "Schannel",
+    "aliases": [
+      "Microsoft-Windows-Schannel"
+    ],
+    "id": 36871,
+    "log": "System",
+    "severity": "routine",
+    "title": "TLS credential error",
+    "meaning": "Windows couldn't create credentials for a secure (TLS) connection. Common and often harmless; matters only if a specific app can't connect securely.",
+    "steps": []
+  },
+  {
+    "provider": "Schannel",
+    "aliases": [
+      "Microsoft-Windows-Schannel"
+    ],
+    "id": 36874,
+    "log": "System",
+    "severity": "routine",
+    "title": "No shared TLS cipher",
+    "meaning": "A client tried a secure connection but none of its encryption methods are allowed on this PC. Usually an old client; harmless on home PCs.",
+    "steps": []
+  },
+  {
+    "provider": "Schannel",
+    "aliases": [
+      "Microsoft-Windows-Schannel"
+    ],
+    "id": 36887,
+    "log": "System",
+    "severity": "routine",
+    "title": "TLS alert received",
+    "meaning": "The other side of a secure connection sent an error and closed it. Very common background noise from apps and websites.",
+    "steps": []
+  },
+  {
+    "provider": "Schannel",
+    "aliases": [
+      "Microsoft-Windows-Schannel"
+    ],
+    "id": 36888,
+    "log": "System",
+    "severity": "routine",
+    "title": "TLS alert sent",
+    "meaning": "This PC sent an error on a secure connection and closed it. Common background noise.",
+    "steps": []
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7000,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service failed to start",
+    "meaning": "A Windows or app service couldn't start. The message gives the service name and reason. Often left over from uninstalled software or a missing driver.",
+    "steps": [
+      "Check the service on the Services page.",
+      "If it belongs to removed software, set it to Disabled.",
+      "Reinstall the app/driver it belongs to."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7001,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service dependency failed",
+    "meaning": "A service didn't start because another service it needs failed first. Fix the first service and this one follows.",
+    "steps": [
+      "Find the earlier 7000/7009/7023 event for the service it depends on."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7009,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service start timed out",
+    "meaning": "A service took too long (usually over 30 seconds) to start. Common on slow disks or busy startups; usually followed by 7000.",
+    "steps": [
+      "Check disk health and startup load.",
+      "Update or remove the software owning the service."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7011,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service didn't respond in time",
+    "meaning": "A service didn't respond to a request within the time limit (usually 30 seconds). Occasional is common; repeats suggest a hanging service or slow disk.",
+    "steps": [
+      "Check which service it is; update or disable it if not needed.",
+      "Check disk health."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7022,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service hung on starting",
+    "meaning": "A service started but got stuck and never finished starting.",
+    "steps": [
+      "Restart the PC; if it repeats, update or reinstall the owning software."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7023,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service stopped with error",
+    "meaning": "A service ended with an error code. The message explains the error.",
+    "steps": [
+      "Look up the named service on the Services page.",
+      "Reinstall or update the software it belongs to."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7024,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service stopped with its own error",
+    "meaning": "A service ended with an error specific to that service. Meaning depends on the service.",
+    "steps": [
+      "Check the service and its app's own logs.",
+      "Reinstall/update the software it belongs to."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7026,
+    "log": "System",
+    "severity": "watch",
+    "title": "Boot driver(s) failed to load",
+    "meaning": "One or more drivers set to load at startup did not load. Often leftover drivers from removed software or unused hardware.",
+    "steps": [
+      "Check the listed driver names on the Drivers page.",
+      "Remove leftovers of uninstalled software (VPN, antivirus, tools)."
+    ],
+    "page": "Drivers"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7031,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service crashed (recovery set)",
+    "meaning": "A service stopped unexpectedly; Windows will take the recovery action set for it (often restart). Repeats mean the service or its app is unstable.",
+    "steps": [
+      "Check Application Error 1000 at the same time for the crashing program.",
+      "Update or reinstall the owning software."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7032,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service recovery action failed",
+    "meaning": "Windows tried to recover a crashed service (e.g. restart it) and that failed too.",
+    "steps": [
+      "Check the service on the Services page and restart it manually.",
+      "Reinstall the software it belongs to."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7034,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service crashed",
+    "meaning": "A service stopped unexpectedly. The message shows how many times this happened.",
+    "steps": [
+      "Check Application Error 1000 at the same time for details.",
+      "Update or reinstall the owning software."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7036,
+    "log": "System",
+    "severity": "routine",
+    "title": "Service started/stopped",
+    "meaning": "A service changed state (running or stopped). Logged constantly; normal.",
+    "steps": []
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7038,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service couldn't log on",
+    "meaning": "A service set to run under a specific user account couldn't log on, usually because that account's password changed.",
+    "steps": [
+      "Update the password in the service's Log On settings."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7040,
+    "log": "System",
+    "severity": "routine",
+    "title": "Service start type changed",
+    "meaning": "A service's startup type was changed (e.g. Automatic to Manual). Windows Update and BITS do this routinely.",
+    "steps": []
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7043,
+    "log": "System",
+    "severity": "watch",
+    "title": "Service slow to shut down",
+    "meaning": "A service didn't shut down properly after being told the PC was shutting down. Can make shutdown slow.",
+    "steps": [
+      "Update the software owning the service."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "Service Control Manager",
+    "aliases": [
+      "Microsoft-Windows-Service Control Manager"
+    ],
+    "id": 7045,
+    "log": "System",
+    "severity": "watch",
+    "title": "New service installed",
+    "meaning": "A new service or driver was installed. Normal when installing software; unknown services can indicate malware.",
+    "steps": [
+      "Check the service name and file path are from known software."
+    ],
+    "page": "Services"
+  },
+  {
+    "provider": "SideBySide",
+    "aliases": [
+      "Microsoft-Windows-SideBySide"
+    ],
+    "id": 33,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Missing program component",
+    "meaning": "A program couldn't start because a required component (usually a Visual C++ runtime) is missing.",
+    "steps": [
+      "Install/repair the Microsoft Visual C++ Redistributables (x86 and x64).",
+      "Reinstall the program."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "SideBySide",
+    "aliases": [
+      "Microsoft-Windows-SideBySide"
+    ],
+    "id": 59,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Program component setup failed",
+    "meaning": "Windows couldn't prepare the components a program needs (its manifest or a referenced runtime is missing or broken). Usually paired with event 33.",
+    "steps": [
+      "Install/repair Visual C++ Redistributables.",
+      "Reinstall the program."
+    ],
+    "page": "Apps"
+  },
+  {
+    "provider": "storahci",
+    "aliases": [
+      "StorAHCI"
+    ],
+    "id": 129,
+    "log": "System",
+    "severity": "watch",
+    "title": "Storage device was reset",
+    "meaning": "The SATA (AHCI) storage driver reset a drive because a request didn't finish in time. Repeated resets cause freezes and point to a failing drive, bad cable, power-saving issues or outdated firmware/driver.",
+    "steps": [
+      "Check SMART on the Disk page.",
+      "Update SSD firmware and the storage/chipset driver.",
+      "For SATA, replace the cable; try disabling link power saving."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "stornvme",
+    "aliases": [
+      "StorNVMe"
+    ],
+    "id": 11,
+    "log": "System",
+    "severity": "serious",
+    "title": "NVMe controller error",
+    "meaning": "The NVMe SSD's controller reported an error. Often a failing SSD, outdated SSD firmware, or overheating.",
+    "steps": [
+      "Check SMART and temperature on the Disk page.",
+      "Update the SSD firmware from the manufacturer.",
+      "Back up data if errors repeat."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "stornvme",
+    "aliases": [
+      "StorNVMe"
+    ],
+    "id": 129,
+    "log": "System",
+    "severity": "watch",
+    "title": "Storage device was reset",
+    "meaning": "The NVMe storage driver reset a drive because a request didn't finish in time. Repeated resets cause freezes and point to a failing drive, bad cable, power-saving issues or outdated firmware/driver.",
+    "steps": [
+      "Check SMART on the Disk page.",
+      "Update SSD firmware and the storage/chipset driver.",
+      "For SATA, replace the cable; try disabling link power saving."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Tcpip",
+    "aliases": [
+      "Microsoft-Windows-Tcpip"
+    ],
+    "id": 4199,
+    "log": "System",
+    "severity": "serious",
+    "title": "IP address conflict",
+    "meaning": "Another device on the network is using the same IP address as this PC. Internet or network access will be unreliable.",
+    "steps": [
+      "Set the adapter to obtain an IP automatically (DHCP).",
+      "Restart the router; fix any duplicate static IPs."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Tcpip",
+    "aliases": [
+      "Microsoft-Windows-Tcpip"
+    ],
+    "id": 4227,
+    "log": "System",
+    "severity": "watch",
+    "title": "Connection reused too quickly",
+    "meaning": "Windows couldn't open a new network connection because the same local/remote port pair was used very recently. Occasional is fine; frequent means an app opens huge numbers of connections.",
+    "steps": [
+      "Find the program making many connections (Network page)."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "Tcpip",
+    "aliases": [
+      "Microsoft-Windows-Tcpip"
+    ],
+    "id": 4231,
+    "log": "System",
+    "severity": "serious",
+    "title": "Out of network ports",
+    "meaning": "Windows ran out of temporary network ports, so new connections fail. Usually one program leaks connections.",
+    "steps": [
+      "Find the program with the most connections (e.g. 'netstat -ano').",
+      "Restart or update that program."
+    ],
+    "page": "Network"
+  },
+  {
+    "provider": "User32",
+    "aliases": [
+      "Microsoft-Windows-User32"
+    ],
+    "id": 1074,
+    "log": "System",
+    "severity": "routine",
+    "title": "Planned restart/shutdown",
+    "meaning": "A user or program started a restart or shutdown. The details show who/what did it and why (e.g. Windows Update).",
+    "steps": []
+  },
+  {
+    "provider": "volmgr",
+    "aliases": [
+      "Microsoft-Windows-Volmgr"
+    ],
+    "id": 45,
+    "log": "System",
+    "severity": "watch",
+    "title": "Crash dump driver failed to load",
+    "meaning": "Windows couldn't load the driver that writes crash dump files. If a blue screen happens, no dump may be saved.",
+    "steps": [
+      "Check pagefile and crash dump settings (System > Advanced > Startup and Recovery)."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "volmgr",
+    "aliases": [
+      "Microsoft-Windows-Volmgr"
+    ],
+    "id": 46,
+    "log": "System",
+    "severity": "watch",
+    "title": "Crash dump setup failed",
+    "meaning": "Windows couldn't prepare to save crash dump files at boot. Harmless by itself (common when the page file is off or small), but blue screens won't leave a dump.",
+    "steps": [
+      "Enable a system-managed page file on C:.",
+      "Set 'Automatic memory dump' in Startup and Recovery."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "volmgr",
+    "aliases": [
+      "Microsoft-Windows-Volmgr"
+    ],
+    "id": 49,
+    "log": "System",
+    "severity": "watch",
+    "title": "Page file too small for dumps",
+    "meaning": "The page file couldn't be configured for crash dumps, usually because it's disabled or too small. Crash dumps won't be saved.",
+    "steps": [
+      "Enable a system-managed page file on the system drive."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "volmgr",
+    "aliases": [
+      "Microsoft-Windows-Volmgr"
+    ],
+    "id": 161,
+    "log": "System",
+    "severity": "watch",
+    "title": "Crash dump creation failed",
+    "meaning": "A blue screen happened but the crash dump file couldn't be written, often due to a small page file, low disk space, or a disk problem.",
+    "steps": [
+      "Free space on C: and enable a system-managed page file.",
+      "Check the disk on the Disk page."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "volsnap",
+    "aliases": [
+      "Microsoft-Windows-Volsnap"
+    ],
+    "id": 25,
+    "log": "System",
+    "severity": "watch",
+    "title": "Restore points deleted (space)",
+    "meaning": "Shadow copies (restore points) on a volume were deleted because their storage couldn't grow in time.",
+    "steps": [
+      "Free disk space or increase System Protection space."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "volsnap",
+    "aliases": [
+      "Microsoft-Windows-Volsnap"
+    ],
+    "id": 33,
+    "log": "System",
+    "severity": "routine",
+    "title": "Oldest restore point deleted",
+    "meaning": "The oldest shadow copy (restore point) was deleted to stay under the space limit. Normal.",
+    "steps": []
+  },
+  {
+    "provider": "volsnap",
+    "aliases": [
+      "Microsoft-Windows-Volsnap"
+    ],
+    "id": 36,
+    "log": "System",
+    "severity": "watch",
+    "title": "Shadow copies aborted (limit)",
+    "meaning": "Shadow copies were aborted because their storage hit the size limit.",
+    "steps": [
+      "Increase System Protection space or free disk space."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "VSS",
+    "aliases": [
+      "Microsoft-Windows-VSS"
+    ],
+    "id": 13,
+    "log": "Application",
+    "severity": "routine",
+    "title": "Shadow copy component unavailable",
+    "meaning": "A Volume Shadow Copy component couldn't be started. Very common and usually harmless unless backups or restore points fail.",
+    "steps": []
+  },
+  {
+    "provider": "VSS",
+    "aliases": [
+      "Microsoft-Windows-VSS"
+    ],
+    "id": 8193,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Shadow copy error",
+    "meaning": "The Volume Shadow Copy service (used by backups and restore points) hit an unexpected error.",
+    "steps": [
+      "Check that backups/System Restore work.",
+      "Restart the 'Volume Shadow Copy' service."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "VSS",
+    "aliases": [
+      "Microsoft-Windows-VSS"
+    ],
+    "id": 8194,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Shadow copy access denied",
+    "meaning": "The Volume Shadow Copy service got 'access denied' talking to a component. Often harmless; can break some backup software.",
+    "steps": [
+      "Check that backups complete successfully."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "VSS",
+    "aliases": [
+      "Microsoft-Windows-VSS"
+    ],
+    "id": 12289,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Shadow copy device error",
+    "meaning": "The Volume Shadow Copy service got an error from a drive. Can affect backups and restore points; sometimes caused by drives without enough free space.",
+    "steps": [
+      "Check the named drive on the Disk page.",
+      "Free space on the drive."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "VSS",
+    "aliases": [
+      "Microsoft-Windows-VSS"
+    ],
+    "id": 12302,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Shadow copy writer problem",
+    "meaning": "The Volume Shadow Copy service found an inconsistency while contacting backup helpers (writers).",
+    "steps": [
+      "Run 'vssadmin list writers' to find failed writers.",
+      "Restart the PC and retry the backup."
+    ],
+    "page": "Disk"
+  },
+  {
+    "provider": "Windows Error Reporting",
+    "aliases": [
+      "Microsoft-Windows-Windows Error Reporting"
+    ],
+    "id": 1001,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Problem report created",
+    "meaning": "Windows recorded a problem report. 'Event Name' shows the type: APPCRASH (app crash), AppHangB1 (app froze), BlueScreen, or LiveKernelEvent (driver/hardware hiccup, often graphics).",
+    "steps": [
+      "Read 'Event Name' and the program name in the details.",
+      "LiveKernelEvent 141/117: check the graphics driver and GPU."
+    ],
+    "page": "Crash"
+  },
+  {
+    "provider": "Wininit",
+    "aliases": [
+      "Microsoft-Windows-Wininit"
+    ],
+    "id": 1001,
+    "log": "Application",
+    "severity": "watch",
+    "title": "Check Disk results at boot",
+    "meaning": "Shows the result of a disk check (chkdsk) that ran during startup. Read the text: 'no problems found' is fine; repaired or bad sectors deserve a closer look.",
+    "steps": [
+      "Read the report for 'bad sectors' or repaired files.",
+      "Check SMART on the Disk page."
+    ],
+    "page": "Disk"
+  }
+]

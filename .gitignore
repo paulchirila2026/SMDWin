@@ -1,0 +1,34 @@
+# Build output
+bin/
+obj/
+publish/
+publish_*/
+publish-log.txt
+publish-lista.txt
+dotnet-info.txt
+*.binlog
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Runtime data written next to the exe (settings, logs, reports)
+Data/*
+!Data/HardwareDB/
+!Data/EventDB/
+
+# Private working files (never published)
+_private/
+CLAUDE.md
+# delivery archives — every one of them contains _private
+out/
+*.zip
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

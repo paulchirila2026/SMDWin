@@ -1,0 +1,17 @@
+<Application x:Class="SMDWin.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SMDWin.Views"
+             StartupUri="Views/MainWindow.xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Views/IconsDark.xaml"/>
+        <ResourceDictionary Source="Views/Styles.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+      <local:EmptyStringToCollapsedConverter x:Key="EmptyStringToCollapsed"/>
+      <local:ForegroundToPillBgConverter x:Key="ForegroundToPillBg"/>
+      <local:ThemeStatusBrushConverter x:Key="ThemeStatusBrush"/>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

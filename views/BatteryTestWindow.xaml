@@ -1,0 +1,134 @@
+    <Window x:Class="SMDWin.BatteryTestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="SMD Win — Battery Test"
+        Height="700" Width="740"
+        WindowStartupLocation="CenterOwner"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        FontFamily="{StaticResource AppFont}">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6"
+                            CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+  <Grid Margin="12">
+    <!-- the shadow on its own empty layer: an Effect on the element with text would blur the text -->
+    <Border CornerRadius="{DynamicResource RadiusCard}" Background="{DynamicResource BgCardBrush}" IsHitTestVisible="False">
+      <Border.Effect>
+      <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Color="#000000" Opacity="0.35" RenderingBias="Performance"/>
+    </Border.Effect>
+    </Border>
+    <Border CornerRadius="{DynamicResource RadiusCard}" Background="Transparent">
+  <Border CornerRadius="{DynamicResource RadiusCard}" ClipToBounds="True"
+          Background="{DynamicResource BgDarkBrush}"
+          BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="32"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- Titlebar: drag area + close button -->
+    <Grid Grid.Row="0" Background="Transparent">
+        <Border Background="Transparent" HorizontalAlignment="Stretch"
+                shell:WindowChrome.IsHitTestVisibleInChrome="False"/>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                Style="{StaticResource CaptionCloseBtnStyle}"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                Click="CloseTest_Click"
+                ToolTip="Close">✕</Button>
+    </Grid>
+
+    <!-- Header -->
+    <Border Grid.Row="1" Background="{DynamicResource BgCardBrush}" Padding="24,16,24,12"
+            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,0,1">
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel>
+          <TextBlock x:Name="TxtBatWindowTitle" Text="🔋 Battery Test" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
+                     Foreground="{DynamicResource TextPrimaryBrush}"/>
+          <TextBlock x:Name="TxtTestSubtitle" Text="Start the test to measure real battery life."
+                     FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+          <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" Padding="12,6" Margin="0,0,10,0">
+            <StackPanel HorizontalAlignment="Center">
+              <TextBlock x:Name="TxtBatPctLabel" Text="Battery" FontSize="{StaticResource FontSizeXS}"
+                         Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+              <TextBlock x:Name="TxtTestBatPct" Text="—%" FontSize="{StaticResource FontSizeTitleLg}" FontWeight="Bold"
+                         Foreground="{DynamicResource ChartGreenBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" Padding="12,6" Margin="0,0,10,0">
+            <StackPanel HorizontalAlignment="Center">
+              <TextBlock x:Name="TxtElapsedLabel" Text="Elapsed" FontSize="{StaticResource FontSizeXS}"
+                         Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+              <TextBlock x:Name="TxtElapsed" Text="00:00:00" FontSize="{StaticResource FontSizeTitleLg}" FontWeight="Bold"
+                         Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="8" Padding="12,6">
+            <StackPanel HorizontalAlignment="Center">
+              <TextBlock x:Name="TxtEstimatedLabel" Text="Est. remaining" FontSize="{StaticResource FontSizeXS}"
+                         Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+              <TextBlock x:Name="TxtEstimated" Text="—" FontSize="{StaticResource FontSizeTitleLg}" FontWeight="Bold"
+                         Foreground="{DynamicResource ChartAmberBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- TxtAnimStyleCurrent placeholder for code-behind compat -->
+    <TextBlock x:Name="TxtAnimStyleCurrent" Grid.Row="2" Visibility="Collapsed"/>
+
+    <!-- Animation Canvas -->
+    <Border Grid.Row="3" Background="{DynamicResource BgDarkBrush}" ClipToBounds="True">
+      <Canvas x:Name="AnimCanvas" ClipToBounds="True"
+              SizeChanged="AnimCanvas_SizeChanged"/>
+    </Border>
+
+    <!-- Battery history chart -->
+    <Border Grid.Row="4" Background="{DynamicResource BgCardBrush}" Padding="16,10" Margin="0,0,0,0">
+      <StackPanel>
+        <TextBlock x:Name="TxtBatHistoryLabel" Text="📊 Battery level over time" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+        <Canvas x:Name="TestBatChart" Height="60" ClipToBounds="True"
+                SizeChanged="TestBatChart_SizeChanged"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Footer controls -->
+    <Border Grid.Row="5" Background="{DynamicResource BgCardBrush}" Padding="16,12"
+            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,1,0,0">
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock x:Name="TxtTestStatus" Text="Ready. Unplug the charger before starting."
+                   FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                   VerticalAlignment="Center" TextWrapping="Wrap"/>
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+          <!-- Single toggle Start/Stop button -->
+          <Button x:Name="BtnToggleTest" Content="▶  Start Test"
+                  Style="{StaticResource GreenButtonStyle}"
+                  Padding="18,9" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                  Click="ToggleTest_Click" Margin="0,0,8,0"/>
+          <Button x:Name="BtnCloseTest" Content="✖  Close"
+                  Style="{StaticResource OutlineButtonStyle}"
+                  Padding="16,8" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                  Click="CloseTest_Click"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+  </Border>
+  </Border>
+  </Grid>
+</Window>

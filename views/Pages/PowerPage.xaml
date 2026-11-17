@@ -1,0 +1,717 @@
+<UserControl x:Class="SMDWin.Views.Pages.PowerPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+             xmlns:local="clr-namespace:SMDWin.Views"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+  <!-- The page logic is in the MainWindow.*.cs files: the named elements here are exposed in MainWindow as properties
+       (MainWindow.Pages.cs), and the handlers are redirected below. -->
+        <ScrollViewer x:Name="PanelBattery" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"
+                      ScrollChanged="PanelBattery_ScrollChanged">
+          <!-- Power (like RAM): at the top the battery (laptop) or the diagram (PC) | the active plan; at the bottom Sleep &amp; wake |
+               consumers. The page fills the window: the bottom row takes the rest of the height (MainWindow.PowerPage.cs → FitPowerCards). -->
+          <Grid x:Name="PowerPageGrid" Margin="{StaticResource PageMargin}">
+            <!-- 11.11.2026: the page fits one screen — header · top row (idle settings or battery | plan) · Sleep (+ consumers) ·
+                 Start-up and shut-down; the last row only takes the rest of the height -->
+            <!-- header · tabs (laptop) · UPS (when one is connected) · the cards (built in MainWindow.PowerRedesign.cs, they take the
+                 rest of the height) · the older page parts, hidden: the code still fills them and the new cards borrow some of them -->
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="TxtBatteryTitle" Text="Power"
+                           Style="{StaticResource SectionTitleStyle}" Margin="0"/>
+                <TextBlock x:Name="TxtPowerSubtitle" Text="Power plan and sleep" Style="{StaticResource PageSubtitleStyle}"/>
+              </StackPanel>
+              <!-- Action buttons in title bar -->
+              <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Keep awake (MainWindow.PowerSimple.cs): stops sleep and the screen turning off for a while, the plan stays as it is -->
+                <Border x:Name="PowerKeepAwakeBox" CornerRadius="8" BorderThickness="1" Padding="10,0,6,0" Height="30" Margin="0,0,8,0"
+                        BorderBrush="{DynamicResource CardBorderBrush}" Background="{DynamicResource BgCardBrush}" VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtKeepAwakeTitle" Text="Keep awake" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="TxtKeepAwakeState" Text="off" Margin="6,0,8,0" FontSize="{StaticResource FontSizeS}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <ui:Button x:Name="BtnKeepAwakeFor" Appearance="Secondary" Padding="8,1" Height="24" Margin="0,0,6,0" Content="1 hour" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="ChkKeepAwake" Style="{StaticResource ToggleSwitchStyle}" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Border>
+                <!-- Reset to defaults: Balanced, processor Normal, the recommended times (asks first) — MainWindow.PowerRedesign.cs -->
+                <ui:Button x:Name="BtnPowerDefaults" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,8,0"
+                           ToolTip="Balanced plan, Normal processor and the recommended times — the settings that suit most PCs">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Path x:Name="IconPowerDefaults" Width="24" Height="24" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}"/></Viewbox>
+                    <TextBlock x:Name="TxtBtnPowerDefaults" Text="Reset to defaults" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnPowerCheck" Appearance="Primary" Foreground="White" Height="30" Padding="12,4" Margin="0,0,6,0"
+                           ToolTip="Looks for settings and devices that waste power or stop sleep, and explains each one">
+                  <TextBlock x:Name="TxtBtnPowerCheck" Text="Power check" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </ui:Button>
+                <ui:Button x:Name="BtnBatteryTest" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
+                        Click="BatteryTest_Click" Margin="0,0,6,0"
+                        local:TechTooltip.Text="Reads FullChargeCapacity and DesignCapacity from WMI (Win32_Battery/BatteryStatus), computes wear% = 100 - (Full/Design*100), and cross-checks against powercfg's battery report (CAPACITY_INFORMATION from the ACPI battery driver) when available.">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M17,6 A3,3 0 0 1 20,9 L20,10 L21,10 A1,1 0 0 1 22,11 L22,13 A1,1 0 0 1 21,14 L20,14 L20,15 A3,3 0 0 1 17,18 L5,18 A3,3 0 0 1 2,15 L2,9 A3,3 0 0 1 5,6 Z M17,7.5 L5,7.5 C4.22,7.5 3.58,8.1 3.5,8.86 L3.5,15 C3.5,15.78 4.1,16.42 4.86,16.5 L17,16.5 C17.78,16.5 18.42,15.9 18.5,15.14 L18.5,9 C18.5,8.22 17.9,7.58 17.14,7.5 Z"/></Canvas></Viewbox><TextBlock Text="Battery Test" VerticalAlignment="Center"/></StackPanel>
+                    </ui:Button>
+                <ui:Button x:Name="BtnGenerateSleepReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,6,0"
+                        Click="GenerateSleepReport_Click" ToolTip="Runs powercfg /sleepstudy — needs at least one previous Modern Standby sleep cycle to have data">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="13" Height="13" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M20.03,17 A10,10 0 0 1 3.13,17.68 A0.75,0.75 0 0 1 3.49,16.55 C7.26,15.2 9.28,13.64 10.45,11.4 C11.68,9.05 12,6.47 11.14,2.94 A0.75,0.75 0 0 1 11.9,2 A10,10 0 0 1 20.03,17 M11.78,12.1 C10.53,14.49 8.47,16.2 4.96,17.6 A8.5,8.5 0 0 0 18.73,16.25 A8.5,8.5 0 0 0 12.83,3.62 C13.47,7.01 13.05,9.67 11.78,12.1"/></Canvas></Viewbox>
+                    <TextBlock Text="Sleep Report" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnGenerateEnergyReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,6,0"
+                        Click="GenerateEnergyReport_Click" ToolTip="Runs powercfg /energy — takes about 60 seconds, monitors the system live">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="13" Height="13" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Canvas></Viewbox>
+                    <TextBlock x:Name="TxtBtnEnergyReport" Text="Energy Report (~60s)" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnPowerHistory" VerticalAlignment="Center" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
+                        Click="OpenPowerHistory_Click" Margin="0,0,6,0"
+                        ToolTip="Power History — timeline boot/shutdown/crash/sleep/resume">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center">
+                      <Canvas Width="24" Height="24">
+                        <Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/>
+                      </Canvas>
+                    </Viewbox>
+                    <TextBlock x:Name="TxtRamPowerHistoryLabel" Text="Power History" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnOpenOptimizer" Visibility="Collapsed" VerticalAlignment="Center" Appearance="Secondary" Height="30" Padding="10,4"
+                        Click="OpenOptimizer_Click"
+                        ToolTip="Opens Windows Power Options control panel — change power plan">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center">
+                      <Canvas Width="24" Height="24">
+                        <Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/>
+                      </Canvas>
+                    </Viewbox>
+                    <TextBlock Text="Power Options" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+              </WrapPanel>
+            </Grid>
+            <!-- laptop: two tabs, Battery · Power & sleep (the same look as the Storage tabs); a PC has one page -->
+            <Border x:Name="PowerTabsBar" Grid.Row="1" Style="{StaticResource SegmentTrackStyle}" Tag="SegTrack" HorizontalAlignment="Left" Margin="0,4,0,10" Visibility="Collapsed">
+              <StackPanel Orientation="Horizontal">
+                <ui:Button x:Name="BtnPowerTabBattery" Appearance="Secondary" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" Margin="0,0,2,0" Padding="12,5"/>
+                <ui:Button x:Name="BtnPowerTabSleep" Appearance="Secondary" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" Padding="12,5"/>
+              </StackPanel>
+            </Border>
+            <Border x:Name="PowerUpsHost" Grid.Row="2"/>
+            <Grid x:Name="PowerNewGrid" Grid.Row="3" Margin="0,4,0,0"/>
+            <Grid x:Name="PowerLegacyHost" Grid.Row="4" Visibility="Collapsed">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <TextBlock x:Name="TxtBatDeviceName" Grid.Row="1" Visibility="Collapsed" Text="" FontSize="{StaticResource FontSizeM}" FontStyle="Italic"
+                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+            <Grid x:Name="PowerTopRow" Grid.Row="2">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Grid Grid.Column="0">
+            <Border x:Name="BatteryNoBatteryPanel" Visibility="Collapsed"
+                    Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,16" Margin="0,4,0,12">
+              <StackPanel HorizontalAlignment="Stretch">
+                <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"></StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M19.49,5.57 A5.97,5.97 0 0 1 17.59,14.53 C16.95,14.88 16.17,14.67 15.65,14.15 L9.85,8.35 C9.33,7.83 9.12,7.05 9.47,6.4 A6,6 0 0 1 18.43,4.51 L20.72,2.22 A0.75,0.75 0 1 1 21.78,3.28 Z M17.47,12.83 A4.5,4.5 0 1 0 11.17,6.53 C10.9,6.88 10.98,7.36 11.29,7.67 L16.33,12.71 C16.64,13.01 17.13,13.1 17.47,12.83 M3.28,21.78 L5.58,19.49 A5.97,5.97 0 0 0 14.53,17.59 C14.88,16.95 14.67,16.17 14.15,15.65 L8.35,9.85 C7.83,9.33 7.05,9.12 6.4,9.47 A6,6 0 0 0 4.51,18.43 L2.22,20.72 A0.75,0.75 0 1 0 3.28,21.78 M7.67,11.29 L12.71,16.33 C13.01,16.64 13.1,17.13 12.83,17.47 A4.5,4.5 0 1 1 6.53,11.17 C6.88,10.9 7.36,10.98 7.67,11.29"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock x:Name="TxtPowerNowTitle" Text="What the plan does now" Style="{StaticResource DashRowName}"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+                <!-- the "No battery detected" message + checkbox hidden — on a desktop the Power page starts directly with the diagram -->
+                <Viewbox Width="44" Height="44" Margin="0,0,0,14" Visibility="Collapsed">
+                  <Canvas Width="24" Height="24">
+                    <Path Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M3.28,2.22 A0.75,0.75 0 1 0 2.22,3.28 L2.62,3.68 C2.25,4.1 2,4.65 2,5.26 L2,15.92 A2.25,2.25 0 0 0 4.26,18 L8.5,18 L8.5,20.49 L6.65,20.49 A0.75,0.75 0 0 0 6.75,21.99 L17.35,21.99 A0.75,0.75 0 0 0 17.25,20.49 L15.5,20.49 L15.5,18 L16.94,18 L20.72,21.78 A0.75,0.75 0 0 0 21.78,20.72 Z M15.44,16.5 L4.15,16.5 A0.75,0.75 0 0 1 3.5,15.75 L3.5,5.15 A1,1 0 0 1 3.69,4.75 Z M19.74,16.5 L19.68,16.5 L20.88,17.7 A2.3,2.3 0 0 0 22,15.75 L22,5.1 A2.25,2.25 0 0 0 19.74,3 L6.18,3 L7.68,4.5 L19.85,4.5 C20.22,4.56 20.5,4.87 20.5,5.25 L20.5,15.85 A0.75,0.75 0 0 1 19.75,16.5 M14,18 L14,20.5 L10,20.5 L10,18 Z"/>
+                  </Canvas>
+                </Viewbox>
+                <TextBlock x:Name="TxtNoBatteryTitle" Visibility="Collapsed" Text="No battery detected"
+                           FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                <TextBlock x:Name="TxtNoBatteryDesc" Visibility="Collapsed"
+                           Text="This appears to be a desktop system running on AC power. Battery monitoring, wear level and charge history are not available."
+                           FontSize="{StaticResource FontSizeM}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420"
+                           Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                <ui:Button x:Name="BtnNoBatteryPower" Visibility="Collapsed" Appearance="Secondary"
+                        Click="OpenOptimizer_Click" Margin="0,16,0,0" Padding="14,6"
+                        HorizontalAlignment="Center" Content="Open Power Options"/>
+
+                <!-- Optional decorative animation — a motherboard with "current" flowing to CPU/GPU/RAM/Storage. Started/stopped from
+                     code-behind, not only through Visibility, so storyboards do not run for nothing in the background. -->
+                <!-- shown by default (IsChecked + Visible); the diagram also shows the active plan settings -->
+                <CheckBox x:Name="ChkPowerFlowAnimation" Visibility="Collapsed" Content="Show power flow &amp; plan settings" IsChecked="True"
+                          Margin="0,20,0,0" HorizontalAlignment="Center"
+                          Checked="ChkPowerFlowAnimation_Checked" Unchecked="ChkPowerFlowAnimation_Unchecked"/>
+                <!-- the "What the plan does now" list (MainWindow.PowerPlanCards.cs); the map below appears only from
+                     Developer › Design experiments ("Power page: old power map") -->
+                <StackPanel x:Name="PowerPlanNowList" Margin="0,2,0,4"/>
+                <Viewbox x:Name="PowerFlowBox" Stretch="Uniform" Height="260" HorizontalAlignment="Center" Visibility="Collapsed"><local:PowerFlowAnimation x:Name="PowerFlowWidget" Margin="0" Visibility="Visible"/></Viewbox>
+              </StackPanel>
+            </Border>
+            <Border x:Name="BatteryHeroCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Margin="0,4,0,12">
+              <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                  <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M17,6 A3,3 0 0 1 20,9 L20,10 L21,10 A1,1 0 0 1 22,11 L22,13 A1,1 0 0 1 21,14 L20,14 L20,15 A3,3 0 0 1 17,18 L5,18 A3,3 0 0 1 2,15 L2,9 A3,3 0 0 1 5,6 Z M17,7.5 L5,7.5 C4.22,7.5 3.58,8.1 3.5,8.86 L3.5,15 C3.5,15.78 4.1,16.42 4.86,16.5 L17,16.5 C17.78,16.5 18.42,15.9 18.5,15.14 L18.5,9 C18.5,8.22 17.9,7.58 17.14,7.5 Z"/></Viewbox>
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtBatCardName" Text="" Style="{StaticResource DashRowName}" ToolTip="Battery" Visibility="Collapsed"/>
+                  </StackPanel>
+                </StackPanel>
+                <!-- the battery + percentage | details, estimates, the power chart | health (block dial + capacity + cycles);
+                     centred in the card height, so a short card (no power chart, e.g. full on AC) has no empty band at the bottom -->
+                <Grid Grid.Row="1" Margin="0,0,0,8" VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="1"/><ColumnDefinition Width="*"/><ColumnDefinition Width="1"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,0,20,0">
+                  <!-- the block battery (default) — views/BatteryPicture.cs; the other two hosts are the older variants -->
+                  <local:BatteryPicture x:Name="BatBlocks" HorizontalAlignment="Center" HasReading="False"/>
+                  <Canvas x:Name="BatGlyphClassicHost" Width="112" Height="55" HorizontalAlignment="Center" Visibility="Collapsed">
+                    <Border Width="112" Height="55" BorderThickness="2" BorderBrush="{DynamicResource TextPrimaryBrush}"
+                            CornerRadius="7" Opacity="0.85"/>
+                    <Border Canvas.Left="112" Canvas.Top="18" Width="5" Height="19"
+                            Background="{DynamicResource TextPrimaryBrush}" CornerRadius="0,3,3,0" Opacity="0.85"/>
+                    <Border x:Name="BatGlyphFill" Canvas.Left="4" Canvas.Top="4" Width="0" Height="47" CornerRadius="4" ClipToBounds="True">
+                      <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                          <GradientStop Color="#22C55E" Offset="0"/>
+                          <GradientStop Color="#16803D" Offset="1"/>
+                        </LinearGradientBrush>
+                      </Border.Background>
+                      <!-- Sweep — visible/animated ONLY while the battery is charging (SetBatterySweepAnimating) -->
+                      <Border x:Name="BatSweepOverlay" Width="26" HorizontalAlignment="Left" Visibility="Collapsed">
+                        <Border.RenderTransform><TranslateTransform X="-45"/></Border.RenderTransform>
+                        <Border.Background>
+                          <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00FFFFFF" Offset="0"/>
+                            <GradientStop Color="#8CFFFFFF" Offset="0.5"/>
+                            <GradientStop Color="#00FFFFFF" Offset="1"/>
+                          </LinearGradientBrush>
+                        </Border.Background>
+                      </Border>
+                    </Border>
+                    <Viewbox x:Name="BatChargingBoltIcon" Canvas.Left="46" Canvas.Top="17" Width="20" Height="20" Visibility="Collapsed">
+                      <Canvas Width="24" Height="24">
+                        <Path Fill="White" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/>
+                      </Canvas>
+                    </Viewbox>
+                    <Viewbox x:Name="BatFullPluggedIcon" Canvas.Left="46" Canvas.Top="17" Width="20" Height="20" Visibility="Collapsed">
+                      <Canvas Width="24" Height="24">
+                        <Path Fill="White" Data="F1 M12,2 A10,10 0 0 1 12,22 A10,10 0 0 1 12,2 M12,3.5 A8.5,8.5 0 0 0 12,20.5 A8.5,8.5 0 0 0 12,3.5 M10.75,13.44 L15.22,8.97 A0.75,0.75 0 0 1 16.35,9.95 L16.28,10.03 L11.28,15.03 A0.75,0.75 0 0 1 10.3,15.1 L10.22,15.03 L7.72,12.53 A0.75,0.75 0 0 1 8.7,11.4 L8.78,11.47 Z L15.22,8.97 Z"/>
+                      </Canvas>
+                    </Viewbox>
+                  </Canvas>
+
+                  <Canvas x:Name="BatGlyphAltHost" Width="130" Height="60" HorizontalAlignment="Center"
+                          Margin="0,4,0,0" Visibility="Collapsed"/>
+
+                  <TextBlock x:Name="TxtBatCharge" Text="—%" FontSize="33" FontFamily="{DynamicResource MonoFont}" FontWeight="Bold"
+                             Foreground="{DynamicResource StatusSuccessBrush}" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                    <Ellipse x:Name="BatStatusDot" Width="8" Height="8" Fill="{DynamicResource StatusSuccessBrush}" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                    <TextBlock x:Name="TxtBatStatus" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </StackPanel>
+                  <Border Grid.Column="1" Background="{DynamicResource CardBorderBrush}" Margin="0,4"/>
+                  <!-- the middle column: the details and estimates at the top, and the power chart fills all the remaining space -->
+                  <DockPanel Grid.Column="2" LastChildFill="True" Margin="24,4,24,4" VerticalAlignment="Center">
+                  <!-- what the battery does now, in one sentence; with a coloured background only when there is a problem
+                       (MainWindow.BatteryCard.cs) -->
+                  <Border x:Name="BatVerdictBox" DockPanel.Dock="Top" CornerRadius="8" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Name="TxtBatVerdict" Text="" TextWrapping="Wrap" FontSize="{StaticResource FontSizeM}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                  </Border>
+                  <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                      <Border x:Name="SepBatChemistry" Width="0" Height="0"/>
+                      <StackPanel x:Name="PanelBatChemistry" Margin="0,2,32,10">
+                        <TextBlock x:Name="TxtChemistryLabel" Text="TYPE" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                        <TextBlock x:Name="TxtBatChemistry" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" FontFamily="{StaticResource NumFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                      </StackPanel>
+                      <StackPanel Margin="0,2,32,10">
+                        <TextBlock x:Name="TxtVoltageLabel" Text="VOLTAGE" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                        <TextBlock x:Name="TxtBatVoltage" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" FontFamily="{StaticResource NumFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                      </StackPanel>
+                      <StackPanel x:Name="PanelBatCapacityNow" Margin="0,2,32,10">
+                        <TextBlock x:Name="TxtCapacityNowLabel" Text="STORED NOW" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                        <TextBlock x:Name="TxtBatCapacityNow" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" FontFamily="{StaticResource NumFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                      </StackPanel>
+                      <Border x:Name="SepBatManufacturer" Width="0" Height="0"/>
+                      <StackPanel x:Name="PanelBatManufacturer" Margin="0,2,32,10">
+                        <TextBlock x:Name="TxtManufacturerLabel" Text="MANUFACTURER" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                        <TextBlock x:Name="TxtBatManufacturer" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" FontFamily="{StaticResource NumFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" MaxWidth="220"/>
+                      </StackPanel>
+                      <Border x:Name="SepBatMfgDate" Width="0" Height="0"/>
+                      <StackPanel x:Name="PanelBatMfgDate" Margin="0,2,32,10">
+                        <TextBlock x:Name="TxtMfgDateLabel" Text="MADE" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                        <TextBlock x:Name="TxtBatMfgDate" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold" FontFamily="{StaticResource NumFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                      </StackPanel>
+                  </WrapPanel>
+
+                  <!-- Older fields kept for code, but no longer shown here: the remaining time and the live consumption appear in the
+                       estimates / in the chart header (no duplicates). -->
+                  <StackPanel DockPanel.Dock="Top" Visibility="Collapsed">
+                    <StackPanel x:Name="PanelBatTimeRemaining">
+                      <TextBlock x:Name="TxtBatTimeRemainingLabel" Text="TIME REMAINING"/>
+                      <TextBlock x:Name="TxtBatRuntime" Text=""/>
+                    </StackPanel>
+                    <Border x:Name="SepBatPower"/>
+                    <StackPanel x:Name="PanelBatPower">
+                      <TextBlock x:Name="TxtPowerLabel" Text="LIVE DRAW"/>
+                      <TextBlock x:Name="TxtBatPower" Text=""/>
+                    </StackPanel>
+                    <Border x:Name="SepBatTimeToFull"/>
+                    <StackPanel x:Name="PanelBatTimeToFull">
+                      <TextBlock x:Name="TxtTimeToFullLabel" Text="TIME TO FULL"/>
+                      <TextBlock x:Name="TxtBatTimeToFull" Text=""/>
+                    </StackPanel>
+                  </StackPanel>
+
+                  <!-- 3 estimari (MainWindow.BatteryCard.cs) -->
+                  <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="BatEstTile1" Grid.Column="0" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" CornerRadius="10"
+                            Padding="14,9" Margin="0,0,10,0" Visibility="Collapsed">
+                      <StackPanel>
+                        <TextBlock x:Name="TxtBatEst1Label" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtBatEst1Value" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold"
+                                   FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,1,0,1"/>
+                        <TextBlock x:Name="TxtBatEst1Sub" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                    <Border x:Name="BatEstTile2" Grid.Column="1" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" CornerRadius="10"
+                            Padding="14,9" Margin="0,0,10,0" Visibility="Collapsed">
+                      <StackPanel>
+                        <TextBlock x:Name="TxtBatEst2Label" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtBatEst2Value" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold"
+                                   FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,1,0,1"/>
+                        <TextBlock x:Name="TxtBatEst2Sub" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                    <Border x:Name="BatEstTile3" Grid.Column="2" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" CornerRadius="10"
+                            Padding="14,9" Margin="0" Visibility="Collapsed">
+                      <StackPanel>
+                        <TextBlock x:Name="TxtBatEst3Label" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtBatEst3Value" Text="" FontSize="{StaticResource FontSizeXXL}" FontWeight="SemiBold"
+                                   FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,1,0,1"/>
+                        <TextBlock x:Name="TxtBatEst3Sub" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+
+                </DockPanel>
+                  <Border Grid.Column="3" Background="{DynamicResource CardBorderBrush}" Margin="0,4"/>
+                  <StackPanel Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="200" Margin="24,0,4,0">
+                    <TextBlock x:Name="TxtBatteryHealthLabel" Text="Battery health" Style="{StaticResource CompFootKey}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                    <local:PercentGauge x:Name="BatHealthGauge" Width="132" Height="116" Segments="20" WarnAt="101" CritAt="101" ShowValue="True" HorizontalAlignment="Center"/>
+                    <Grid Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <TextBlock x:Name="TxtCapacityRowLabel" Text="Max capacity" Style="{StaticResource CompFootKey}" Margin="0,0,14,4" ToolTip="What it holds now, compared with when it was new (design capacity)"/>
+                      <TextBlock x:Name="TxtBatCapacity" Grid.Column="1" Text="" Style="{StaticResource CompFootVal}" HorizontalAlignment="Right"/>
+                      <StackPanel x:Name="RowBatCycles" Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+                        <TextBlock x:Name="TxtChargeCyclesLabel" Text="Charge cycles" Style="{StaticResource CompFootKey}" Margin="0,0,14,0"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtBatCycles" Grid.Row="1" Grid.Column="1" Text="" Style="{StaticResource CompFootVal}" HorizontalAlignment="Right"
+                                 Visibility="{Binding Visibility, ElementName=RowBatCycles}"/>
+                    </Grid>
+                    <TextBlock x:Name="TxtBatHealthNote" Text="" Visibility="Collapsed" TextWrapping="Wrap" MaxWidth="200" Margin="0,8,0,0"
+                               FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource StatusWarnBrush}"/>
+                  </StackPanel>
+                  <!-- the power (consumption / charging) over the last 10 minutes, across the card width, under battery / details / health -->
+                  <DockPanel x:Name="BatDrawPanel" Grid.Row="1" Grid.ColumnSpan="5" Margin="4,12,4,0" LastChildFill="True" Visibility="Collapsed">
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                      <TextBlock x:Name="TxtBatDrawTitle" Text="power draw" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Bottom"/>
+                      <TextBlock x:Name="TxtBatDrawStats" Grid.Column="1" Text="" FontSize="{StaticResource FontSizeXS}" HorizontalAlignment="Right"
+                                 TextTrimming="CharacterEllipsis" Margin="12,0,0,0" VerticalAlignment="Bottom"
+                                 Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                    <Grid DockPanel.Dock="Bottom" Margin="0,3,0,0">
+                      <TextBlock x:Name="TxtBatDrawAxisLeft" Text="-10 min" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                      <TextBlock x:Name="TxtBatDrawAxisRight" Text="now" FontSize="{StaticResource FontSizeXS}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.8"/>
+                    </Grid>
+                    <Canvas x:Name="BatDrawChart" Height="104" ClipToBounds="True" Background="Transparent"
+                            SizeChanged="BatDrawChart_SizeChanged"/>
+                  </DockPanel>
+                </Grid>
+                <StackPanel Visibility="Collapsed">
+                  <TextBlock x:Name="TxtBatHealthFoot" Text=""/>
+                  <Ellipse x:Name="BatHealthRing"/>
+                  <TextBlock x:Name="TxtBatWear" Text=""/>
+                  <Border x:Name="SepBatCycles" Height="0"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+              </Grid>
+              <Grid Grid.Column="2">
+            <Border x:Name="PowerPlanCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,12" Margin="0,4,0,12">
+              <StackPanel>
+                <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"></StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,2 C12.41,2 12.75,2.34 12.75,2.75 L12.75,4.25 A0.75,0.75 0 0 1 11.25,4.25 L11.25,2.75 C11.25,2.34 11.59,2 12,2 M12,17 A5,5 0 0 0 12,7 A5,5 0 0 0 12,17 M12,15.5 A3.5,3.5 0 0 1 12,8.5 A3.5,3.5 0 0 1 12,15.5 M21.25,12.75 A0.75,0.75 0 0 0 21.25,11.25 L19.75,11.25 A0.75,0.75 0 0 0 19.75,12.75 Z M12,19 C12.41,19 12.75,19.34 12.75,19.75 L12.75,21.25 A0.75,0.75 0 0 1 11.25,21.25 L11.25,19.75 C11.25,19.34 11.59,19 12,19 M4.25,12.75 A0.75,0.75 0 0 0 4.25,11.25 L2.75,11.25 A0.75,0.75 0 0 0 2.75,12.75 Z M4.22,4.22 C4.52,3.92 4.99,3.92 5.28,4.22 L6.78,5.72 A0.75,0.75 0 0 1 5.72,6.78 L4.22,5.28 A0.75,0.75 0 0 1 4.22,4.22 M5.28,19.78 A0.75,0.75 0 1 1 4.22,18.72 L5.72,17.22 A0.75,0.75 0 1 1 6.78,18.28 Z M19.78,4.22 A0.75,0.75 0 0 0 18.72,4.22 L17.22,5.72 A0.75,0.75 0 0 0 18.28,6.78 L19.78,5.28 C20.08,4.98 20.08,4.51 19.78,4.22 M18.72,19.78 A0.75,0.75 0 1 0 19.78,18.72 L18.28,17.22 A0.75,0.75 0 1 0 17.22,18.28 Z"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Active plan" Style="{StaticResource DashRowCaption}"/>
+                      <TextBlock x:Name="TxtLabelActivePowerPlan" Visibility="Collapsed" Text="ACTIVE POWER PLAN" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="0,0,0,2"/><TextBlock x:Name="TxtActivePowerPlan" Text="—" Style="{StaticResource DashRowName}"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+                <!-- the three plans as three cards with an image (leaf · scale · rocket); the content and the marking of the active plan
+                     are done from code (MainWindow.PowerPlanCards.cs) -->
+                <UniformGrid x:Name="PowerPlanCards" Columns="3" Rows="1" Margin="0,2,0,8">
+                  <ui:Button x:Name="BtnPlanPowerSaver" Tag="a1841308-3541-4fab-bc81-f71556f20b4a" Appearance="Secondary" Click="SetPowerPlan_Click"
+                             Margin="0,0,6,0" Padding="10,9" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
+                  <ui:Button x:Name="BtnPlanBalanced" Tag="381b4222-f694-41f0-9685-ff5bb260df2e" Appearance="Secondary" Click="SetPowerPlan_Click"
+                             Margin="3,0,3,0" Padding="10,9" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
+                  <ui:Button x:Name="BtnPlanHighPerf" Tag="8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" Appearance="Secondary" Click="SetPowerPlan_Click"
+                             Margin="6,0,0,0" Padding="10,9" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"/>
+                </UniformGrid>
+                <!-- the hidden Ultimate Performance plan (desktops), shown only when Windows does not list it yet -->
+                <TextBlock x:Name="TxtUltimateRow" Visibility="Collapsed" TextWrapping="Wrap" Margin="0,0,0,8" FontSize="{StaticResource FontSizeS}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="0,2,0,8"/>
+                <!-- the processor in three simple steps (MainWindow.PowerSimple.cs); the detailed controls are under "Advanced" -->
+                <TextBlock x:Name="TxtCpuModeTitle" Text="Processor" Style="{StaticResource DashRowCaption}" Margin="0,0,0,6"/>
+                <Border x:Name="CpuModeSeg" Style="{StaticResource SegmentTrackStyle}" HorizontalAlignment="Stretch">
+                  <UniformGrid x:Name="CpuModeHost" Rows="1" Columns="3"/>
+                </Border>
+                <TextBlock x:Name="TxtCpuModeExplain" Text="" TextWrapping="Wrap" Margin="0,6,0,8" FontSize="{StaticResource FontSizeS}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <Grid>
+                  <ToggleButton x:Name="BtnPowerAdvanced" Style="{StaticResource DropdownToggleStyle}" HorizontalAlignment="Left" MinWidth="170"
+                                Content="Advanced settings"/>
+                  <Popup x:Name="PopupPowerAdvanced" PlacementTarget="{Binding ElementName=BtnPowerAdvanced}" Placement="Bottom"
+                         IsOpen="{Binding IsChecked, ElementName=BtnPowerAdvanced, Mode=TwoWay}" StaysOpen="False" AllowsTransparency="True">
+                    <Grid x:Name="PowerAdvancedPanel" Width="420" Margin="0,4,12,14">
+                      <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+                      <Border Background="{DynamicResource BgCardBrush}" CornerRadius="10" Effect="{StaticResource CardShadow}" IsHitTestVisible="False"/>
+                      <Border Background="{DynamicResource BgCardBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12,16,10">
+                <StackPanel Margin="0,2,0,4">
+
+                <!-- Plugged in / On battery: laptop only (a PC has a single profile) — FitPowerCards -->
+                <StackPanel x:Name="PowerProfileRow" Orientation="Horizontal" Margin="0,0,0,8">
+                  <TextBlock Text="Profile:" Style="{StaticResource TimeRangeLabelStyle}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                  <Border Style="{StaticResource SegmentTrackStyle}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                      <RadioButton x:Name="RbPowerProfileAC" Content="Plugged in" Tag="AC" GroupName="PowerProfileGroup" IsChecked="True"
+                                   Style="{StaticResource SegmentChipStyle}" Checked="PowerProfileChip_Checked"/>
+                      <RadioButton x:Name="RbPowerProfileDC" Content="On battery" Tag="DC" GroupName="PowerProfileGroup"
+                                   Style="{StaticResource SegmentChipStyle}" Checked="PowerProfileChip_Checked"/>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+
+                <!-- Processor Performance Boost Mode -->
+                <Grid Margin="0,2,0,5">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock x:Name="TxtLabelBoostMode" Text="Processor Boost Mode (Turbo)" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      <!-- how long the current Turbo setting lasts (MainWindow.Helpers.cs → UpdateTurboButton) -->
+                      <Border x:Name="TurboStateBadge" CornerRadius="6" Padding="7,1" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"
+                              Background="{DynamicResource SegTrackBrush}">
+                        <TextBlock x:Name="TxtTurboStateBadge" Text="" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                      </Border>
+                    </StackPanel>
+                    <TextBlock x:Name="TxtDescBoostMode" Text="Turbo gives full speed. Turn it off for less heat and a quieter fan." FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <Grid Grid.Column="1" VerticalAlignment="Center">
+                    <ToggleButton x:Name="BtnBoostModeDropdown" Style="{StaticResource DropdownToggleStyle}" Width="170"
+                                  Content="Enabled"/>
+                    <Popup x:Name="PopupBoostMode" PlacementTarget="{Binding ElementName=BtnBoostModeDropdown}"
+                           Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=BtnBoostModeDropdown, Mode=TwoWay}"
+                           StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide">
+                      <Grid>
+                        <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+                        <Border Background="{DynamicResource BgCardBrush}" CornerRadius="{StaticResource RadiusControl}" Margin="0,4,0,0" Effect="{StaticResource CardShadow}" IsHitTestVisible="False"/>
+                        <Border Background="{DynamicResource BgCardBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                              BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" MinWidth="170"
+                              Margin="0,4,0,0">
+                        <StackPanel Margin="4">
+                          <Button x:Name="CmbBoostDisabled" Content="Disabled" Tag="0" Click="BoostModeOption_Click" Style="{StaticResource DropdownItemStyle}"/>
+                          <Button x:Name="CmbBoostEnabled" Content="Enabled" Tag="1" Click="BoostModeOption_Click" Style="{StaticResource DropdownItemStyle}"/>
+                          <Button x:Name="CmbBoostAggressive" Content="Aggressive" Tag="2" Click="BoostModeOption_Click" Style="{StaticResource DropdownItemStyle}"/>
+                          <Button x:Name="CmbBoostEfficientEnabled" Content="Efficient Enabled" Tag="3" Click="BoostModeOption_Click" Style="{StaticResource DropdownItemStyle}"/>
+                          <Button x:Name="CmbBoostEfficientAggressive" Content="Efficient Aggressive" Tag="4" Click="BoostModeOption_Click" Style="{StaticResource DropdownItemStyle}"/>
+                        </StackPanel>
+                      </Border>
+                      </Grid>
+                    </Popup>
+                  </Grid>
+                </Grid>
+
+                <Border Height="1" Background="{DynamicResource CardBorderBrush}" Opacity="0.4" Margin="0,3,0,5"/>
+
+
+                <!-- Min/Max Processor State — a single control with 2 handles -->
+                <Grid Margin="0,2,0,4">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Grid.Column="0" x:Name="TxtLabelProcStateRange" Text="Processor State Range (Min – Max)" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                  <TextBlock x:Name="TxtProcStateRange" Grid.Column="1" Text="5% – 100%" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" TextAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+                <TextBlock x:Name="TxtDescProcStateRange" Text="Limit the processor speed" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                <Grid x:Name="ProcStateRangeTrack" Height="24" Margin="0,0,0,8" SizeChanged="ProcStateRangeTrack_SizeChanged">
+                  <Border Height="4" VerticalAlignment="Center" Background="{DynamicResource TextSecondaryBrush}" Opacity="0.35" CornerRadius="2"/>
+                  <Canvas>
+                    <Border x:Name="ProcStateRangeFill" Height="4" Canvas.Top="10" Background="{DynamicResource AccentBrush}" CornerRadius="2"/>
+                    <Thumb x:Name="ThumbProcStateMin" Width="18" Height="18" Canvas.Top="3"
+                           DragDelta="ThumbProcStateMin_DragDelta" DragCompleted="ThumbProcState_DragCompleted" Cursor="Hand">
+                      <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                          <Ellipse Width="18" Height="18" Fill="{DynamicResource AccentBrush}" Stroke="White" StrokeThickness="2"/>
+                        </ControlTemplate>
+                      </Thumb.Template>
+                    </Thumb>
+                    <Thumb x:Name="ThumbProcStateMax" Width="18" Height="18" Canvas.Top="3"
+                           DragDelta="ThumbProcStateMax_DragDelta" DragCompleted="ThumbProcState_DragCompleted" Cursor="Hand">
+                      <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                          <Ellipse Width="18" Height="18" Fill="{DynamicResource AccentBrush}" Stroke="White" StrokeThickness="2"/>
+                        </ControlTemplate>
+                      </Thumb.Template>
+                    </Thumb>
+                  </Canvas>
+                </Grid>
+
+                <Border Height="1" Background="{DynamicResource CardBorderBrush}" Opacity="0.4" Margin="0,3,0,5"/>
+
+                <!-- USB Selective Suspend -->
+                <Grid Margin="0,2,0,5">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtLabelUsbSuspend" Text="USB Selective Suspend" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="TxtDescUsbSuspend" Text="Saves power on idle USB devices" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <CheckBox x:Name="ChkUsbSelectiveSuspend" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource ToggleSwitchStyle}"
+                            Click="UsbSelectiveSuspend_Click"/>
+                </Grid>
+
+                <!-- Fast Startup: shown in "Start-up and shut-down" now; kept (hidden) for the code that reads it -->
+                <Grid Margin="0,2,0,0" Visibility="Collapsed">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtLabelFastStartup" Text="Fast Startup" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="TxtDescFastStartup" Text="Starts Windows faster, but shutdown is not a full restart" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <CheckBox x:Name="ChkFastStartup" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource ToggleSwitchStyle}"
+                            Click="FastStartup_Click"/>
+                </Grid>
+
+              </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Popup>
+                </Grid>
+              </StackPanel>
+            </Border>
+              </Grid>
+            </Grid>
+            <Grid x:Name="PowerCardsRow" Grid.Row="3" Margin="0,0,0,4">
+              <Grid.ColumnDefinitions>
+                <!-- the same proportions as the top row (battery | active plan), so the card edges line up -->
+                <ColumnDefinition x:Name="PowerColLeft" Width="1.45*"/>
+                <ColumnDefinition x:Name="PowerColGap" Width="12"/>
+                <ColumnDefinition x:Name="PowerColRight" Width="*"/>
+              </Grid.ColumnDefinitions>
+              <DockPanel x:Name="PowerColLeftStack" Grid.Column="0" LastChildFill="True">
+            <Border x:Name="UpsCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,14" Margin="0,12,0,0" Visibility="Collapsed" DockPanel.Dock="Bottom">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <TextBlock Text="UPS" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                  <TextBlock x:Name="TxtUpsName" Text="—" FontSize="{StaticResource FontSizeM}"
+                             Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="24,0" VerticalAlignment="Center">
+                  <TextBlock Text="Charge" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75"/>
+                  <TextBlock x:Name="TxtUpsCharge" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                  <TextBlock Text="Runtime" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75"/>
+                  <TextBlock x:Name="TxtUpsRuntime" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+            <!-- laptop: "When the PC is not used" (on a PC it sits in the top-left card); MainWindow.PowerSimple.cs -->
+            <Border x:Name="PowerIdleCard" DockPanel.Dock="Top" Visibility="Collapsed" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,12" Margin="0,0,0,12">
+              <StackPanel>
+                <TextBlock x:Name="TxtPowerIdleTitle" Text="When the PC is not used" Style="{StaticResource DashRowName}" Margin="0,0,0,8"/>
+                <StackPanel x:Name="PowerIdleHostLaptop"/>
+              </StackPanel>
+            </Border>
+            <Border x:Name="PowerSleepCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,12,18,10" Margin="0">
+              <StackPanel>
+                <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><ui:Button x:Name="BtnPowerDiagRefresh" Appearance="Secondary" Padding="10,4" Margin="10,0,0,0"
+                               Click="PowerDiagRefresh_Click" Content="Refresh"/></StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M20.03,17 A10,10 0 0 1 3.13,17.68 A0.75,0.75 0 0 1 3.49,16.55 C7.26,15.2 9.28,13.64 10.45,11.4 C11.68,9.05 12,6.47 11.14,2.94 A0.75,0.75 0 0 1 11.9,2 A10,10 0 0 1 20.03,17 M11.78,12.1 C10.53,14.49 8.47,16.2 4.96,17.6 A8.5,8.5 0 0 0 18.73,16.25 A8.5,8.5 0 0 0 12.83,3.62 C13.47,7.01 13.05,9.67 11.78,12.1"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock x:Name="TxtPowerSleepTitle" Text="Sleep" Style="{StaticResource DashRowName}" ToolTip="What keeps the PC awake or wakes it up"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+                <!-- linia de timp a somnului, subtire (MainWindow.PowerPlanCards.cs → UpdateSleepTimeline) -->
+                <Grid x:Name="SleepTimeline" Margin="0,2,0,10" Visibility="Collapsed"/>
+                <TextBlock x:Name="TxtPowerSleepSummary" Text="Reading…" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <TextBlock Visibility="Collapsed" Text="{Binding Text, ElementName=TxtSleepStates}" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                <StackPanel x:Name="PowerSleepHost" Margin="0,0,0,2"/>
+                <Expander x:Name="ExpPowerSleep" IsExpanded="True" Visibility="Collapsed"/>
+              </StackPanel>
+            </Border>
+              </DockPanel>
+              <DockPanel x:Name="PowerColRightStack" Grid.Column="2" LastChildFill="True">
+            <Border x:Name="BatDrainCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow">
+              <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.46,6.8 L11.75,20.43 C11.92,21.16 12.95,21.2 13.19,20.48 L16.45,10.36 L17.03,12.46 C17.13,12.78 17.42,13 17.75,13 L21.25,13 A0.75,0.75 0 0 0 21.25,11.5 L18.32,11.5 L17.22,7.55 A0.75,0.75 0 0 0 15.78,7.52 L12.58,17.48 L9.23,3.58 C9.04,2.82 7.97,2.81 7.77,3.56 L5.67,11.5 L2.75,11.5 A0.75,0.75 0 0 0 2.75,13 L6.25,13 C6.59,13 6.88,12.77 6.97,12.44 Z"/></Viewbox>
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Top consumers" Style="{StaticResource DashRowCaption}"/>
+                    <TextBlock Text="By processor use" Style="{StaticResource DashRowName}"
+                               ToolTip="Apps using the processor the most right now — they drain the battery fastest. Updates every 10 seconds."/>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel x:Name="PowerTopList" Grid.Row="1" VerticalAlignment="Top" Margin="0,6,0,0"/>
+                <!-- the older table (list, context menu) — hidden, the code uses it as a source -->
+                <Border Grid.Row="1" Visibility="Collapsed">
+                <Expander x:Name="ExpAppDrain" IsExpanded="True">
+                <Expander.Header>
+                  <Grid Margin="0,0,0,0" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="App Power Usage" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"/>
+                      <TextBlock x:Name="TxtAppDrainStatus" FontSize="{StaticResource FontSizeS}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}"
+                                 Text="Loading..."
+                                 Margin="0,2,0,0"/>
+                    </StackPanel>
+                  </Grid>
+                </Expander.Header>
+              <StackPanel Margin="0,10,0,0">
+                <DataGrid Style="{StaticResource VanillaDataGridStyle}" x:Name="LstAppDrain" AutoGenerateColumns="False" IsReadOnly="True"
+                          MaxHeight="205" BorderThickness="0" GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="{DynamicResource BorderBrush}"
+                          RowBackground="Transparent"
+                          AlternatingRowBackground="{DynamicResource RowAltBrush}"
+                          RowHeight="32" ColumnHeaderHeight="30" FontSize="{StaticResource FontSizeS}"
+                          HeadersVisibility="Column"
+                          MouseDoubleClick="AppDrainGrid_DoubleClick"
+                          CanUserReorderColumns="False" CanUserResizeColumns="True" CanUserSortColumns="False"
+                          SelectionMode="Single" SelectionUnit="FullRow">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="Application" Binding="{Binding Name}" Width="*"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}"/>
+                    <DataGridTextColumn Header="Process" Binding="{Binding ProcessName}" Width="110"
+                                        ElementStyle="{StaticResource DataGridCellTextStyle}"/>
+                    <DataGridTemplateColumn Header="CPU Usage" Width="*">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Grid VerticalAlignment="Center" Margin="4,0">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="44"/>
+                              <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Usage}" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                                       Foreground="{Binding BarColor, Converter={StaticResource ThemeStatusBrush}}" VerticalAlignment="Center"/>
+                            <Border Grid.Column="1" Height="7" CornerRadius="4" Margin="4,0,6,0"
+                                    Background="{DynamicResource BgInputBrush}" VerticalAlignment="Center"
+                                    ClipToBounds="True">
+                              <Rectangle Height="7" HorizontalAlignment="Left"
+                                         Width="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=ActualWidth}"
+                                         Fill="{Binding BarColor, Converter={StaticResource ThemeStatusBrush}}">
+                                <Rectangle.RenderTransform>
+                                  <ScaleTransform ScaleX="{Binding BarRatio}" ScaleY="1" CenterX="0" CenterY="0"/>
+                                </Rectangle.RenderTransform>
+                              </Rectangle>
+                            </Border>
+                          </Grid>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Level" Width="70">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Border CornerRadius="6" Padding="6,2" Margin="4,0" HorizontalAlignment="Center"
+                                  Background="{Binding LevelBg}">
+                            <TextBlock Text="{Binding UsageLevel}" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                                       Foreground="{Binding BarColor, Converter={StaticResource ThemeStatusBrush}}" HorizontalAlignment="Center"/>
+                          </Border>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                  <DataGrid.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="View process details" Click="AppDrainDetails_Click"/>
+                      <MenuItem Header="Open Task Manager" Click="AppDrainAnalyze_Click"/>
+                      <Separator/>
+                      <MenuItem Header="Kill process" Click="AppDrainKill_Click"/>
+                    </ContextMenu>
+                  </DataGrid.ContextMenu>
+                </DataGrid>
+                <ui:Button x:Name="BtnToggleAppDrainExpand" Click="ToggleAppDrainExpand_Click" Appearance="Secondary" HorizontalAlignment="Left" Margin="4,8,0,0" Padding="10,4">
+                  <TextBlock x:Name="TxtToggleAppDrainExpand" Text="Show all" FontSize="{StaticResource FontSizeS}"/>
+                </ui:Button>
+              </StackPanel>
+              </Expander>
+                </Border>
+              </Grid>
+            </Border>
+              </DockPanel>
+            </Grid>
+            <!-- Start-up and shut-down: Fast Startup · Hibernate · sleep type · reset plans (MainWindow.PowerSimple.cs) -->
+            <Border x:Name="PowerStartupCard" Grid.Row="4" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,12,18,14" Margin="0,12,0,4">
+              <StackPanel>
+                <TextBlock x:Name="TxtPowerStartupTitle" Text="Start-up and shut-down" Style="{StaticResource DashRowName}" Margin="0,0,0,10"/>
+                <UniformGrid x:Name="PowerStartupHost" Rows="1" Columns="4"/>
+              </StackPanel>
+            </Border>
+            <StackPanel Grid.Row="5" Visibility="Collapsed">
+              <TextBlock x:Name="TxtBatteryInfo" Visibility="Collapsed"/>
+            <Border x:Name="AdvancedPowerCard" Visibility="Collapsed">
+              <Expander x:Name="ExpAdvancedPower" IsExpanded="False"
+                        Expanded="ExpAdvancedPower_UserToggled" Collapsed="ExpAdvancedPower_UserToggled">
+                <Expander.Header>
+                  <StackPanel Margin="-4,4,0,4">
+                    <TextBlock x:Name="TxtAdvancedPowerTitle" Text="Advanced Power" FontSize="{StaticResource FontSizeM}" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="TxtSleepStates" Text="Sleep states available: —" FontSize="{StaticResource FontSizeXS}"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" Opacity="0.8"/>
+                  </StackPanel>
+                </Expander.Header>
+              </Expander>
+            </Border>
+            </StackPanel>
+            </Grid>
+          </Grid>
+        </ScrollViewer>
+</UserControl>

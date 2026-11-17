@@ -1,0 +1,414 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ============================================================
+       SIDEBAR ITEM  ·  Lift.SidebarItem
+       Apply to ToggleButton (or RadioButton with GroupName).
+       Active = IsChecked True. Light card lifts off the canvas.
+       ============================================================ -->
+  <Style x:Key="Lift.SidebarItem" TargetType="{x:Type ToggleButton}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Lift.TextMuted}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="14,10" />
+    <Setter Property="Margin" Value="0,1" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Grid>
+            <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+            <Border x:Name="bdShadow" Background="{TemplateBinding Background}" CornerRadius="10" IsHitTestVisible="False"/>
+            <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="10"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                TextElement.Foreground="{TemplateBinding Foreground}"
+                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                TextElement.FontSize="{TemplateBinding FontSize}"
+                TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <!-- hover -->
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Surface2}" />
+            </Trigger>
+            <!-- active (selected) -->
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Surface}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource Lift.Border}" />
+              <Setter TargetName="bdShadow" Property="Effect"
+                      Value="{DynamicResource Lift.Shadow1}" />
+              <Setter Property="Foreground"
+                      Value="{DynamicResource Lift.Text}" />
+              <Setter Property="FontWeight" Value="SemiBold" />
+            </Trigger>
+            <!-- disabled -->
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       TABS CONTAINER  ·  Lift.TabsContainer
+       Wrap a StackPanel of Lift.Tab inside this Border.
+       ============================================================ -->
+  <Style x:Key="Lift.TabsContainer" TargetType="{x:Type Border}">
+    <Setter Property="Background" Value="{DynamicResource Lift.Surface2}" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+
+  <!-- ============================================================
+       TAB  ·  Lift.Tab
+       Same idiom as SidebarItem: ToggleButton with IsChecked.
+       ============================================================ -->
+  <Style x:Key="Lift.Tab" TargetType="{x:Type ToggleButton}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="14,7" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ToggleButton}">
+          <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="7"
+                  Padding="{TemplateBinding Padding}"
+                  BorderBrush="Transparent" BorderThickness="1"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource BgHoverBrush}" />
+              <Setter Property="Foreground"
+                      Value="{DynamicResource TextPrimaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource SbItemActiveBg}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource AccentBrush}" />
+              <Setter Property="Foreground"
+                      Value="{DynamicResource AccentBrush}" />
+              <Setter Property="FontWeight" Value="SemiBold" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       ACTION-BAR BUTTON  ·  Lift.Action
+       Bordered white card, lifts on hover, sinks on press.
+       ============================================================ -->
+  <Style x:Key="Lift.Action" TargetType="{x:Type Button}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="13" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Lift.Text}" />
+    <Setter Property="Background" Value="{DynamicResource Lift.Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Lift.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="13,7" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+            <Border x:Name="bdShadow" Background="{TemplateBinding Background}" CornerRadius="7" IsHitTestVisible="False"/>
+            <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="7"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Surface2}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource AccentBrush}" />
+              <Setter TargetName="bdShadow" Property="Effect"
+                      Value="{DynamicResource Lift.Shadow1}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Canvas}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource AccentBrush}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       PRIMARY CTA  ·  Lift.Primary  (near-black on light)
+       ============================================================ -->
+  <Style x:Key="Lift.Primary" TargetType="{x:Type Button}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Lift.PrimaryFg}" />
+    <Setter Property="Background" Value="{DynamicResource Lift.PrimaryBg}" />
+    <Setter Property="Padding" Value="18,10" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+            <Border x:Name="bdShadow" Background="{TemplateBinding Background}" CornerRadius="10" Effect="{DynamicResource Lift.ShadowPrimary}" IsHitTestVisible="False"/>
+            <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="10"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.PrimaryBgHover}" />
+              <Setter TargetName="bdShadow" Property="Effect"
+                      Value="{DynamicResource Lift.Shadow2}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.PrimaryBgPress}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Border}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+              <Setter Property="Foreground"
+                      Value="{DynamicResource Lift.TextDim}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       SECONDARY CTA  ·  Lift.Secondary  (light card)
+       ============================================================ -->
+  <Style x:Key="Lift.Secondary" TargetType="{x:Type Button}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Lift.Text}" />
+    <Setter Property="Background" Value="{DynamicResource Lift.Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Lift.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="18,10" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+            <Border x:Name="bdShadow" Background="{TemplateBinding Background}" CornerRadius="10" Effect="{DynamicResource Lift.Shadow1}" IsHitTestVisible="False"/>
+            <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="10"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Canvas}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource Lift.Border2}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Surface2}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       ACCENT CTA  ·  Lift.Accent  (indigo)
+       ============================================================ -->
+  <Style x:Key="Lift.Accent" TargetType="{x:Type Button}"
+         BasedOn="{StaticResource Lift.Primary}">
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Background" Value="{DynamicResource Lift.Accent}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Grid>
+            <!-- the shadow sits on its own layer: an effect on the element with text would blur the text -->
+            <Border x:Name="bdShadow" Background="{TemplateBinding Background}" CornerRadius="10" Effect="{DynamicResource Lift.Shadow1}" IsHitTestVisible="False"/>
+            <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="10"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.AccentHover}" />
+              <Setter TargetName="bdShadow" Property="Effect"
+                      Value="{DynamicResource Lift.Shadow2}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.AccentPress}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.Border}" />
+              <Setter TargetName="bdShadow" Property="Effect" Value="{x:Null}" />
+              <Setter Property="Foreground"
+                      Value="{DynamicResource Lift.TextDim}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================================================
+       DANGER CTA  ·  Lift.Danger  (red outline)
+       ============================================================ -->
+  <Style x:Key="Lift.Danger" TargetType="{x:Type Button}">
+    <Setter Property="FontFamily" Value="{DynamicResource Lift.Font}" />
+    <Setter Property="FontSize"   Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource Lift.DangerText}" />
+    <Setter Property="Background" Value="{DynamicResource Lift.Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Lift.DangerBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="18,10" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border x:Name="bd"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="10"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.DangerHoverBg}" />
+              <Setter TargetName="bd" Property="BorderBrush"
+                      Value="{DynamicResource Lift.DangerHoverBorder}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="bd" Property="Background"
+                      Value="{DynamicResource Lift.DangerPressBg}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+</ResourceDictionary>

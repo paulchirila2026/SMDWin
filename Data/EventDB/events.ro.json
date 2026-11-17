@@ -1,0 +1,1353 @@
+{
+  ".NET Runtime|1026": {
+    "title": "Program .NET oprit din cauza unei erori",
+    "meaning": "Un program creat cu .NET s-a închis din cauza unei erori pe care nu a știut s-o gestioneze. Detaliile arată programul și tipul erorii.",
+    "steps": [
+      "Actualizarea sau reinstalarea programului.",
+      "Repararea sau instalarea versiunii de .NET necesare."
+    ]
+  },
+  "ACPI|13": {
+    "title": "Controlerul încorporat nu a răspuns la timp",
+    "meaning": "Controlerul încorporat al laptopului (cipul mic care se ocupă de baterie, tastatură, ventilatoare și capac) nu a răspuns la timp. Poate duce la valori greșite pentru baterie sau ventilatoare. De obicei este o greșeală în BIOS sau în firmware (programul intern al componentei).",
+    "steps": [
+      "Actualizarea BIOS-ului sau a firmware-ului controlerului de la producătorul laptopului."
+    ]
+  },
+  "ACPI|15": {
+    "title": "Controlerul încorporat a trimis date neașteptate",
+    "meaning": "Controlerul încorporat al laptopului a trimis date pe care nu le ceruse nimeni, de obicei pentru că BIOS-ul comunică cu el fără să se înțeleagă cu Windows. În mod normal este o greșeală de firmware (programul intern al componentei).",
+    "steps": [
+      "Actualizarea BIOS-ului sau a firmware-ului controlerului de la producătorul laptopului."
+    ]
+  },
+  "Application Error|1000": {
+    "title": "Program oprit brusc",
+    "meaning": "Un program s-a închis pe neașteptate. Detaliile arată programul și modulul (fișierul DLL) în care a apărut oprirea.",
+    "steps": [
+      "Actualizarea sau reinstalarea programului.",
+      "Dacă modulul este un driver sau un DLL de tip overlay (suprapunere pe ecran), merită actualizat sau eliminat.",
+      "Dacă se opresc des mai multe programe, merită testată memoria RAM."
+    ]
+  },
+  "Application Hang|1002": {
+    "title": "Program blocat, care nu mai răspunde",
+    "meaning": "Un program s-a blocat și a fost închis (de Windows sau de utilizator).",
+    "steps": [
+      "Actualizarea programului.",
+      "Dacă se blochează multe programe, se verifică dacă discul este lent sau memoria este aproape plină."
+    ]
+  },
+  "Application Popup|26": {
+    "title": "Mesaj afișat de sistem",
+    "meaning": "Windows a afișat o fereastră cu un mesaj. Sensul depinde de text (de exemplu „Delayed Write Failed” sau un fișier lipsă).",
+    "steps": [
+      "Citirea textului mesajului din detalii."
+    ]
+  },
+  "BTHUSB|17": {
+    "title": "Adaptorul Bluetooth a căzut",
+    "meaning": "Adaptorul Bluetooth a avut o defecțiune, iar Windows a încetat să-l folosească. Apare des după trecerea prin repaus (sleep), iar dispozitivele Bluetooth nu mai funcționează.",
+    "steps": [
+      "Repornirea calculatorului (oprire completă, apoi pornire).",
+      "Actualizarea sau reinstalarea driverului Bluetooth (programul care ajută Windows să folosească adaptorul).",
+      "Dezactivarea economisirii de energie pentru adaptorul Bluetooth."
+    ]
+  },
+  "BTHUSB|34": {
+    "title": "Conexiune Bluetooth refuzată",
+    "meaning": "O încercare de conectare la un dispozitiv Bluetooth deja asociat a eșuat sau a fost respinsă, de obicei pentru că dispozitivul este oprit sau prea departe. Nu este grav, decât dacă dispozitivul nu se mai conectează deloc.",
+    "steps": []
+  },
+  "disk|7": {
+    "title": "Disc cu bloc defect",
+    "meaning": "Unitatea a raportat un bloc defect (o zonă deteriorată care nu mai poate fi citită sigur). Datele din acea zonă se pot pierde, iar unitatea poate fi pe cale să se strice.",
+    "steps": [
+      "Salvarea imediată a datelor importante.",
+      "Verificarea stării SMART (autodiagnoza discului) și rularea unei scanări de suprafață pe pagina Disk.",
+      "Dacă numărul blocurilor defecte crește, merită planificată înlocuirea unității."
+    ]
+  },
+  "disk|11": {
+    "title": "Eroare de controler de disc",
+    "meaning": "Windows a primit o eroare la comunicarea cu unitatea. Cauze frecvente: unitate pe cale să se strice, cablu SATA/USB slab sau defect, port defect sau probleme de alimentare.",
+    "steps": [
+      "Reconectarea sau înlocuirea cablului de date/alimentare; se încearcă alt port.",
+      "Verificarea stării SMART pe pagina Disk.",
+      "Actualizarea driverului de stocare sau de chipset."
+    ]
+  },
+  "disk|15": {
+    "title": "Disc nepregătit",
+    "meaning": "O unitate nu era pregătită când Windows a încercat s-o folosească. Apare des la o unitate USB sau un cititor de carduri care se trezește greu ori tocmai a fost conectat.",
+    "steps": [
+      "Dacă este o unitate internă, se verifică cablurile și alimentarea.",
+      "Verificarea stării SMART pe pagina Disk."
+    ]
+  },
+  "disk|51": {
+    "title": "Eroare la mutarea datelor pe disc",
+    "meaning": "A apărut o eroare la mutarea datelor din memorie pe disc sau de pe disc (paginare). O singură înregistrare după scoaterea unei unități USB nu este gravă. Înregistrările repetate la o unitate internă pot arăta o unitate sau un cablu defect.",
+    "steps": [
+      "Se verifică ce disc este numit în mesaj (Harddisk0 este de obicei discul sistemului).",
+      "Verificarea stării SMART și a cablurilor, cu ajutorul paginii Disk."
+    ]
+  },
+  "disk|52": {
+    "title": "Discul anunță că se va strica",
+    "meaning": "Sistemul propriu de monitorizare a sănătății discului (SMART) spune că unitatea se va strica probabil în curând.",
+    "steps": [
+      "Salvarea imediată a tuturor datelor.",
+      "Înlocuirea unității.",
+      "Confirmarea valorilor SMART pe pagina Disk."
+    ]
+  },
+  "disk|153": {
+    "title": "Operațiune pe disc reluată",
+    "meaning": "O cerere de citire sau scriere pe disc a durat prea mult sau a eșuat, iar Windows a reluat-o. Câteva înregistrări izolate sunt acceptabile. Dacă sunt multe, pot indica un disc lent sau defect, un cablu slab sau o problemă de controler.",
+    "steps": [
+      "Verificarea stării SMART și a timpilor de răspuns pe pagina Disk.",
+      "Verificarea cablurilor; actualizarea driverului de stocare și a firmware-ului SSD-ului (programul intern al discului)."
+    ]
+  },
+  "disk|154": {
+    "title": "Eroare hardware la disc",
+    "meaning": "O cerere de citire sau scriere a eșuat deoarece unitatea a raportat o eroare hardware. Unitatea este probabil deteriorată.",
+    "steps": [
+      "Salvarea imediată a datelor.",
+      "Rularea verificării SMART și a scanării de suprafață pe pagina Disk.",
+      "Înlocuirea unității dacă erorile continuă."
+    ]
+  },
+  "disk|157": {
+    "title": "Disc scos brusc",
+    "meaning": "O unitate a dispărut fără să fi fost scoasă în siguranță. Este normal dacă a fost scoasă o unitate USB. La o unitate internă indică o problemă de alimentare, de cablu sau o defecțiune a unității.",
+    "steps": [
+      "La o unitate internă se verifică cablurile, sursa de alimentare și starea SMART.",
+      "La USB se folosește opțiunea „Safely Remove Hardware” înainte de scoatere."
+    ]
+  },
+  "Display|4101": {
+    "title": "Driverul grafic s-a recuperat",
+    "meaning": "Driverul plăcii video (programul care ajută Windows să folosească placa video) a încetat să răspundă, iar Windows l-a repornit. Ecranul poate să fi devenit negru pentru scurt timp. Ocazional este acceptabil. Dacă se repetă des, cauza poate fi driverul, supraîncălzirea, overclocking-ul (forțarea plăcii peste viteza normală) sau o problemă la placa video ori la sursă.",
+    "steps": [
+      "Instalarea curată a ultimului driver grafic (sau a celui stabil anterior).",
+      "Verificarea temperaturii plăcii video și renunțarea la overclocking.",
+      "Rularea unui test de stres pentru placa video."
+    ]
+  },
+  "e1dexpress|27": {
+    "title": "Cablu de rețea deconectat",
+    "meaning": "Adaptorul de rețea cu fir Intel a pierdut legătura (cablu scos, router oprit sau legătură întreruptă). Căderile frecvente indică un cablu sau port defect ori economisirea de energie.",
+    "steps": [
+      "Înlocuirea cablului de rețea; se încearcă alt port al routerului.",
+      "Dezactivarea opțiunii „Energy Efficient Ethernet” din setările adaptorului.",
+      "Actualizarea driverului de rețea Intel."
+    ]
+  },
+  "e1dexpress|32": {
+    "title": "Legătură de rețea stabilită",
+    "meaning": "Adaptorul de rețea cu fir Intel s-a conectat. Mesajul arată viteza (de exemplu 1 Gbps full duplex). Dacă viteza este mai mică decât cea așteptată, merită verificat cablul.",
+    "steps": []
+  },
+  "ESENT|455": {
+    "title": "Eroare la fișierul jurnal al unei baze de date",
+    "meaning": "Mica bază de date internă a unui program (adesea memoria cache a browserului, WebCacheV01, sau Search) nu a putut deschide un fișier jurnal. De obicei nu este grav, Windows îl recreează.",
+    "steps": []
+  },
+  "ESENT|916": {
+    "title": "Notificare despre o funcție de bază de date",
+    "meaning": "Mesaj informativ despre activarea unei funcții a unei baze de date interne. Nu este grav.",
+    "steps": []
+  },
+  "EventLog|6005": {
+    "title": "Serviciul Event Log a pornit",
+    "meaning": "Serviciul care ține jurnalul de evenimente a pornit, lucru care se întâmplă la fiecare pornire a calculatorului. Este util ca reper pentru „calculatorul a fost pornit”.",
+    "steps": []
+  },
+  "EventLog|6006": {
+    "title": "Serviciul Event Log s-a oprit",
+    "meaning": "Serviciul care ține jurnalul de evenimente s-a oprit la o închidere normală. Este util ca reper pentru „calculatorul a fost închis normal”.",
+    "steps": []
+  },
+  "EventLog|6008": {
+    "title": "Închiderea anterioară a fost neașteptată",
+    "meaning": "Ultima închidere nu a fost curată: pierdere de curent, blocare, oprire forțată sau oprire din cauza unei erori. Apare de obicei împreună cu Kernel-Power 41.",
+    "steps": [
+      "Se caută evenimentele Kernel-Power 41 și BugCheck 1001 produse la aceeași oră.",
+      "Se verifică pagina Crash pentru un ecran albastru (blue screen)."
+    ]
+  },
+  "iaStorA|129": {
+    "title": "Dispozitivul de stocare a fost resetat",
+    "meaning": "Driverul de stocare Intel RST (programul care gestionează discurile) a resetat o unitate pentru că o cerere nu s-a terminat la timp. Resetările repetate provoacă blocaje și indică o unitate pe cale să se strice, un cablu slab, probleme cu economisirea de energie sau un firmware ori driver vechi.",
+    "steps": [
+      "Verificarea stării SMART pe pagina Disk.",
+      "Actualizarea firmware-ului SSD-ului și a driverului de stocare sau de chipset.",
+      "La discurile SATA, înlocuirea cablului și încercarea de a dezactiva economisirea de energie a legăturii."
+    ]
+  },
+  "LsaSrv|40960": {
+    "title": "Eroare de autentificare",
+    "meaning": "Sistemul de securitate a primit o eroare de autentificare (verificarea identității) la comunicarea cu un server, adesea un controler de domeniu sau o resursă din rețea.",
+    "steps": [
+      "Verificarea rețelei, a sincronizării orei și a parolelor salvate."
+    ]
+  },
+  "Microsoft Office 16 Alerts|300": {
+    "title": "Office a afișat un mesaj",
+    "meaning": "O aplicație Office a afișat utilizatorului o fereastră de dialog (de exemplu „Doriți să salvați?”). Textul ferestrei se găsește în detalii.",
+    "steps": []
+  },
+  "Microsoft-Windows-CAPI2|513": {
+    "title": "Notificare despre copia de siguranță a criptării",
+    "meaning": "Serviciile de criptare nu au putut face copie de siguranță pentru un fișier de sistem, cerută de programul de backup (adesea este vorba despre un driver de rețea). Mesaj cunoscut, fără urmări.",
+    "steps": []
+  },
+  "Microsoft-Windows-CAPI2|4107": {
+    "title": "Actualizarea listei de certificate rădăcină a eșuat",
+    "meaning": "Windows nu a putut extrage o listă actualizată de certificate rădăcină (cele care arată ce site-uri sunt de încredere), de obicei din cauza unei descărcări temporar eșuate sau a unei ore greșite. Nu este grav dacă site-urile se deschid normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Dhcp-Client|1001": {
+    "title": "Nicio adresă IP primită de la DHCP",
+    "meaning": "Adaptorul de rețea nu a primit o adresă de la router (serverul DHCP, care împarte adrese calculatoarelor din rețea). Apare des la pornire sau după trezire. Dacă se repetă, nu există conexiune.",
+    "steps": [
+      "Verificarea cablului sau a conexiunii Wi-Fi și repornirea routerului.",
+      "Rularea comenzii „ipconfig /renew”."
+    ]
+  },
+  "Microsoft-Windows-Dhcp-Client|1002": {
+    "title": "Adresă IP refuzată",
+    "meaning": "Routerul (serverul DHCP) a refuzat adresa cerută de acest calculator (DHCPNACK). De obicei nu este grav la trecerea dintre rețele, iar Windows cere atunci o adresă nouă.",
+    "steps": [
+      "Dacă după aceasta nu există conexiune, se repornește routerul și se rulează „ipconfig /renew”."
+    ]
+  },
+  "Microsoft-Windows-Dhcp-Client|50036": {
+    "title": "Clientul DHCP a pornit",
+    "meaning": "Serviciul client DHCPv4 (cel care cere adresa de rețea) a pornit, lucru înregistrat la pornirea calculatorului. Normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Diagnostics-Performance|100": {
+    "title": "Timpul de pornire a fost măsurat",
+    "meaning": "Windows a înregistrat cât a durat pornirea (Boot Duration, în milisecunde). Este util pentru urmărirea pornirilor lente.",
+    "steps": []
+  },
+  "Microsoft-Windows-Diagnostics-Performance|101": {
+    "title": "Un program a încetinit pornirea",
+    "meaning": "Un program a pornit mai greu decât de obicei la pornirea calculatorului și a încetinit-o.",
+    "steps": [
+      "Dacă programul nu este necesar, se dezactivează pe pagina Startup."
+    ]
+  },
+  "Microsoft-Windows-Diagnostics-Performance|102": {
+    "title": "Un driver a încetinit pornirea",
+    "meaning": "Un driver (programul care ajută Windows să folosească o componentă) a durat mai mult decât de obicei să pornească.",
+    "steps": [
+      "Actualizarea sau eliminarea driverului indicat."
+    ]
+  },
+  "Microsoft-Windows-Diagnostics-Performance|103": {
+    "title": "Un serviciu a încetinit pornirea",
+    "meaning": "Un serviciu de pornire a durat mai mult decât de obicei să pornească.",
+    "steps": [
+      "Verificarea sau întârzierea pornirii serviciului indicat, pe pagina Services."
+    ]
+  },
+  "Microsoft-Windows-Diagnostics-Performance|200": {
+    "title": "Timpul de închidere a fost măsurat",
+    "meaning": "Windows a înregistrat cât a durat închiderea calculatorului.",
+    "steps": []
+  },
+  "Microsoft-Windows-DistributedCOM|10005": {
+    "title": "DCOM nu a putut porni un serviciu",
+    "meaning": "O componentă a cerut un serviciu care este dezactivat sau nu poate porni. Eroarea 1058 înseamnă că serviciul este dezactivat, adesea intenționat. De obicei nu este grav.",
+    "steps": []
+  },
+  "Microsoft-Windows-DistributedCOM|10010": {
+    "title": "Componenta nu s-a înregistrat la timp",
+    "meaning": "O componentă din fundal a fost pornită, dar nu s-a anunțat în timpul permis. Foarte frecvent și de obicei fără urmări, cu excepția cazului în care o aplicație anume eșuează în același timp.",
+    "steps": []
+  },
+  "Microsoft-Windows-DistributedCOM|10016": {
+    "title": "Notificare despre permisiuni DCOM",
+    "meaning": "O componentă Windows a încercat să folosească o altă componentă fără permisiunea necesară. Microsoft arată că este un comportament așteptat, care poate fi ignorat și nu afectează funcționarea Windows.",
+    "steps": []
+  },
+  "Microsoft-Windows-DistributedCOM|10028": {
+    "title": "DCOM nu a putut contacta un calculator",
+    "meaning": "Windows nu a putut comunica prin rețea, cu ajutorul DCOM, cu un alt calculator. Adesea este vorba despre o imprimantă, un server sau un PC care nu mai există sau este oprit.",
+    "steps": [
+      "Eliminarea imprimantelor sau serverelor vechi care trimit către calculatorul indicat.",
+      "Dacă acel calculator ar trebui să fie accesibil, se verifică rețeaua și firewall-ul (paza care filtrează conexiunile)."
+    ]
+  },
+  "Microsoft-Windows-DNS-Client|1014": {
+    "title": "Căutarea unui nume a expirat",
+    "meaning": "O căutare DNS (transformarea unui nume de site într-o adresă) nu a primit răspuns. Pentru numele „wpad” este un zgomot normal. Dacă eșuează multe căutări pentru site-uri reale, există o problemă de DNS sau de internet.",
+    "steps": []
+  },
+  "Microsoft-Windows-DriverFrameworks-UserMode|10110": {
+    "title": "Driver din modul utilizator oprit din cauza unei erori",
+    "meaning": "Un driver care rulează în afara nucleului Windows (pentru dispozitive USB, senzori, telefoane, imprimante etc.) a avut o problemă, iar procesul său a fost oprit.",
+    "steps": [
+      "Se identifică dispozitivul în detalii și se reconectează.",
+      "Actualizarea sau reinstalarea driverului său."
+    ]
+  },
+  "Microsoft-Windows-DriverFrameworks-UserMode|10111": {
+    "title": "Dispozitivul a trecut offline",
+    "meaning": "Un dispozitiv cu driver din modul utilizator a trecut offline și a fost dezactivat după erori, adesea un dispozitiv USB care s-a deconectat.",
+    "steps": [
+      "Reconectarea dispozitivului; se încearcă alt port USB sau alt cablu.",
+      "Actualizarea driverului său."
+    ]
+  },
+  "Microsoft-Windows-Eventlog|104": {
+    "title": "Jurnalul de evenimente a fost șters",
+    "meaning": "O persoană sau un program a șters un jurnal de evenimente. Este normal după folosirea unor programe de curățare. O ștergere neașteptată poate ascunde probleme sau o intruziune.",
+    "steps": [
+      "Se verifică utilizatorul care a făcut ștergerea (în detalii) și dacă a fost intenționată."
+    ]
+  },
+  "Microsoft-Windows-Eventlog|1102": {
+    "title": "Jurnalul de securitate a fost șters",
+    "meaning": "Jurnalul de audit al securității a fost șters. Este normal dacă a fost făcut de un administrator. În caz contrar, poate ascunde urmele unei intruziuni.",
+    "steps": [
+      "Confirmarea, cu utilizatorul sau administratorul, că ștergerea a fost intenționată."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1054": {
+    "title": "Controlerul de domeniu nu a fost găsit",
+    "meaning": "Group Policy (regulile impuse unui calculator dintr-o rețea de firmă) nu a putut afla numele unui controler de domeniu, de obicei din cauza unei probleme de rețea sau de DNS la un calculator din domeniu.",
+    "steps": [
+      "Verificarea rețelei și a faptului că DNS-ul indică serverele DNS ale domeniului."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1055": {
+    "title": "Numele calculatorului nu a putut fi rezolvat",
+    "meaning": "Group Policy nu a putut rezolva numele calculatorului, de obicei din cauza unei probleme de DNS sau de apartenență la domeniu.",
+    "steps": [
+      "Verificarea setărilor DNS; rularea comenzii „gpupdate /force”."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1058": {
+    "title": "Fișierele de politici nu au putut fi citite",
+    "meaning": "Group Policy nu a putut citi fișierele de politici de pe controlerul de domeniu (gpt.ini). Problemă de rețea, de DNS sau de permisiuni.",
+    "steps": [
+      "Verificarea accesului în rețea la domeniu; rularea comenzii „gpupdate /force”."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1085": {
+    "title": "Setările de politici nu au fost aplicate",
+    "meaning": "Windows nu a reușit să aplice un grup de setări de politici (numit în mesaj).",
+    "steps": [
+      "Rularea comenzii „gpresult /h report.html” pentru a vedea eroarea."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1129": {
+    "title": "Nicio rețea pentru Group Policy",
+    "meaning": "Group Policy (regulile impuse unui calculator dintr-o rețea de firmă) a eșuat pentru că nu exista conexiune de rețea cu un controler de domeniu. Apare des la pornire pe Wi-Fi sau VPN. Este o problemă dacă se repetă.",
+    "steps": [
+      "Verificarea conexiunii de rețea; rularea comenzii „gpupdate /force” după conectare."
+    ]
+  },
+  "Microsoft-Windows-GroupPolicy|1130": {
+    "title": "Scriptul de politici a eșuat",
+    "meaning": "Un script de pornire, închidere, autentificare sau deconectare, trimis prin Group Policy, nu a putut rula.",
+    "steps": [
+      "Verificarea căii scriptului și a permisiunilor, indicate în detalii."
+    ]
+  },
+  "Microsoft-Windows-Hyper-V-Hypervisor|41": {
+    "title": "Hypervizorul nu a pornit",
+    "meaning": "Hyper-V (virtualizarea, adică rularea unui calculator în interiorul altuia) nu a putut porni, pentru că virtualizarea hardware (Intel VT-x / AMD-V) este oprită în BIOS sau nu este disponibilă.",
+    "steps": [
+      "Dacă sunt necesare Hyper-V, WSL sau VBS, se activează virtualizarea (VT-x/AMD-V/SVM) în BIOS."
+    ]
+  },
+  "Microsoft-Windows-Kernel-Boot|20": {
+    "title": "Starea ultimei închideri și a ultimei porniri",
+    "meaning": "Înregistrează dacă închiderea și pornirea anterioare s-au terminat. Dacă una dintre stări este „false”, sesiunea anterioară s-a încheiat prost. Merită căutat un eveniment Kernel-Power 41 în apropiere.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Boot|27": {
+    "title": "Tipul de pornire",
+    "meaning": "Înregistrează felul în care a pornit calculatorul: 0x0 înseamnă pornire completă (la rece), 0x1 înseamnă reluare din Fast Startup (pornire rapidă), 0x2 înseamnă reluare din hibernare.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-EventTracing|3": {
+    "title": "Sesiune de urmărire oprită",
+    "meaning": "O sesiune internă de urmărire pentru diagnostic s-a oprit cu o eroare, de obicei „ReadyBoot” cu 0xC0000188 (jurnal plin). Nu este grav.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-General|1": {
+    "title": "Ora sistemului a fost schimbată",
+    "meaning": "Ceasul a fost modificat, de obicei prin sincronizarea orei sau la reluarea din repaus. Salturile mari sau frecvente pot arăta o baterie CMOS slabă (bateria mică de pe placa de bază care ține ora).",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-General|12": {
+    "title": "Windows a pornit",
+    "meaning": "Sistemul de operare a pornit. Marchează începutul fiecărei porniri.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-General|13": {
+    "title": "Windows s-a închis",
+    "meaning": "Sistemul de operare se închide. Dacă lipsește înaintea unui eveniment 12, ultima închidere nu a fost curată.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-PnP|219": {
+    "title": "Driverul nu s-a încărcat pentru un dispozitiv",
+    "meaning": "Un driver (programul care ajută Windows să folosească un dispozitiv) nu s-a încărcat la pornire. Foarte des nu este grav (de exemplu WudfRd pentru un dispozitiv care se încarcă mai târziu). Merită investigat dacă un dispozitiv nu funcționează.",
+    "steps": [
+      "Verificarea în Device Manager sau pe pagina Drivers a dispozitivelor cu erori.",
+      "Reinstalarea sau actualizarea driverului pentru dispozitivul numit."
+    ]
+  },
+  "Microsoft-Windows-Kernel-PnP|225": {
+    "title": "O aplicație a blocat scoaterea unui dispozitiv",
+    "meaning": "Un program folosea un dispozitiv (de obicei o unitate USB) și a împiedicat scoaterea lui. Detaliile numesc programul.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-PnP|411": {
+    "title": "Un dispozitiv a avut probleme la pornire",
+    "meaning": "Un dispozitiv nu a reușit să pornească. Detaliile conțin dispozitivul și un cod de problemă (același cu codul de eroare din Device Manager).",
+    "steps": [
+      "Verificarea dispozitivului pe pagina Drivers.",
+      "Reinstalarea sau actualizarea driverului său; la USB se încearcă alt port."
+    ]
+  },
+  "Microsoft-Windows-Kernel-Power|41": {
+    "title": "Repornire neașteptată",
+    "meaning": "Calculatorul a repornit fără să se fi închis corect: s-a pierdut curentul, sistemul s-a blocat și a fost resetat sau s-a oprit din cauza unei erori. Dacă BugcheckCode din detalii nu este 0, a existat un ecran albastru. Dacă este 0, curentul a fost tăiat sau calculatorul a fost resetat forțat.",
+    "steps": [
+      "Se verifică pagina Crash pentru un ecran albastru produs la aceeași oră.",
+      "Dacă BugcheckCode este 0, se verifică sursa de alimentare, cablul de curent, supraîncălzirea sau o apăsare prelungită a butonului de pornire.",
+      "Rularea unui test de stres, pentru a vedea dacă calculatorul se oprește sub sarcină."
+    ]
+  },
+  "Microsoft-Windows-Kernel-Power|42": {
+    "title": "Intrare în repaus",
+    "meaning": "Windows intră în repaus (sleep) sau în hibernare. Detaliile arată motivul (buton, capac, cronometru de inactivitate sau cererea unei aplicații).",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|86": {
+    "title": "Oprire din cauza temperaturii critice",
+    "meaning": "Windows a oprit calculatorul pentru că un senzor de temperatură (zonă termică) a raportat un nivel critic. Oprirea protejează componentele de deteriorarea cauzată de căldură.",
+    "steps": [
+      "Verificarea temperaturilor procesorului și ale plăcii video sub sarcină.",
+      "Curățarea prafului de pe ventilatoare și radiatoare; verificarea că toate ventilatoarele se rotesc.",
+      "Înnoirea pastei termoconductoare dacă temperaturile rămân mari."
+    ]
+  },
+  "Microsoft-Windows-Kernel-Power|107": {
+    "title": "Reluare din repaus",
+    "meaning": "Sistemul s-a trezit din repaus sau din hibernare. Normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|109": {
+    "title": "Închiderea a început",
+    "meaning": "Gestionarul de energie din nucleul Windows a început o închidere sau o repornire. Se înregistrează la fiecare închidere normală.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|137": {
+    "title": "Firmware-ul a schimbat setările procesorului la reluare",
+    "meaning": "BIOS-ul/UEFI a modificat unele setări de memorie ale procesorului (MTRR) cât timp calculatorul era în hibernare. Nu este grav dacă la trezire calculatorul pornește și funcționează normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|187": {
+    "title": "O aplicație a cerut repaus sau închidere",
+    "meaning": "Un program a cerut Windows să schimbe starea de alimentare (repaus, hibernare sau închidere) printr-o funcție de sistem. Detaliile numesc programul.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|506": {
+    "title": "Intrare în Modern Standby",
+    "meaning": "Dispozitivul intră în Modern Standby (mod cu ecranul stins și consum redus, la laptopurile și tabletele mai noi). Normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Power|507": {
+    "title": "Ieșire din Modern Standby",
+    "meaning": "Dispozitivul s-a trezit din Modern Standby. Detaliile arată cât timp a stat în repaus și ce l-a trezit.",
+    "steps": []
+  },
+  "Microsoft-Windows-Kernel-Processor-Power|37": {
+    "title": "Viteza procesorului limitată de firmware",
+    "meaning": "BIOS-ul sau firmware-ul ține procesorul sub viteza lui obișnuită, de obicei din cauza căldurii, a unei surse sau a unui încărcător slab ori a unei setări de economisire a energiei. Înregistrările ocazionale sunt frecvente la laptopuri.",
+    "steps": [
+      "Verificarea temperaturii procesorului și a reducerii vitezei (throttling) pe pagina Stress.",
+      "La laptopuri, testarea cu încărcătorul original conectat.",
+      "Actualizarea BIOS-ului dacă problema se repetă când calculatorul este rece."
+    ]
+  },
+  "Microsoft-Windows-MemoryDiagnostics-Results|1101": {
+    "title": "Test de memorie: fără erori",
+    "meaning": "Windows Memory Diagnostic s-a terminat și nu a găsit erori.",
+    "steps": []
+  },
+  "Microsoft-Windows-MemoryDiagnostics-Results|1102": {
+    "title": "Testul de memorie a găsit erori",
+    "meaning": "Windows Memory Diagnostic a găsit erori hardware în memoria RAM.",
+    "steps": [
+      "Testarea modulelor pe rând, pentru a găsi modulul defect.",
+      "Înlocuirea modulului defect."
+    ]
+  },
+  "Microsoft-Windows-MemoryDiagnostics-Results|1201": {
+    "title": "Test de memorie: fără erori",
+    "meaning": "Windows Memory Diagnostic s-a terminat și nu a găsit erori (înregistrat după următoarea autentificare).",
+    "steps": []
+  },
+  "Microsoft-Windows-MemoryDiagnostics-Results|1202": {
+    "title": "Testul de memorie a găsit erori",
+    "meaning": "Windows Memory Diagnostic a găsit erori hardware în memoria RAM (înregistrat după următoarea autentificare).",
+    "steps": [
+      "Testarea modulelor pe rând, pentru a găsi modulul defect.",
+      "Înlocuirea modulului defect."
+    ]
+  },
+  "Microsoft-Windows-Ntfs|50": {
+    "title": "Scrierea amânată a eșuat",
+    "meaning": "Windows nu a putut termina salvarea datelor pe o unitate, deci unele date se pot pierde. Tipic la o unitate USB scoasă prea devreme sau la o unitate ori un cablu defect.",
+    "steps": [
+      "Rularea comenzii chkdsk pe unitatea numită în mesaj.",
+      "Verificarea stării SMART și a cablurilor, cu ajutorul paginii Disk."
+    ]
+  },
+  "Microsoft-Windows-Ntfs|55": {
+    "title": "Sistemul de fișiere este corupt",
+    "meaning": "Structura sistemului de fișiere de pe o unitate este deteriorată și nu mai poate fi folosită în siguranță. Cauze: pierdere de curent, închideri forțate sau un disc pe cale să se strice.",
+    "steps": [
+      "Rularea comenzii „chkdsk X: /f” pe unitatea numită (poate fi nevoie de repornire).",
+      "Verificarea stării SMART pe pagina Disk.",
+      "Salvarea datelor importante."
+    ]
+  },
+  "Microsoft-Windows-Ntfs|98": {
+    "title": "Verificarea stării volumului",
+    "meaning": "Windows a verificat sistemul de fișiere al unei unități. Dacă mesajul spune că volumul este sănătos, nu trebuie făcut nimic. Dacă spune că este nevoie de o scanare/reparare offline (chkdsk), sistemul de fișiere are erori.",
+    "steps": [
+      "Dacă este nevoie de reparare, se rulează „chkdsk X: /f” și se repornește.",
+      "Verificarea stării SMART dacă mesajul revine."
+    ]
+  },
+  "Microsoft-Windows-Ntfs|137": {
+    "title": "Eroare la gestionarul de tranzacții",
+    "meaning": "Partea din NTFS care urmărește tranzacțiile unui volum a întâlnit o eroare pe care nu o poate relua. Adesea are legătură cu deteriorarea sistemului de fișiere sau cu unitățile detașabile.",
+    "steps": [
+      "Rularea comenzii „chkdsk X: /f” pe volumul numit.",
+      "Rularea comenzii „sfc /scannow” dacă este vorba despre unitatea sistemului."
+    ]
+  },
+  "Microsoft-Windows-Ntfs|140": {
+    "title": "Jurnalul de tranzacții nu a putut fi golit pe disc",
+    "meaning": "Windows nu a putut scrie pe un volum datele de evidență ale sistemului de fișiere, deci pot apărea date corupte. Foarte frecvent la unitățile USB scoase prea devreme sau la discurile care intră în repaus.",
+    "steps": [
+      "Identificarea volumului (HarddiskVolumeN) în detalii.",
+      "Rularea comenzii chkdsk pe el; verificarea stării SMART pe pagina Disk."
+    ]
+  },
+  "Microsoft-Windows-Power-Troubleshooter|1": {
+    "title": "Trezire din repaus",
+    "meaning": "Calculatorul a revenit din repaus. „Wake Source” arată ce l-a trezit (buton de pornire, mouse, adaptor de rețea, cronometru).",
+    "steps": []
+  },
+  "Microsoft-Windows-Resource-Exhaustion-Detector|2004": {
+    "title": "Memorie insuficientă detectată",
+    "meaning": "Windows a diagnosticat o lipsă de memorie virtuală. Detaliile arată programele care folosesc cea mai multă memorie.",
+    "steps": [
+      "Închiderea sau repararea programului care folosește cea mai multă memorie.",
+      "Verificarea că fișierul de paginare (page file) este activat.",
+      "Merită luată în calcul adăugarea de memorie RAM."
+    ]
+  },
+  "Microsoft-Windows-RestartManager|10000": {
+    "title": "Sesiune Restart Manager începută",
+    "meaning": "Un program de instalare a pornit o sesiune pentru închiderea sau repornirea aplicațiilor care folosesc fișierele de actualizat. Normal în timpul instalărilor.",
+    "steps": []
+  },
+  "Microsoft-Windows-RestartManager|10001": {
+    "title": "Sesiune Restart Manager încheiată",
+    "meaning": "Sesiunea Restart Manager a programului de instalare s-a încheiat. Normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Search|3036": {
+    "title": "Căutarea nu poate accesa o locație",
+    "meaning": "Windows Search nu a putut accesa una dintre locațiile indexate (adesea Offline Files sau o unitate deconectată). Nu este grav.",
+    "steps": []
+  },
+  "Microsoft-Windows-Security-Auditing|4624": {
+    "title": "Autentificare reușită",
+    "meaning": "Un cont s-a autentificat cu succes (include autentificările făcute de sistem și din rețea).",
+    "steps": []
+  },
+  "Microsoft-Windows-Security-Auditing|4625": {
+    "title": "Autentificare eșuată",
+    "meaning": "O încercare de autentificare a eșuat (parolă greșită sau utilizator necunoscut). Multe încercări într-un timp scurt pot arăta ghicirea parolei sau o parolă greșită salvată.",
+    "steps": [
+      "Verificarea numelui contului și a adresei sursă din detalii."
+    ]
+  },
+  "Microsoft-Windows-Security-Auditing|4720": {
+    "title": "Cont de utilizator creat",
+    "meaning": "A fost creat un cont de utilizator nou. Merită verificat dacă a fost intenționat.",
+    "steps": [
+      "Confirmarea cu proprietarul că noul cont este cunoscut."
+    ]
+  },
+  "Microsoft-Windows-Security-Auditing|4740": {
+    "title": "Cont blocat",
+    "meaning": "Un cont a fost blocat după prea multe autentificări eșuate.",
+    "steps": [
+      "Găsirea dispozitivului care folosește o parolă veche (sursa apare în detalii)."
+    ]
+  },
+  "Microsoft-Windows-Security-Kerberos|4": {
+    "title": "Kerberos: identitate greșită a serverului",
+    "meaning": "Un server a respins un tichet de autentificare în domeniu (KRB_AP_ERR_MODIFIED). De obicei cauza sunt înregistrări DNS sau nume de calculator duplicate ori vechi, într-o rețea cu domeniu.",
+    "steps": [
+      "Verificarea înregistrărilor DNS pentru serverul numit.",
+      "Realipirea calculatorului la domeniu, dacă contul lui este stricat."
+    ]
+  },
+  "Microsoft-Windows-Security-SPP|1014": {
+    "title": "Obținerea licenței a eșuat",
+    "meaning": "Windows nu a putut obține o licență de la serverele Microsoft, de obicei pentru că rețeaua nu era pregătită. Nu este grav dacă Windows apare ca activat.",
+    "steps": []
+  },
+  "Microsoft-Windows-Security-SPP|8198": {
+    "title": "Activarea a eșuat",
+    "meaning": "Activarea Windows a eșuat. Codul hr= arată motivul (lipsa internetului, cheie nevalidă sau server de activare inaccesibil).",
+    "steps": [
+      "Verificarea stării activării în Settings > System > Activation."
+    ]
+  },
+  "Microsoft-Windows-Security-SPP|16384": {
+    "title": "Serviciul de licențiere reprogramat",
+    "meaning": "Serviciul Software Protection și-a programat singur o repornire pentru mai târziu. Normal.",
+    "steps": []
+  },
+  "Microsoft-Windows-Servicing|2": {
+    "title": "Schimbare de pachet încheiată",
+    "meaning": "Un pachet de actualizare și-a schimbat starea (de exemplu Installed). Codul de rezultat arată succesul sau eșecul.",
+    "steps": []
+  },
+  "Microsoft-Windows-Servicing|4": {
+    "title": "Repornire necesară pentru pachet",
+    "meaning": "Este nevoie de o repornire înainte ca un pachet de actualizare să-și poată termina instalarea.",
+    "steps": []
+  },
+  "Microsoft-Windows-Time-Service|36": {
+    "title": "Ceasul nu a fost sincronizat de mult timp",
+    "meaning": "Ceasul nu a fost sincronizat de mult timp (adesea 24 de ore), pentru că nicio sursă de oră nu a răspuns. Ora poate să se abată.",
+    "steps": [
+      "Verificarea accesului la internet.",
+      "Rularea comenzii „w32tm /resync” ca administrator."
+    ]
+  },
+  "Microsoft-Windows-Time-Service|47": {
+    "title": "Serverul de oră nu a răspuns",
+    "meaning": "Serverul de oră configurat nu a răspuns după mai multe încercări. Nu este grav când calculatorul este offline. Dacă se repetă cu internet, un firewall poate bloca ora (portul UDP 123).",
+    "steps": [
+      "Verificarea că ceasul arată ora corectă.",
+      "Încercarea unui alt server de oră în setările Date & Time."
+    ]
+  },
+  "Microsoft-Windows-Time-Service|129": {
+    "title": "Nicio sursă de oră din domeniu găsită",
+    "meaning": "Calculatorul a încercat să găsească un controler de domeniu pentru oră și nu a reușit. Normal la calculatoarele de acasă care nu sunt într-un domeniu și la pornire, înainte ca rețeaua să fie activă.",
+    "steps": []
+  },
+  "Microsoft-Windows-Time-Service|134": {
+    "title": "Numele serverului de oră nu a putut fi rezolvat",
+    "meaning": "Numele serverului de oră (de exemplu time.windows.com) nu a putut fi căutat, de obicei pentru că rețeaua nu era încă pregătită. Nu este grav dacă ceasul arată ora corectă.",
+    "steps": []
+  },
+  "Microsoft-Windows-Time-Service|158": {
+    "title": "Furnizorul de oră pentru mașini virtuale nu este folosit",
+    "meaning": "Furnizorul de oră pentru mașini virtuale spune că nu este necesar, deoarece acesta nu este o mașină virtuală. Normal la calculatoarele fizice.",
+    "steps": []
+  },
+  "Microsoft-Windows-TPM-WMI|1795": {
+    "title": "Firmware-ul a respins o actualizare Secure Boot",
+    "meaning": "BIOS-ul/UEFI a returnat o eroare în timp ce Windows încerca să actualizeze certificatele Secure Boot (verificarea care împiedică pornirea unor programe false la startul calculatorului).",
+    "steps": [
+      "Actualizarea BIOS-ului/UEFI de la producătorul calculatorului."
+    ]
+  },
+  "Microsoft-Windows-TPM-WMI|1796": {
+    "title": "Eroare la actualizarea Secure Boot",
+    "meaning": "A apărut o eroare neașteptată la actualizarea datelor Secure Boot. Windows reîncearcă la următoarea repornire. Se înregistrează și atunci când Secure Boot este dezactivat.",
+    "steps": [
+      "Repornirea și verificarea dacă evenimentul reapare.",
+      "Actualizarea BIOS-ului; verificarea că Secure Boot este activat."
+    ]
+  },
+  "Microsoft-Windows-TPM-WMI|1801": {
+    "title": "Certificatele Secure Boot nu sunt încă aplicate",
+    "meaning": "Noile certificate Secure Boot sunt pregătite, dar nu au fost încă scrise în firmware. Fac parte din lansarea certificatelor Microsoft (cele vechi, din 2011, expiră în 2026).",
+    "steps": [
+      "Instalarea actualizărilor Windows și a unui BIOS actual, apoi repornirea."
+    ]
+  },
+  "Microsoft-Windows-TPM-WMI|1808": {
+    "title": "Certificatele Secure Boot au fost actualizate",
+    "meaning": "Acest dispozitiv a instalat certificatele/cheile Secure Boot actualizate. Este un lucru bun.",
+    "steps": []
+  },
+  "Microsoft-Windows-User Profiles Service|1511": {
+    "title": "Autentificare cu profil temporar",
+    "meaning": "Windows nu a putut încărca profilul utilizatorului și a pornit cu unul temporar. Fișierele și setările par să lipsească, iar modificările se pierd la deconectare.",
+    "steps": [
+      "Evitarea salvării lucrărilor în profilul temporar.",
+      "Repararea intrării din registru a profilului (ProfileList) sau restaurarea dintr-o copie de siguranță.",
+      "Verificarea stării discului."
+    ]
+  },
+  "Microsoft-Windows-User Profiles Service|1530": {
+    "title": "Fișierul de profil era încă folosit",
+    "meaning": "La deconectare, un program încă ținea deschis fișierul de registru al utilizatorului, iar Windows l-a descărcat oricum. Normal și fără urmări.",
+    "steps": []
+  },
+  "Microsoft-Windows-UserPnp|20001": {
+    "title": "Driver instalat pentru un dispozitiv",
+    "meaning": "Windows a terminat instalarea unui driver pentru un dispozitiv. Starea 0x0 înseamnă succes, orice altă stare înseamnă că instalarea a eșuat.",
+    "steps": []
+  },
+  "Microsoft-Windows-WER-SystemErrorReporting|1001": {
+    "title": "A apărut un ecran albastru (oprire a sistemului)",
+    "meaning": "Calculatorul a repornit după un ecran albastru (bugcheck). Mesajul arată codul de oprire și locul unde a fost salvat fișierul de dump (copia memoriei de la momentul opririi).",
+    "steps": [
+      "Deschiderea paginii Crash pentru codul de oprire și driverul probabil vinovat.",
+      "Actualizarea sau revenirea la versiunea anterioară a driverului numit în dump.",
+      "Testarea memoriei RAM și a discului dacă opririle au coduri diferite."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|1": {
+    "title": "Eroare hardware gravă înregistrată",
+    "meaning": "După o repornire, Windows a înregistrat o eroare hardware gravă, salvată în urma opririi anterioare. Detaliile numesc componenta (procesor, memorie, PCI Express).",
+    "steps": [
+      "Notarea componentei și a sursei erorii din detalii.",
+      "Renunțarea la overclocking și undervolting (modificarea vitezei sau a tensiunii peste valorile din fabrică) și încărcarea setărilor implicite din BIOS.",
+      "Testarea memoriei RAM și rularea unui test de stres pentru procesor."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|17": {
+    "title": "Eroare PCI Express corectată",
+    "meaning": "O legătură PCI Express (spre placa video, SSD-ul NVMe, placa de rețea etc.) a avut o eroare remediată automat. Adesea este un zgomot fără urmări, provocat de economisirea de energie (ASPM). Multe înregistrări pe minut pot încetini sistemul.",
+    "steps": [
+      "Notarea ID-ului dispozitivului din detalii, pentru a afla despre ce placă este vorba.",
+      "Actualizarea BIOS-ului și a driverelor de chipset.",
+      "Reintroducerea plăcii în slot sau încercarea altui slot."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|18": {
+    "title": "Eroare gravă de procesor sau hardware",
+    "meaning": "Procesorul a raportat o eroare hardware care nu poate fi corectată (machine check) și care blochează sistemul. Cauze frecvente: overclocking sau undervolting instabil, supraîncălzire, procesor, memorie sau placă de bază defecte.",
+    "steps": [
+      "Încărcarea setărilor implicite din BIOS și renunțarea la overclocking sau undervolting.",
+      "Verificarea temperaturilor și rularea unui test de stres.",
+      "Actualizarea BIOS-ului; testarea memoriei RAM."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|19": {
+    "title": "Eroare de procesor corectată",
+    "meaning": "Procesorul a detectat și a remediat o eroare internă (la cache sau la magistrală). Câteva sunt inofensive. Cele frecvente sugerează overclocking sau undervolting instabil, căldură sau componente care încep să cedeze.",
+    "steps": [
+      "Renunțarea la overclocking sau undervolting și încărcarea setărilor implicite din BIOS.",
+      "Actualizarea BIOS-ului; rularea unui test de stres pentru procesor."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|46": {
+    "title": "Eroare hardware de memorie",
+    "meaning": "O eroare de memorie a fost raportată prin sistemul de raportare a erorilor al procesorului (machine check). De obicei memoria RAM este defectă sau instabilă, sau are setări greșite de frecvență (XMP/EXPO).",
+    "steps": [
+      "Dezactivarea XMP/EXPO și testarea cu viteza implicită a memoriei.",
+      "Rularea unui test pentru RAM; testarea modulelor pe rând."
+    ]
+  },
+  "Microsoft-Windows-WHEA-Logger|47": {
+    "title": "Eroare de memorie corectată",
+    "meaning": "O eroare de memorie a fost detectată și remediată. Cele ocazionale pot fi tolerate. Cele repetate indică o memorie RAM defectă sau instabilă (adesea din cauza setărilor XMP/EXPO prea agresive).",
+    "steps": [
+      "Rularea unui test pentru RAM.",
+      "Încercarea setărilor implicite pentru memorie (XMP/EXPO dezactivat)."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|1116": {
+    "title": "Program rău intenționat detectat",
+    "meaning": "Microsoft Defender a găsit un program rău intenționat (malware) sau nedorit. Detaliile arată numele amenințării și calea fișierului.",
+    "steps": [
+      "Verificarea faptului că urmează evenimentul 1117 (acțiunea întreprinsă).",
+      "Rularea unei scanări complete; verificarea căii fișierului."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|1117": {
+    "title": "Acțiune întreprinsă împotriva amenințării",
+    "meaning": "Microsoft Defender a luat o măsură împotriva unei amenințări (a pus-o în carantină, a eliminat-o sau a permis-o).",
+    "steps": [
+      "Verificarea în Protection history că amenințarea a fost rezolvată."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|1118": {
+    "title": "Acțiunea împotriva amenințării a eșuat",
+    "meaning": "Microsoft Defender a încercat să elimine o amenințare, dar nu a reușit (eșec necritic). Amenințarea poate fi încă prezentă.",
+    "steps": [
+      "Rularea unei scanări complete sau a unei scanări Microsoft Defender Offline."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|1119": {
+    "title": "Eșec critic al acțiunii împotriva amenințării",
+    "meaning": "Microsoft Defender a întâlnit o eroare critică în timp ce acționa împotriva unei amenințări. Amenințarea este probabil încă prezentă.",
+    "steps": [
+      "Rularea unei scanări Microsoft Defender Offline.",
+      "Merită luat în calcul un al doilea program de scanare, pentru o a doua părere."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|2001": {
+    "title": "Actualizarea definițiilor a eșuat",
+    "meaning": "Microsoft Defender nu a putut să-și actualizeze informațiile de securitate (definițiile de viruși). Protecția se învechește dacă eșecul continuă.",
+    "steps": [
+      "Verificarea accesului la internet; actualizarea manuală a Defender din Windows Security."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|2004": {
+    "title": "Definițiile noi nu s-au încărcat",
+    "meaning": "Informațiile noi de securitate nu au putut fi încărcate, așa că Defender a revenit la versiunea anterioară.",
+    "steps": [
+      "Actualizarea manuală a Defender; repornirea calculatorului."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|3002": {
+    "title": "Eroare la protecția în timp real",
+    "meaning": "O parte a protecției în timp real a întâlnit o eroare și s-a oprit.",
+    "steps": [
+      "Repornirea calculatorului; actualizarea Defender.",
+      "Verificarea existenței unui alt antivirus care intră în conflict."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|5001": {
+    "title": "Protecția în timp real este oprită",
+    "meaning": "Protecția în timp real a fost oprită. Este normal dacă este instalat un alt antivirus. În caz contrar, calculatorul este mai puțin protejat.",
+    "steps": [
+      "Pornirea ei din nou în Windows Security, dacă nu este activ un alt antivirus."
+    ]
+  },
+  "Microsoft-Windows-Windows Defender|5007": {
+    "title": "Setările Defender au fost schimbate",
+    "meaning": "O setare Microsoft Defender s-a schimbat. Foarte frecvent și normal (actualizările schimbă setări). Excepțiile adăugate pe neașteptate pot fi semn de program rău intenționat.",
+    "steps": []
+  },
+  "Microsoft-Windows-Windows Defender|5008": {
+    "title": "Motorul antivirus s-a oprit",
+    "meaning": "Motorul Microsoft Defender s-a oprit din cauza unei erori neașteptate.",
+    "steps": [
+      "Actualizarea Defender și repornirea; verificarea existenței unui alt antivirus care intră în conflict."
+    ]
+  },
+  "Microsoft-Windows-WindowsUpdateClient|19": {
+    "title": "Actualizare instalată",
+    "meaning": "Windows Update a instalat cu succes o actualizare.",
+    "steps": []
+  },
+  "Microsoft-Windows-WindowsUpdateClient|20": {
+    "title": "Actualizarea nu s-a putut instala",
+    "meaning": "O actualizare nu s-a putut instala. Codul de eroare (0x8...) arată motivul. De obicei Windows reîncearcă mai târziu.",
+    "steps": [
+      "Notarea numărului KB și a codului de eroare.",
+      "Rularea instrumentului de depanare Windows Update; eliberarea de spațiu pe disc.",
+      "Rularea comenzii „DISM /Online /Cleanup-Image /RestoreHealth”, apoi „sfc /scannow”."
+    ]
+  },
+  "Microsoft-Windows-WindowsUpdateClient|25": {
+    "title": "Verificarea actualizărilor a eșuat",
+    "meaning": "Windows Update nu a putut căuta actualizări. De obicei cauza sunt probleme de rețea sau de proxy.",
+    "steps": [
+      "Verificarea setărilor de internet sau de proxy; reîncercarea mai târziu."
+    ]
+  },
+  "Microsoft-Windows-WindowsUpdateClient|31": {
+    "title": "Descărcarea actualizării a eșuat",
+    "meaning": "Windows Update nu a reușit să descarce o actualizare. Adesea cauza sunt probleme de rețea, un proxy sau o memorie cache de actualizări deteriorată.",
+    "steps": [
+      "Verificarea conexiunii la internet și a spațiului liber.",
+      "Resetarea memoriei cache de actualizări (folderul SoftwareDistribution)."
+    ]
+  },
+  "Microsoft-Windows-WindowsUpdateClient|43": {
+    "title": "Instalarea actualizării a început",
+    "meaning": "Windows Update a început instalarea unei actualizări.",
+    "steps": []
+  },
+  "Microsoft-Windows-WindowsUpdateClient|44": {
+    "title": "Descărcarea actualizării a început",
+    "meaning": "Windows Update a început descărcarea unei actualizări.",
+    "steps": []
+  },
+  "Microsoft-Windows-Winlogon|6005": {
+    "title": "Un pas al autentificării este lent",
+    "meaning": "O componentă a autentificării (adesea Group Policy) durează mult. Înregistrările repetate explică autentificările lente.",
+    "steps": [
+      "Consultarea evenimentului 6006 pentru durata exactă.",
+      "Verificarea rețelei și a programelor de pornire."
+    ]
+  },
+  "Microsoft-Windows-Winlogon|6006": {
+    "title": "Un pas al autentificării a durat mult",
+    "meaning": "O componentă a autentificării (adesea Group Policy) a durat mult să se termine. Detaliile arată câte secunde.",
+    "steps": [
+      "Dacă este vorba despre GPClient, se verifică conexiunea la rețea sau la domeniu."
+    ]
+  },
+  "Microsoft-Windows-Winlogon|7001": {
+    "title": "Utilizator autentificat",
+    "meaning": "Un utilizator s-a autentificat în Windows. Util pentru a vedea când a fost folosit calculatorul.",
+    "steps": []
+  },
+  "Microsoft-Windows-Winlogon|7002": {
+    "title": "Utilizator deconectat",
+    "meaning": "Un utilizator s-a deconectat din Windows.",
+    "steps": []
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|4003": {
+    "title": "Wi-Fi limitat, recuperare automată",
+    "meaning": "Windows a detectat conectivitate Wi-Fi limitată și a încercat să o refacă resetând adaptorul.",
+    "steps": [
+      "Actualizarea driverului Wi-Fi.",
+      "Dezactivarea economisirii de energie pentru adaptorul Wi-Fi.",
+      "Verificarea semnalului și a canalului routerului."
+    ]
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|8001": {
+    "title": "Wi-Fi conectat",
+    "meaning": "Calculatorul s-a conectat la o rețea fără fir. Detaliile arată numele rețelei și tipul de securitate.",
+    "steps": []
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|8002": {
+    "title": "Conectarea Wi-Fi a eșuat",
+    "meaning": "Conectarea la o rețea fără fir a eșuat. Detaliile dau motivul (parolă greșită, semnal slab, rețea negăsită).",
+    "steps": [
+      "Verificarea motivului din detalii.",
+      "Ștergerea rețelei din lista salvată și reconectarea."
+    ]
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|8003": {
+    "title": "Wi-Fi deconectat",
+    "meaning": "Calculatorul s-a deconectat de la o rețea fără fir. Normal la plecarea din raza rețelei sau la repaus. Multe deconectări neașteptate indică probleme de semnal sau de driver.",
+    "steps": []
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|10002": {
+    "title": "Modulul producătorului pentru Wi-Fi s-a oprit",
+    "meaning": "Un modul suplimentar al producătorului adaptorului Wi-Fi s-a oprit. Adesea are legătură cu probleme ale driverului Wi-Fi.",
+    "steps": [
+      "Actualizarea sau reinstalarea driverului Wi-Fi."
+    ]
+  },
+  "Microsoft-Windows-WLAN-AutoConfig|11006": {
+    "title": "Securitatea Wi-Fi a eșuat",
+    "meaning": "Pasul de securitate al rețelei fără fir (parola sau autentificarea) a eșuat în timpul conectării.",
+    "steps": [
+      "Introducerea din nou a parolei Wi-Fi.",
+      "Actualizarea driverului Wi-Fi; verificarea modului de securitate al routerului."
+    ]
+  },
+  "Microsoft-Windows-WMI|10": {
+    "title": "Filtrul de evenimente WMI nu a fost reactivat",
+    "meaning": "Un filtru de evenimente WMI (o interogare lăsată de programe precum vechile instrumente ale producătorilor) nu a putut fi reactivat. De obicei nu este grav.",
+    "steps": []
+  },
+  "Microsoft-Windows-WMI-Activity|5858": {
+    "title": "Eroare la o interogare WMI",
+    "meaning": "O interogare WMI a unui program (o cerere de informații despre sistem) a returnat o eroare. Foarte frecvent și, în mod normal, fără urmări.",
+    "steps": []
+  },
+  "MsiInstaller|1033": {
+    "title": "Program instalat",
+    "meaning": "Windows Installer a instalat un produs. „Success or error status: 0” înseamnă succes, orice alt număr este un cod de eroare.",
+    "steps": []
+  },
+  "MsiInstaller|1034": {
+    "title": "Program eliminat",
+    "meaning": "Windows Installer a eliminat un produs. Starea 0 înseamnă succes.",
+    "steps": []
+  },
+  "MsiInstaller|11707": {
+    "title": "Instalare încheiată",
+    "meaning": "Un produs a fost instalat cu succes de Windows Installer.",
+    "steps": []
+  },
+  "MsiInstaller|11708": {
+    "title": "Instalarea a eșuat",
+    "meaning": "O instalare făcută cu Windows Installer a eșuat. Motivul se găsește în evenimentele de dinainte (adesea 11xxx, cu un număr de eroare).",
+    "steps": [
+      "Rularea din nou a programului de instalare ca administrator.",
+      "Verificarea spațiului liber pe disc; eliminarea mai întâi a versiunilor vechi."
+    ]
+  },
+  "MsiInstaller|11724": {
+    "title": "Eliminare încheiată",
+    "meaning": "Un produs a fost eliminat cu succes de Windows Installer.",
+    "steps": []
+  },
+  "NETLOGON|3095": {
+    "title": "Netlogon nu este necesar",
+    "meaning": "Acest calculator face parte dintr-un grup de lucru (workgroup), nu dintr-un domeniu, deci serviciul Netlogon nu este necesar. Nu este grav.",
+    "steps": []
+  },
+  "NETLOGON|5719": {
+    "title": "Niciun controler de domeniu la pornire",
+    "meaning": "Calculatorul nu a putut stabili o sesiune sigură cu un controler de domeniu. Frecvent la pornire, înainte ca rețeaua să fie pregătită. Dacă se repetă mai târziu pe un calculator din domeniu, autentificarea și politicile pot eșua.",
+    "steps": []
+  },
+  "nvlddmkm|13": {
+    "title": "Excepție grafică NVIDIA",
+    "meaning": "Driverul NVIDIA (programul care ajută Windows să folosească placa video) a raportat o eroare a plăcii video („Graphics Exception”, numită și eroare Xid). Adesea cauza este un overclocking instabil, un driver defect, supraîncălzirea sau o placă video pe cale să se strice.",
+    "steps": [
+      "Instalarea curată a driverului NVIDIA.",
+      "Renunțarea la overclocking-ul plăcii video; verificarea temperaturilor sub sarcină."
+    ]
+  },
+  "nvlddmkm|14": {
+    "title": "Eroare a plăcii video NVIDIA",
+    "meaning": "Driverul NVIDIA a înregistrat o eroare a plăcii video, cu coduri pentru diagnosticarea făcută de NVIDIA. Înregistrările repetate indică probleme de driver, de alimentare sau de hardware al plăcii.",
+    "steps": [
+      "Instalarea curată a driverului NVIDIA.",
+      "Verificarea cablurilor de alimentare ale plăcii video și a sursei; rularea unui test de stres pentru placa video."
+    ]
+  },
+  "nvlddmkm|153": {
+    "title": "A apărut o eroare la placa video NVIDIA",
+    "meaning": "Driverul NVIDIA a raportat o eroare la placa video („Error occurred on GPUID”), adesea împreună cu o repornire a driverului (Display 4101) sau cu o oprire a sistemului.",
+    "steps": [
+      "Instalarea curată a driverului NVIDIA.",
+      "Renunțarea la overclocking; verificarea temperaturilor și a cablurilor de alimentare."
+    ]
+  },
+  "partmgr|58": {
+    "title": "Semnătură de disc duplicată",
+    "meaning": "Două discuri au aceeași identitate (semnătură), de obicei după clonarea unei unități. Windows trece unul dintre ele în starea offline.",
+    "steps": [
+      "Trecerea discului online în Disk Management (i se dă astfel o semnătură nouă)."
+    ]
+  },
+  "Perflib|1008": {
+    "title": "Contorul de performanță nu s-a deschis",
+    "meaning": "Un furnizor de contoare de performanță (de exemplu pentru BITS sau pentru un serviciu) nu a putut fi deschis. Nu este grav pentru folosirea obișnuită. Sunt afectate doar programele de monitorizare.",
+    "steps": []
+  },
+  "Perflib|1023": {
+    "title": "DLL-ul contorului de performanță nu s-a încărcat",
+    "meaning": "Windows nu a putut încărca o bibliotecă de contoare de performanță. Nu este grav pentru folosirea obișnuită. Se poate repara cu „lodctr /r” dacă programele de monitorizare au nevoie.",
+    "steps": []
+  },
+  "Schannel|36871": {
+    "title": "Eroare la credențialele TLS",
+    "meaning": "Windows nu a putut crea credențialele pentru o conexiune securizată (TLS). Frecvent și adesea fără urmări. Contează doar dacă o aplicație anume nu se poate conecta în siguranță.",
+    "steps": []
+  },
+  "Schannel|36874": {
+    "title": "Nicio metodă de criptare TLS comună",
+    "meaning": "Un client a încercat o conexiune securizată, dar niciuna dintre metodele lui de criptare nu este permisă pe acest calculator. De obicei este vorba despre un client vechi. Nu este grav pe calculatoarele de acasă.",
+    "steps": []
+  },
+  "Schannel|36887": {
+    "title": "Alertă TLS primită",
+    "meaning": "Cealaltă parte a unei conexiuni securizate a trimis o eroare și a închis-o. Zgomot de fundal foarte frecvent, produs de aplicații și site-uri.",
+    "steps": []
+  },
+  "Schannel|36888": {
+    "title": "Alertă TLS trimisă",
+    "meaning": "Acest calculator a trimis o eroare printr-o conexiune securizată și a închis-o. Zgomot de fundal frecvent.",
+    "steps": []
+  },
+  "Service Control Manager|7000": {
+    "title": "Serviciul nu a putut porni",
+    "meaning": "Un serviciu Windows sau al unei aplicații nu a putut porni. Mesajul dă numele serviciului și motivul. Adesea este o rămășiță de la un program dezinstalat sau de la un driver lipsă.",
+    "steps": [
+      "Verificarea serviciului pe pagina Services.",
+      "Dacă aparține unui program eliminat, se setează pe Disabled.",
+      "Reinstalarea aplicației sau a driverului de care aparține."
+    ]
+  },
+  "Service Control Manager|7001": {
+    "title": "Dependența serviciului a eșuat",
+    "meaning": "Un serviciu nu a pornit pentru că un alt serviciu de care are nevoie a eșuat înaintea lui. Odată reparat primul serviciu, urmează și acesta.",
+    "steps": [
+      "Găsirea evenimentului 7000/7009/7023 anterior, pentru serviciul de care depinde."
+    ]
+  },
+  "Service Control Manager|7009": {
+    "title": "Pornirea serviciului a expirat",
+    "meaning": "Un serviciu a durat prea mult (de obicei peste 30 de secunde) să pornească. Frecvent la discuri lente sau la porniri aglomerate. De obicei urmat de 7000.",
+    "steps": [
+      "Verificarea stării discului și a încărcării la pornire.",
+      "Actualizarea sau eliminarea programului căruia îi aparține serviciul."
+    ]
+  },
+  "Service Control Manager|7011": {
+    "title": "Serviciul nu a răspuns la timp",
+    "meaning": "Un serviciu nu a răspuns la o cerere în timpul permis (de obicei 30 de secunde). Ocazional este frecvent. Repetările sugerează un serviciu blocat sau un disc lent.",
+    "steps": [
+      "Aflarea serviciului în cauză; actualizarea lui sau dezactivarea lui, dacă nu este necesar.",
+      "Verificarea stării discului."
+    ]
+  },
+  "Service Control Manager|7022": {
+    "title": "Serviciul s-a blocat la pornire",
+    "meaning": "Un serviciu a pornit, dar s-a blocat și nu și-a terminat niciodată pornirea.",
+    "steps": [
+      "Repornirea calculatorului; dacă se repetă, actualizarea sau reinstalarea programului căruia îi aparține."
+    ]
+  },
+  "Service Control Manager|7023": {
+    "title": "Serviciul s-a oprit cu o eroare",
+    "meaning": "Un serviciu s-a încheiat cu un cod de eroare. Mesajul explică eroarea.",
+    "steps": [
+      "Căutarea serviciului numit pe pagina Services.",
+      "Reinstalarea sau actualizarea programului de care aparține."
+    ]
+  },
+  "Service Control Manager|7024": {
+    "title": "Serviciul s-a oprit cu propria eroare",
+    "meaning": "Un serviciu s-a încheiat cu o eroare specifică lui. Sensul depinde de serviciu.",
+    "steps": [
+      "Verificarea serviciului și a jurnalelor proprii ale aplicației.",
+      "Reinstalarea sau actualizarea programului de care aparține."
+    ]
+  },
+  "Service Control Manager|7026": {
+    "title": "Driverele de pornire nu s-au încărcat",
+    "meaning": "Unul sau mai multe drivere setate să se încarce la pornire nu s-au încărcat. Adesea sunt drivere rămase de la programe eliminate sau de la componente nefolosite.",
+    "steps": [
+      "Verificarea pe pagina Drivers a numelor de drivere din listă.",
+      "Eliminarea resturilor de la programele dezinstalate (VPN, antivirus, utilitare)."
+    ]
+  },
+  "Service Control Manager|7031": {
+    "title": "Serviciul s-a oprit (cu acțiune de recuperare)",
+    "meaning": "Un serviciu s-a oprit pe neașteptate. Windows va aplica acțiunea de recuperare setată pentru el (adesea repornirea). Repetările arată că serviciul sau aplicația lui este instabilă.",
+    "steps": [
+      "Verificarea evenimentului Application Error 1000 de la aceeași oră, pentru programul care s-a oprit.",
+      "Actualizarea sau reinstalarea programului căruia îi aparține."
+    ]
+  },
+  "Service Control Manager|7032": {
+    "title": "Acțiunea de recuperare a serviciului a eșuat",
+    "meaning": "Windows a încercat să recupereze un serviciu oprit (de exemplu să-l repornească) și nici asta nu a reușit.",
+    "steps": [
+      "Verificarea serviciului pe pagina Services și repornirea lui manuală.",
+      "Reinstalarea programului de care aparține."
+    ]
+  },
+  "Service Control Manager|7034": {
+    "title": "Serviciul s-a oprit brusc",
+    "meaning": "Un serviciu s-a oprit pe neașteptate. Mesajul arată de câte ori s-a întâmplat.",
+    "steps": [
+      "Verificarea evenimentului Application Error 1000 de la aceeași oră, pentru detalii.",
+      "Actualizarea sau reinstalarea programului căruia îi aparține."
+    ]
+  },
+  "Service Control Manager|7036": {
+    "title": "Serviciul a pornit sau s-a oprit",
+    "meaning": "Un serviciu și-a schimbat starea (în funcțiune sau oprit). Se înregistrează constant. Normal.",
+    "steps": []
+  },
+  "Service Control Manager|7038": {
+    "title": "Serviciul nu s-a putut autentifica",
+    "meaning": "Un serviciu setat să ruleze sub un anumit cont de utilizator nu s-a putut autentifica, de obicei pentru că parola contului s-a schimbat.",
+    "steps": [
+      "Actualizarea parolei în setările Log On ale serviciului."
+    ]
+  },
+  "Service Control Manager|7040": {
+    "title": "Tipul de pornire al serviciului a fost schimbat",
+    "meaning": "Tipul de pornire al unui serviciu a fost schimbat (de exemplu din Automatic în Manual). Windows Update și BITS fac asta în mod obișnuit.",
+    "steps": []
+  },
+  "Service Control Manager|7043": {
+    "title": "Serviciul se oprește greu",
+    "meaning": "Un serviciu nu s-a oprit corect după ce i s-a spus că se închide calculatorul. Poate încetini închiderea.",
+    "steps": [
+      "Actualizarea programului căruia îi aparține serviciul."
+    ]
+  },
+  "Service Control Manager|7045": {
+    "title": "Serviciu nou instalat",
+    "meaning": "A fost instalat un serviciu sau un driver nou. Normal la instalarea de programe. Serviciile necunoscute pot indica un program rău intenționat.",
+    "steps": [
+      "Verificarea că numele serviciului și calea fișierului aparțin unor programe cunoscute."
+    ]
+  },
+  "SideBySide|33": {
+    "title": "Componentă de program lipsă",
+    "meaning": "Un program nu a putut porni pentru că lipsește o componentă necesară (de obicei un runtime Visual C++, adică un set de fișiere de care au nevoie multe programe).",
+    "steps": [
+      "Instalarea sau repararea pachetelor Microsoft Visual C++ Redistributable (x86 și x64).",
+      "Reinstalarea programului."
+    ]
+  },
+  "SideBySide|59": {
+    "title": "Pregătirea componentelor programului a eșuat",
+    "meaning": "Windows nu a putut pregăti componentele de care are nevoie un program (manifestul lui sau un runtime la care face trimitere lipsește ori este deteriorat). De obicei apare împreună cu evenimentul 33.",
+    "steps": [
+      "Instalarea sau repararea pachetelor Visual C++ Redistributable.",
+      "Reinstalarea programului."
+    ]
+  },
+  "storahci|129": {
+    "title": "Dispozitivul de stocare a fost resetat",
+    "meaning": "Driverul de stocare SATA (AHCI) a resetat o unitate pentru că o cerere nu s-a terminat la timp. Resetările repetate provoacă blocaje și indică o unitate pe cale să se strice, un cablu slab, probleme cu economisirea de energie sau un firmware ori driver vechi.",
+    "steps": [
+      "Verificarea stării SMART pe pagina Disk.",
+      "Actualizarea firmware-ului SSD-ului și a driverului de stocare sau de chipset.",
+      "La discurile SATA, înlocuirea cablului și încercarea de a dezactiva economisirea de energie a legăturii."
+    ]
+  },
+  "stornvme|11": {
+    "title": "Eroare la controlerul NVMe",
+    "meaning": "Controlerul SSD-ului NVMe a raportat o eroare. Adesea SSD-ul este pe cale să se strice, are firmware vechi sau se supraîncălzește.",
+    "steps": [
+      "Verificarea stării SMART și a temperaturii pe pagina Disk.",
+      "Actualizarea firmware-ului SSD-ului de la producător.",
+      "Salvarea datelor dacă erorile se repetă."
+    ]
+  },
+  "stornvme|129": {
+    "title": "Dispozitivul de stocare a fost resetat",
+    "meaning": "Driverul de stocare NVMe a resetat o unitate pentru că o cerere nu s-a terminat la timp. Resetările repetate provoacă blocaje și indică o unitate pe cale să se strice, un cablu slab, probleme cu economisirea de energie sau un firmware ori driver vechi.",
+    "steps": [
+      "Verificarea stării SMART pe pagina Disk.",
+      "Actualizarea firmware-ului SSD-ului și a driverului de stocare sau de chipset.",
+      "La discurile SATA, înlocuirea cablului și încercarea de a dezactiva economisirea de energie a legăturii."
+    ]
+  },
+  "Tcpip|4199": {
+    "title": "Conflict de adrese IP",
+    "meaning": "Un alt dispozitiv din rețea folosește aceeași adresă IP ca acest calculator. Accesul la internet sau la rețea va fi nesigur.",
+    "steps": [
+      "Setarea adaptorului să obțină automat adresa IP (DHCP).",
+      "Repornirea routerului; remedierea adreselor IP fixe duplicate."
+    ]
+  },
+  "Tcpip|4227": {
+    "title": "Conexiune refolosită prea repede",
+    "meaning": "Windows nu a putut deschide o conexiune nouă de rețea, deoarece aceeași pereche de porturi (locală și la distanță) a fost folosită foarte recent. Ocazional nu este grav. Dacă se repetă des, o aplicație deschide un număr uriaș de conexiuni.",
+    "steps": [
+      "Găsirea programului care face multe conexiuni (pagina Network)."
+    ]
+  },
+  "Tcpip|4231": {
+    "title": "Porturile de rețea s-au epuizat",
+    "meaning": "Windows a rămas fără porturi temporare de rețea, deci conexiunile noi eșuează. De obicei un singur program pierde conexiuni (nu le închide).",
+    "steps": [
+      "Găsirea programului cu cele mai multe conexiuni (de exemplu cu „netstat -ano”).",
+      "Repornirea sau actualizarea acelui program."
+    ]
+  },
+  "User32|1074": {
+    "title": "Repornire sau închidere planificată",
+    "meaning": "Un utilizator sau un program a început o repornire sau o închidere. Detaliile arată cine sau ce a făcut-o și de ce (de exemplu Windows Update).",
+    "steps": []
+  },
+  "volmgr|45": {
+    "title": "Driverul pentru dump-ul de blocare nu s-a încărcat",
+    "meaning": "Windows nu a putut încărca driverul care scrie fișierele de dump (copia memoriei de la momentul unei opriri). Dacă apare un ecran albastru, este posibil să nu se salveze niciun dump.",
+    "steps": [
+      "Verificarea setărilor fișierului de paginare și ale dump-ului (System > Advanced > Startup and Recovery)."
+    ]
+  },
+  "volmgr|46": {
+    "title": "Pregătirea dump-ului de blocare a eșuat",
+    "meaning": "Windows nu a putut pregăti salvarea fișierelor de dump la pornire. În sine nu este grav (frecvent când fișierul de paginare este dezactivat sau mic), dar ecranele albastre nu vor lăsa niciun dump.",
+    "steps": [
+      "Activarea unui fișier de paginare gestionat de sistem pe C:.",
+      "Setarea „Automatic memory dump” în Startup and Recovery."
+    ]
+  },
+  "volmgr|49": {
+    "title": "Fișierul de paginare este prea mic pentru dump-uri",
+    "meaning": "Fișierul de paginare nu a putut fi configurat pentru dump-uri, de obicei pentru că este dezactivat sau prea mic. Dump-urile nu vor fi salvate.",
+    "steps": [
+      "Activarea unui fișier de paginare gestionat de sistem pe unitatea sistemului."
+    ]
+  },
+  "volmgr|161": {
+    "title": "Crearea dump-ului de blocare a eșuat",
+    "meaning": "A apărut un ecran albastru, dar fișierul de dump nu a putut fi scris, adesea din cauza unui fișier de paginare mic, a spațiului redus pe disc sau a unei probleme a discului.",
+    "steps": [
+      "Eliberarea de spațiu pe C: și activarea unui fișier de paginare gestionat de sistem.",
+      "Verificarea discului pe pagina Disk."
+    ]
+  },
+  "volsnap|25": {
+    "title": "Puncte de restaurare șterse (lipsă de spațiu)",
+    "meaning": "Copiile umbră (punctele de restaurare) de pe un volum au fost șterse pentru că spațiul lor nu a putut crește la timp.",
+    "steps": [
+      "Eliberarea de spațiu pe disc sau mărirea spațiului pentru System Protection."
+    ]
+  },
+  "volsnap|33": {
+    "title": "Cel mai vechi punct de restaurare a fost șters",
+    "meaning": "Cea mai veche copie umbră (punct de restaurare) a fost ștearsă pentru a se încadra în limita de spațiu. Normal.",
+    "steps": []
+  },
+  "volsnap|36": {
+    "title": "Copiile umbră au fost întrerupte (limită)",
+    "meaning": "Copiile umbră au fost întrerupte pentru că spațiul lor a atins limita de mărime.",
+    "steps": [
+      "Mărirea spațiului pentru System Protection sau eliberarea de spațiu pe disc."
+    ]
+  },
+  "VSS|13": {
+    "title": "Componenta pentru copii umbră nu este disponibilă",
+    "meaning": "O componentă Volume Shadow Copy nu a putut porni. Foarte frecvent și de obicei fără urmări, cu excepția cazului în care eșuează copiile de siguranță sau punctele de restaurare.",
+    "steps": []
+  },
+  "VSS|8193": {
+    "title": "Eroare la copiile umbră",
+    "meaning": "Serviciul Volume Shadow Copy (folosit de copiile de siguranță și de punctele de restaurare) a întâlnit o eroare neașteptată.",
+    "steps": [
+      "Verificarea că funcționează copiile de siguranță și System Restore.",
+      "Repornirea serviciului „Volume Shadow Copy”."
+    ]
+  },
+  "VSS|8194": {
+    "title": "Acces refuzat la copiile umbră",
+    "meaning": "Serviciul Volume Shadow Copy a primit „access denied” la comunicarea cu o componentă. Adesea nu este grav, dar poate strica unele programe de backup.",
+    "steps": [
+      "Verificarea că se termină cu succes copiile de siguranță."
+    ]
+  },
+  "VSS|12289": {
+    "title": "Eroare de dispozitiv la copiile umbră",
+    "meaning": "Serviciul Volume Shadow Copy a primit o eroare de la o unitate. Poate afecta copiile de siguranță și punctele de restaurare. Uneori cauza este o unitate fără suficient spațiu liber.",
+    "steps": [
+      "Verificarea unității numite pe pagina Disk.",
+      "Eliberarea de spațiu pe unitate."
+    ]
+  },
+  "VSS|12302": {
+    "title": "Problemă la un writer de copii umbră",
+    "meaning": "Serviciul Volume Shadow Copy a găsit o neconcordanță la contactarea ajutoarelor de backup (writers).",
+    "steps": [
+      "Rularea comenzii „vssadmin list writers” pentru a găsi writer-ele cu probleme.",
+      "Repornirea calculatorului și reluarea copiei de siguranță."
+    ]
+  },
+  "Windows Error Reporting|1001": {
+    "title": "Raport de problemă creat",
+    "meaning": "Windows a înregistrat un raport de problemă. „Event Name” arată tipul: APPCRASH (oprirea unei aplicații), AppHangB1 (aplicație blocată), BlueScreen sau LiveKernelEvent (mică problemă de driver sau hardware, adesea la grafică).",
+    "steps": [
+      "Citirea câmpului „Event Name” și a numelui programului din detalii.",
+      "Pentru LiveKernelEvent 141/117, se verifică driverul grafic și placa video."
+    ]
+  },
+  "Wininit|1001": {
+    "title": "Rezultatele Check Disk la pornire",
+    "meaning": "Arată rezultatul unei verificări a discului (chkdsk) rulate în timpul pornirii. Merită citit textul: „no problems found” este în regulă, în timp ce fișierele reparate sau sectoarele defecte (zone deteriorate ale discului) merită o atenție mai mare.",
+    "steps": [
+      "Citirea raportului pentru „bad sectors” sau fișiere reparate.",
+      "Verificarea stării SMART pe pagina Disk."
+    ]
+  }
+}

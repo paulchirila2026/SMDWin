@@ -1,0 +1,143 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- WFAC010: the WinForms analyzer wants DPI in code, but WPF reads PerMonitorV2 from app.manifest; the manifest stays -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>SMDWin</AssemblyName>
+    <RootNamespace>SMDWin</RootNamespace>
+    <Product>SMD Win</Product>
+    <Company>Paul Chirilă</Company>
+    <Authors>Paul Chirilă</Authors>
+    <Copyright>© Paul Chirilă — GPL-3.0-or-later</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <Version>0.4.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\smdwin.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredPGO>true</TieredPGO>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+  <!-- The publish settings live in the project, not only on the publish.bat command line.
+       They apply to ANY win-x64 publish (publish.bat or VS). -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- No compression — a compressed exe is decompressed on EVERY start (measured: ~9.7 s until the first code on a laptop).
+         The file is larger, but it starts much faster. -->
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="SMDWin.Tests\**\*.cs" />
+    <None Remove="SMDWin.Tests\**\*.cs" />
+    <!-- private working files are never part of the build -->
+    <Compile Remove="_private\**" />
+    <None Remove="_private\**" />
+    <Page Remove="_private\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildDateUtc" Value="$([System.DateTime]::UtcNow.ToString(`o`))" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PdfSharp" Version="6.2.0" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
+    <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+    <PackageReference Include="System.Management" Version="10.0.2" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+    <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <!-- Logging — Serilog with rolling file sink + debug sink -->
+    <PackageReference Include="Serilog" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+  <!-- Icon embedded as resource so WPF Window can reference it too -->
+  <ItemGroup>
+    <Resource Include="Assets\smdwin.ico" />
+    <Resource Include="Assets\smdwin.png" />
+    <Resource Include="Assets\grain_texture.png" />
+  </ItemGroup>
+  <!-- The language packs and Tools (smartctl) are embedded as resources in the exe and extracted by
+       AppPaths.BundleDirectory, when first needed, into %TEMP%\SMDWin\bundle\<build>\ (a few files).
+       IncludeAllContentForSelfExtract is not used: it extracts the whole .NET/WPF runtime on the first start on each PC
+       (hundreds of files, each scanned by the antivirus), which delays start-up by 1-2 minutes.
+       Fixed LogicalName: the resource name = "SMDWinBundle/<relative path>", independent of the namespace. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Languages\*.json" LogicalName="SMDWinBundle/Languages/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Tools\*" LogicalName="SMDWinBundle/Tools/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Data\HardwareDB\*.json" />
+    <!-- Windows events explained (Event Viewer) — Data/EventDB/events.json, see SOURCES.md -->
+    <EmbeddedResource Include="Data\EventDB\events.json" LogicalName="SMDWinBundle/EventDB/events.json" />
+    <EmbeddedResource Include="Data\EventDB\events.ro.json" LogicalName="SMDWinBundle/EventDB/events.ro.json" />
+  </ItemGroup>
+  <!-- PAWNIO OFFLINE: if PawnIO_setup.exe is present in Assets, it is packed as an embedded resource, so the install works
+       without internet. The Exists() condition avoids a build error when the file is not added — then the app falls back to
+       the online download. -->
+  <ItemGroup Condition="Exists('Assets\PawnIO_setup.exe')">
+    <EmbeddedResource Include="Assets\PawnIO_setup.exe" />
+  </ItemGroup>
+  <!-- Country of public IP addresses (Network › Apps), offline: DB-IP Lite, CC BY 4.0 — built by _private/scripts/build-geo-country.py -->
+  <ItemGroup Condition="Exists('Assets\geo-country-v4.bin')">
+    <EmbeddedResource Include="Assets\geo-country-v4.bin" LogicalName="SMDWinGeo/geo-country-v4.bin" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('Assets\oui_database.csv')">
+    <EmbeddedResource Include="Assets\oui_database.csv" />
+  </ItemGroup>
+  <!-- BUILD NUMBER (11.11.2026): build-number.txt holds the number of the last published build. Every publish (dotnet publish,
+       publish.bat, or Visual Studio's Publish) adds 1 and writes it back; ordinary builds (F5, Build) keep the number and are
+       marked "dev". The number and the build time go into the exe (AssemblyMetadata SmdBuild / SmdBuildKind, FileVersion
+       0.4.0.N) and are shown as "Build N" in the log, the self-test, About, the splash and the PDF — so a log or a stick copy
+       says exactly which build it came from. -->
+  <!-- 14.11.2026: the number is also kept outside the project folder (%LOCALAPPDATA%\SMDWin\dev\build-number.txt) and the
+       higher of the two is used — every new zip comes with its own build-number.txt, so the count started again from 1 each
+       time ("why build 3 again?"). The temporary WPF markup project (*_wpftmp) only reads the number: it used to add 1 too,
+       so one publish counted twice. -->
+  <PropertyGroup>
+    <SmdBuildNumberFile>$(MSBuildProjectDirectory)\build-number.txt</SmdBuildNumberFile>
+    <SmdBuildNumberUserFile>$(LOCALAPPDATA)\SMDWin\dev\build-number.txt</SmdBuildNumberUserFile>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+  <Target Name="SmdBuildNumber" BeforeTargets="GetAssemblyVersion">
+    <ReadLinesFromFile File="$(SmdBuildNumberFile)" Condition="Exists('$(SmdBuildNumberFile)')">
+      <Output TaskParameter="Lines" PropertyName="_SmdBuildRead" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(SmdBuildNumberUserFile)" Condition="'$(LOCALAPPDATA)' != '' and Exists('$(SmdBuildNumberUserFile)')">
+      <Output TaskParameter="Lines" PropertyName="_SmdBuildReadUser" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <_SmdBuildRead Condition="'$(_SmdBuildRead)' == ''">0</_SmdBuildRead>
+      <_SmdBuildReadUser Condition="'$(_SmdBuildReadUser)' == ''">0</_SmdBuildReadUser>
+      <_SmdIsWpfTmp>$(MSBuildProjectName.EndsWith('_wpftmp'))</_SmdIsWpfTmp>
+      <_SmdPublish Condition="'$(_IsPublishing)' == 'true' or '$(SmdPublish)' == 'true'">true</_SmdPublish>
+      <_SmdPublish Condition="'$(_SmdPublish)' == ''">false</_SmdPublish>
+      <SmdBuild>$([System.Math]::Max($([System.Int32]::Parse($(_SmdBuildRead.Trim()))), $([System.Int32]::Parse($(_SmdBuildReadUser.Trim())))))</SmdBuild>
+      <SmdBuild Condition="'$(_SmdPublish)' == 'true'">$([MSBuild]::Add($(SmdBuild), 1))</SmdBuild>
+      <FileVersion>$(Version).$(SmdBuild)</FileVersion>
+      <InformationalVersion>$(Version) build $(SmdBuild)</InformationalVersion>
+    </PropertyGroup>
+    <WriteLinesToFile Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True'" File="$(SmdBuildNumberFile)" Lines="$(SmdBuild)" Overwrite="true" />
+    <MakeDir Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True' and '$(LOCALAPPDATA)' != ''" Directories="$(LOCALAPPDATA)\SMDWin\dev" ContinueOnError="true" />
+    <WriteLinesToFile Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True' and '$(LOCALAPPDATA)' != ''" File="$(SmdBuildNumberUserFile)" Lines="$(SmdBuild)" Overwrite="true" ContinueOnError="true" />
+    <ItemGroup>
+      <AssemblyMetadata Include="SmdBuild" Value="$(SmdBuild)" />
+      <AssemblyMetadata Include="SmdBuildKind" Value="$([MSBuild]::ValueOrDefault('$(_SmdPublish)', 'false').Replace('true','release').Replace('false','dev'))" />
+    </ItemGroup>
+    <Message Importance="high" Text="SMD Win build $(SmdBuild) ($([MSBuild]::ValueOrDefault('$(_SmdPublish)', 'false').Replace('true','publish').Replace('false','dev build')))" />
+  </Target>
+</Project>

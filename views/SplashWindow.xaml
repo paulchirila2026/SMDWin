@@ -1,0 +1,137 @@
+<Window x:Class="SMDWin.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:SMDWin.Views"
+        Title="SMD Win"
+        Width="520" Height="300"
+        Background="#1B1D22"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True">
+    <!-- Splash: a discreet blue halo behind the logo, a fine dot grid, and the logo itself filling with the start-up progress.
+         The splash is always dark (it appears before the theme is applied). -->
+    <Window.Resources>
+        <SolidColorBrush x:Key="SplashBack"      Color="#1B1D22"/>
+        <SolidColorBrush x:Key="SplashBorder"    Color="#24FFFFFF"/>
+        <SolidColorBrush x:Key="SplashTitle"     Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SplashSubtitle"  Color="#8A93A0"/>
+        <SolidColorBrush x:Key="SplashMuted"     Color="#8EA3C7"/>
+        <SolidColorBrush x:Key="SplashStatus"    Color="#C7CEDB"/>
+        <SolidColorBrush x:Key="SplashMeta"      Color="#7F8894"/>
+        <SolidColorBrush x:Key="SplashTrack"     Color="#14FFFFFF"/>
+        <SolidColorBrush x:Key="SplashBar1"      Color="#00C9F8"/>
+        <SolidColorBrush x:Key="SplashBar2"      Color="#1B80DC"/>
+        <SolidColorBrush x:Key="SplashBar3"      Color="#135EB9"/>
+    </Window.Resources>
+
+    <Border x:Name="RootPanel"
+            CornerRadius="12"
+            Background="{DynamicResource SplashBack}"
+            BorderBrush="{DynamicResource SplashBorder}"
+            BorderThickness="1">
+        <Grid ClipToBounds="True">
+
+            <!-- Fine dot grid (technical texture, barely visible) -->
+            <Rectangle Opacity="0.55" IsHitTestVisible="False">
+                <Rectangle.Fill>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute"
+                                  Viewbox="0,0,16,16" ViewboxUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="#00000000">
+                                    <GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,16,16"/></GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#0FFFFFFF">
+                                    <GeometryDrawing.Geometry><EllipseGeometry Center="8,8" RadiusX="0.8" RadiusY="0.8"/></GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Rectangle.Fill>
+                <!-- the grid fades towards the edges: visible only around the centre -->
+                <Rectangle.OpacityMask>
+                    <RadialGradientBrush Center="0.5,0.45" GradientOrigin="0.5,0.45" RadiusX="0.6" RadiusY="0.75">
+                        <GradientStop Color="#FF000000" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Rectangle.OpacityMask>
+            </Rectangle>
+
+            <!-- Halo albastru in spatele logo-ului -->
+            <Border x:Name="GlowOverlay" CornerRadius="12" IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="0.5,0.42" GradientOrigin="0.5,0.42" RadiusX="0.45" RadiusY="0.62">
+                        <GradientStop Color="#331B80DC" Offset="0"/>
+                        <GradientStop Color="#141B80DC" Offset="0.5"/>
+                        <GradientStop Color="#001B80DC" Offset="1"/>
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!-- ===== Centre (variant A, decided 11.11.2026): the logo IS the progress bar — its segments light up as the app
+                 loads, then the pulse is drawn and beats once; the name, the tagline and the current step below it ===== -->
+            <StackPanel x:Name="CenterBlock" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
+                <StackPanel.RenderTransform>
+                    <TranslateTransform x:Name="CenterShift" Y="0"/>
+                </StackPanel.RenderTransform>
+                <!-- the logo fills with the real start-up progress (SplashWindow.xaml.cs); the pulse is drawn at the end -->
+                <local:SmdLogo x:Name="SplashLogo" Width="92" Height="92" HorizontalAlignment="Center" Level="0" DimOpacity="0.16"
+                               PulseProgress="0"/>
+                <local:SmdWordmark HorizontalAlignment="Center" Margin="0,12,0,0" FontSize="30"
+                                   MutedBrushKey="SplashMuted" Foreground="{DynamicResource SplashTitle}"/>
+
+                <TextBlock HorizontalAlignment="Center" Margin="0,12,0,0"
+                           Text="S Y S T E M   M O N I T O R I N G   &amp;   D I A G N O S T I C S"
+                           FontSize="10.5" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SplashSubtitle}"/>
+
+                <TextBlock x:Name="TxtStatus" HorizontalAlignment="Center" Margin="0,16,0,0"
+                           Text="Starting…" FontSize="12"
+                           Foreground="{DynamicResource SplashMeta}"/>
+            </StackPanel>
+
+            <!-- ===== the build, discreet, bottom right ===== -->
+            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,14,12"
+                    CornerRadius="4" Padding="6,1,6,2" Background="#12FFFFFF">
+                <TextBlock x:Name="TxtFooter" Text="Build" FontSize="11" FontFamily="Consolas"
+                           Foreground="{DynamicResource SplashMeta}"/>
+            </Border>
+
+            <!-- ===== Progress bar, attached to the bottom edge (DWM cuts the corners) ===== -->
+            <!-- (the old bar is kept hidden for SetProgress's columns; the logo shows the progress) -->
+            <Border VerticalAlignment="Bottom" Height="3" Background="{DynamicResource SplashTrack}" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="ColFill"  Width="0*"/>
+                        <ColumnDefinition x:Name="ColEmpty" Width="100*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="PbSplash" Grid.Column="0" ClipToBounds="True">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                <GradientStop Color="#00C9F8" Offset="0"/>
+                                <GradientStop Color="#3EA8FF" Offset="0.55"/>
+                                <GradientStop Color="#135EB9" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <!-- a sheen running over the filled part: shows the app is working even when a step (e.g. PawnIO) holds the bar at the
+                             same percentage -->
+                        <Rectangle x:Name="PbShine" Width="90" HorizontalAlignment="Left">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                    <GradientStop Color="#00FFFFFF" Offset="0"/>
+                                    <GradientStop Color="#AAFFFFFF" Offset="0.5"/>
+                                    <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                            <Rectangle.RenderTransform>
+                                <TranslateTransform x:Name="PbShineShift" X="-90"/>
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
+                    </Border>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

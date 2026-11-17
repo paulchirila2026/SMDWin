@@ -1,0 +1,58 @@
+<!--
+  Lift.Light.xaml — color tokens, LIGHT theme.
+  Merge this into App.xaml BEFORE Lift.Styles.xaml.
+
+  All keys mirror Lift.Dark.xaml exactly. Swap which file is merged
+  (or replace the source at runtime) and every button rebrands.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ===== Surfaces (warm stone) ===== -->
+  <SolidColorBrush x:Key="Lift.Canvas"    Color="#F3F4F6" />
+  <SolidColorBrush x:Key="Lift.Surface"   Color="#FAFAFA" />
+  <SolidColorBrush x:Key="Lift.Surface2"  Color="#F5F5F4" />
+  <SolidColorBrush x:Key="Lift.Border"    Color="#D1CDC9" />
+  <SolidColorBrush x:Key="Lift.Border2"   Color="#C4C0BB" />
+
+  <!-- ===== Text ===== -->
+  <SolidColorBrush x:Key="Lift.Text"        Color="#1C1917" />
+  <SolidColorBrush x:Key="Lift.TextMuted"   Color="#44403C" />
+  <SolidColorBrush x:Key="Lift.TextSoft"    Color="#57534E" />
+  <SolidColorBrush x:Key="Lift.TextDim"     Color="#A8A29E" />
+
+  <!-- ===== Accent (indigo) ===== -->
+  <SolidColorBrush x:Key="Lift.Accent"       Color="#4338CA" />
+  <SolidColorBrush x:Key="Lift.AccentHover"  Color="#3730A3" />
+  <SolidColorBrush x:Key="Lift.AccentPress"  Color="#312E81" />
+
+  <!-- ===== Primary CTA (near-black on light) ===== -->
+  <SolidColorBrush x:Key="Lift.PrimaryBg"       Color="#1C1917" />
+  <SolidColorBrush x:Key="Lift.PrimaryBgHover"  Color="#292524" />
+  <SolidColorBrush x:Key="Lift.PrimaryBgPress"  Color="#0C0A09" />
+  <SolidColorBrush x:Key="Lift.PrimaryFg"       Color="#FFFFFF" />
+
+  <!-- ===== Danger ===== -->
+  <SolidColorBrush x:Key="Lift.DangerText"        Color="#B91C1C" />
+  <SolidColorBrush x:Key="Lift.DangerBorder"      Color="#FECACA" />
+  <SolidColorBrush x:Key="Lift.DangerHoverBg"     Color="#FEF2F2" />
+  <SolidColorBrush x:Key="Lift.DangerHoverBorder" Color="#F87171" />
+  <SolidColorBrush x:Key="Lift.DangerPressBg"     Color="#FEE2E2" />
+
+  <!-- ===== Shadows (used by Lift.Styles.xaml) ===== -->
+  <DropShadowEffect x:Key="Lift.Shadow1"
+      BlurRadius="3" ShadowDepth="1" Direction="270"
+      Opacity="0.10" Color="#1C1917" RenderingBias="Quality" />
+  <DropShadowEffect x:Key="Lift.Shadow2"
+      BlurRadius="6" ShadowDepth="2" Direction="270"
+      Opacity="0.16" Color="#1C1917" RenderingBias="Quality" />
+  <DropShadowEffect x:Key="Lift.ShadowPrimary"
+      BlurRadius="4" ShadowDepth="1" Direction="270"
+      Opacity="0.22" Color="#1C1917" RenderingBias="Quality" />
+
+  <!-- ===== Type ===== -->
+  <FontFamily x:Key="Lift.Font">Segoe UI</FontFamily>
+  <Color x:Key="BgHoverColor">#EDEBE8</Color>
+
+</ResourceDictionary>

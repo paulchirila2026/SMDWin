@@ -1,0 +1,1487 @@
+<UserControl x:Class="SMDWin.Views.Pages.TempStressPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+             xmlns:local="clr-namespace:SMDWin.Views"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+  <!-- The page logic is in the MainWindow.*.cs files: the named elements here are exposed in MainWindow as properties
+       (MainWindow.Pages.cs), and the handlers are redirected below. -->
+        <Grid x:Name="PanelStress" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- titlu + range + butoane -->
+            <RowDefinition Height="*"/>      <!-- table | charts -->
+            <RowDefinition Height="Auto"/>   <!-- stress buttons bar -->
+            <RowDefinition Height="Auto"/>   <!-- benchmark inline result (collapsed by default) -->
+            <RowDefinition Height="Auto"/>   <!-- top procese CPU -->
+          </Grid.RowDefinitions>
+
+          <Grid Grid.Row="0" Margin="24,14,24,5">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" VerticalAlignment="Center" Margin="0,0,0,8">
+              <TextBlock x:Name="TxtStressTitle" Text="Temp &amp; Stress"
+                         Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,0"/>
+              <TextBlock x:Name="TxtTempSubtitle" Text="Live sensors • Stress tests" Style="{StaticResource PageSubtitleStyle}"/>
+              <TextBlock x:Name="TxtTempBackend" Text="" FontSize="{StaticResource FontSizeXS}"
+                         Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"
+                         Visibility="Collapsed"/>
+              <Border x:Name="LastAlertBanner" Visibility="Collapsed" Margin="0,6,0,0"
+                      Background="{DynamicResource BgInputBrush}" CornerRadius="6" Padding="8,5"
+                      HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock x:Name="TxtLastAlert" Text="" FontSize="{StaticResource FontSizeS}"
+                             Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                  <ui:Button Appearance="Transparent" x:Name="BtnDismissLastAlert" Content="✕" Click="DismissLastAlert_Click" Padding="8,0,0,0"
+                          FontSize="{StaticResource FontSizeS}"
+                          ToolTip="Dismiss"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+            <!-- the test bar in the order what → intensity → stop after → start; on the right the chart interval and "⋯".
+                 Logic: MainWindow.StressPlan.cs. The older buttons (CPU Stress, GPU Stress, Max Load, Long test) stay hidden, for
+                 compatibility. -->
+            <DockPanel x:Name="StressToolbar" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0" SizeChanged="StressToolbar_SizeChanged">
+              <StackPanel x:Name="StressToolbarRight" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
+                <!-- the chart interval in a menu (also on right click on the CPU / GPU cards); Reset Min/Max and PDF in "⋯".
+                     Logic: MainWindow.StressToolbarMenus.cs -->
+                <ui:Button x:Name="BtnStressRangeMenu" Appearance="Secondary" Click="StressRangeMenu_Click" VerticalAlignment="Center" Padding="10,5" Margin="0,0,6,4">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M3.5,12 A8.5,8.5 0 0 1 20.5,12 A8.5,8.5 0 0 1 3.5,12 M12,2 A10,10 0 0 0 12,22 A10,10 0 0 0 12,2 M12,6.65 A0.75,0.75 0 0 0 10.5,6.75 L10.5,12.85 C10.56,13.22 10.87,13.5 11.25,13.5 L15.35,13.5 A0.75,0.75 0 0 0 15.25,12 L12,12 L12,6.65"/></Canvas></Viewbox>
+                    <TextBlock x:Name="TxtStressRangeMenu" Text="1 min" VerticalAlignment="Center"/>
+                    <Viewbox Width="9" Height="9" Margin="6,1,0,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M4.22,8.47 C4.52,8.17 4.99,8.17 5.28,8.47 L12,15.19 L18.72,8.47 A0.75,0.75 0 1 1 19.78,9.53 L12.53,16.78 C12.23,17.08 11.76,17.08 11.47,16.78 L4.22,9.53 A0.75,0.75 0 0 1 4.22,8.47"/></Canvas></Viewbox>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnStressMoreMenu" Appearance="Secondary" Click="StressMoreMenu_Click" VerticalAlignment="Center" Padding="10,5" Margin="0,0,0,4"
+                           Height="{Binding ActualHeight, ElementName=BtnStressRangeMenu}" MinWidth="{Binding ActualHeight, ElementName=BtnStressRangeMenu}">
+                  <Viewbox Width="14" Height="14" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.75,12 A1.75,1.75 0 0 1 4.25,12 A1.75,1.75 0 0 1 7.75,12 M13.75,12 A1.75,1.75 0 0 1 10.25,12 A1.75,1.75 0 0 1 13.75,12 M18,13.75 A1.75,1.75 0 0 0 18,10.25 A1.75,1.75 0 0 0 18,13.75"/></Canvas></Viewbox>
+                </ui:Button>
+                <!-- the older buttons stay hidden: the existing code uses them (the active interval, Reset, PDF disabled during export) -->
+                <StackPanel x:Name="StressToolbarLegacy" Orientation="Horizontal" Visibility="Collapsed">
+              <TextBlock Text="Range:" Style="{StaticResource TimeRangeLabelStyle}" Margin="0,0,8,4"/>
+              <Border Style="{StaticResource SegmentTrackStyle}" VerticalAlignment="Center" Margin="0,0,10,0"><StackPanel Orientation="Horizontal">
+<Border x:Name="BtnChartRange1m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" Background="{DynamicResource BgCardBrush}" Tag="60"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="ChartTimeRange_Click">
+                <TextBlock Text="1m" Style="{StaticResource TimeRangeSegmentTextStyle}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnChartRange5m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="300"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="ChartTimeRange_Click">
+                <TextBlock Text="5m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnChartRange15m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="900"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="ChartTimeRange_Click">
+                <TextBlock Text="15m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnChartRange1h" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="3600"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="ChartTimeRange_Click">
+                <TextBlock Text="1h" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+</StackPanel></Border>
+                <Border Width="1" Margin="0,2,10,6" Background="{DynamicResource CardBorderBrush}" Opacity="0.5"/>
+                <ui:Button x:Name="BtnResetChart" Appearance="Secondary" Click="ResetChart_Click" VerticalAlignment="Center" Padding="10,5">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M12,4.5 A7.5,7.5 0 1 1 4.58,10.9 C4.65,10.44 4.32,10 3.86,10 C3.49,10 3.16,10.26 3.1,10.62 Q3,11.3 3,12 A9,9 0 1 0 6,5.3 L6,4.24 A0.75,0.75 0 0 0 4.5,4.24 L4.5,7.24 C4.5,7.65 4.84,7.99 5.25,7.99 L8.25,7.99 A0.75,0.75 0 0 0 8.25,6.49 L6.9,6.49 A7.5,7.5 0 0 1 12,4.49"/></Canvas></Viewbox>
+                    <TextBlock x:Name="TxtBtnResetChart" Text="Reset" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="BtnExportStressPdf" Appearance="Secondary"
+                        Click="ExportStressPdf_Click" VerticalAlignment="Center" Margin="6,0,0,0"
+                        Padding="10,5" ToolTip="Export stress test report as PDF">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M6,2 A2,2 0 0 0 4,4 L4,11.5 Q4.71,11.2 5.5,11.08 L5.5,4 C5.5,3.72 5.72,3.5 6,3.5 L12,3.5 L12,8 C12,9.1 12.9,10 14,10 L18.5,10 L18.5,20 A0.5,0.5 0 0 1 18,20.5 L12.27,20.5 A7,7 0 0 1 11.19,22 L18,22 A2,2 0 0 0 20,20 L20,9.83 A2,2 0 0 0 19.41,8.41 L13.6,2.6 A2,2 0 0 0 12.17,2 Z M17.38,8.5 L14,8.5 A0.5,0.5 0 0 1 13.5,8 L13.5,4.62 Z M12,17.5 A5.5,5.5 0 0 1 1,17.5 A5.5,5.5 0 0 1 12,17.5 M7,14.5 A0.5,0.5 0 0 0 6,14.5 L6,19.3 L4.35,17.65 A0.5,0.5 0 0 0 3.65,18.35 L6.15,20.85 C6.35,21.05 6.65,21.05 6.85,20.85 L9.35,18.35 A0.5,0.5 0 0 0 8.65,17.65 L7,19.29 Z"/></Canvas></Viewbox>
+                    <TextBlock x:Name="TxtBtnExportPdf" Text="PDF" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </ui:Button>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel x:Name="StressPlanHost" DockPanel.Dock="Left" Orientation="Vertical">
+                <WrapPanel x:Name="StressPlanBar" Orientation="Horizontal">
+                  <StackPanel x:Name="StressPlanChoices" Orientation="Horizontal" Margin="0,0,0,4">
+                <TextBlock x:Name="TxtStressWhatLabel" Text="Test:" Style="{StaticResource TimeRangeLabelStyle}" Margin="0,0,8,0"/>
+                <Border Style="{StaticResource SegmentTrackStyle}" Tag="SegTrack" VerticalAlignment="Center" Margin="0,0,14,0"><StackPanel Orientation="Horizontal">
+                  <Border x:Name="BtnStressWhatCpu" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="what:cpu"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressWhatCpu" Text="CPU" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                  <Border x:Name="BtnStressWhatGpu" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="what:gpu"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressWhatGpu" Text="GPU" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                  <Border x:Name="BtnStressWhatBoth" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="what:both"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressWhatBoth" Text="CPU + GPU" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                  <Border x:Name="BtnStressWhatSystem" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="what:system"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressWhatSystem" Text="System" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                </StackPanel></Border>
+                <TextBlock x:Name="TxtStressIntLabel" Text="Intensity:" Style="{StaticResource TimeRangeLabelStyle}" Margin="0,0,8,0"/>
+                <Border Style="{StaticResource SegmentTrackStyle}" Tag="SegTrack" VerticalAlignment="Center" Margin="0,0,14,0"><StackPanel Orientation="Horizontal">
+                  <Border x:Name="BtnStressIntLong" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="int:long"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressIntLong" Text="Endurance" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                  <Border x:Name="BtnStressIntStd" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="int:std"
+                          Style="{StaticResource TimeRangeSegmentStyle}" VerticalAlignment="Center" MouseLeftButtonUp="StressPlan_Click">
+                    <TextBlock x:Name="TxtStressIntStd" Text="Standard" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                  </Border>
+                </StackPanel></Border>
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Margin="0,0,14,4">
+              <TextBlock x:Name="TxtStressDurLabel" Text="Stop after:" Style="{StaticResource TimeRangeLabelStyle}" Margin="0,0,8,0"/>
+              <Border Style="{StaticResource SegmentTrackStyle}" Tag="SegTrack" VerticalAlignment="Center"><StackPanel Orientation="Horizontal">
+<Border x:Name="BtnStressDur3m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="3"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="StressDuration_Click">
+                <TextBlock Text="3m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnStressDur10m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="10"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="StressDuration_Click">
+                <TextBlock Text="10m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnStressDur30m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="30"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="StressDuration_Click">
+                <TextBlock Text="30m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnStressDur60m" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="Transparent" Background="Transparent" Tag="60"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="StressDuration_Click">
+                <TextBlock Text="60m" Style="{StaticResource TimeRangeSegmentTextStyle}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+              <Border x:Name="BtnStressDurInf" CornerRadius="5" Padding="11,3" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" Background="{DynamicResource BgCardBrush}" Tag="0"
+                      Style="{StaticResource TimeRangeSegmentStyle}"
+                      VerticalAlignment="Center"
+                      MouseLeftButtonUp="StressDuration_Click">
+                <TextBlock Text="∞" Style="{StaticResource TimeRangeSegmentTextStyle}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+              </Border>
+</StackPanel></Border>
+                  </StackPanel>
+                  <ui:Button x:Name="BtnStressStart" Appearance="Primary" Click="StressStart_Click" Padding="14,6" Margin="0,0,0,4" VerticalAlignment="Center" MinWidth="130">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                      <Viewbox Width="11" Height="11" Margin="0,0,7,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path x:Name="BtnStressStartIcon" Fill="White" Data="F1 M7.6,4.61 A0.75,0.75 0 0 0 6.5,5.27 L6.5,18.73 C6.5,19.29 7.1,19.66 7.6,19.38 L19.97,12.66 A0.75,0.75 0 0 0 19.97,11.34 Z M5,5.27 C5,3.57 6.83,2.48 8.33,3.3 L20.69,10.02 A2.25,2.25 0 0 1 20.69,13.98 L8.33,20.7 A2.25,2.25 0 0 1 5,18.73 Z"/></Canvas></Viewbox>
+                      <TextBlock x:Name="TxtBtnStressStart" Text="Start test" VerticalAlignment="Center" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"/>
+                    </StackPanel>
+                  </ui:Button>
+                </WrapPanel>
+                <TextBlock x:Name="TxtStressPlanHint" Text="" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" Margin="2,2,0,0"/>
+              </StackPanel>
+              <StackPanel x:Name="StressToolbarLeft" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+              <ui:Button x:Name="BtnStressCpu" Appearance="Secondary" Margin="0,0,6,4" Padding="10,5"
+                      Click="ToggleCpuStress_Click" ToolTip="Stress test CPU — all cores at 100%"
+                      local:TechTooltip.Text="Starts N background threads (BelowNormal priority, one per logical core) that alternate every 20s between an FMA/AVX2 vector kernel and an integer LCG kernel — saturates the FPU and ALU without touching disk/network. Checks for NaN/mismatch every ~100ms slice as a correctness signal.">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{DynamicResource StatusOkBrush}" Data="F1 M7.6,4.61 A0.75,0.75 0 0 0 6.5,5.27 L6.5,18.73 C6.5,19.29 7.1,19.66 7.6,19.38 L19.97,12.66 A0.75,0.75 0 0 0 19.97,11.34 Z M5,5.27 C5,3.57 6.83,2.48 8.33,3.3 L20.69,10.02 A2.25,2.25 0 0 1 20.69,13.98 L8.33,20.7 A2.25,2.25 0 0 1 5,18.73 Z"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtBtnStressCpu" Text="CPU Stress" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
+                </StackPanel>
+              </ui:Button>
+              <ui:Button x:Name="BtnStressGpu" Appearance="Secondary" Margin="0,0,10,4" Padding="10,5"
+                      Click="ToggleGpuStress_Click" ToolTip="GPU stress test with D3D11 compute shaders"
+                      local:TechTooltip.Text="Runs a DirectX 11 compute shader in a tight dispatch loop on a background thread — keeps the GPU's shader cores at maximum occupancy. Verifies output correctness after each dispatch batch to catch VRAM/core instability, not just raw load.">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{DynamicResource StatusOkBrush}" Data="F1 M7.6,4.61 A0.75,0.75 0 0 0 6.5,5.27 L6.5,18.73 C6.5,19.29 7.1,19.66 7.6,19.38 L19.97,12.66 A0.75,0.75 0 0 0 19.97,11.34 Z M5,5.27 C5,3.57 6.83,2.48 8.33,3.3 L20.69,10.02 A2.25,2.25 0 0 1 20.69,13.98 L8.33,20.7 A2.25,2.25 0 0 1 5,18.73 Z"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtBtnStressGpu" Text="GPU Stress" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
+                </StackPanel>
+              </ui:Button>
+
+              <ui:Button x:Name="BtnMaxLoad" Appearance="Secondary" Margin="0,0,10,4" Padding="10,5"
+                      Click="ToggleMaxLoad_Click"
+                      ToolTip="Max Load — starts CPU + GPU + RAM + Disk stress simultaneously, for maximum power/PSU load testing"
+                      local:TechTooltip.Text="Starts CpuStressor (2 cores reserved for the other loads), GpuStressService (D3D11 compute), and PsuStressService (RAM fill + sequential disk write/read on background threads) at the same time — pulls maximum combined power through the PSU/charger and battery, for stability testing under real worst-case draw.">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{DynamicResource StatusOkBrush}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtBtnMaxLoad" Text="Max Load" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
+                </StackPanel>
+              </ui:Button>
+
+              <ui:Button x:Name="BtnEnduranceMode" Appearance="Secondary" Margin="0,0,10,4" Padding="10,5"
+                      Click="ToggleEnduranceMode_Click"
+                      ToolTip="Endurance mode — runs stress at a sustained 80% instead of 100%, for long-duration stability testing (hours, not minutes) without pushing full thermal/power limits constantly."
+                      local:TechTooltip.Text="Changes the duty cycle inside the stress worker loops: instead of 100ms work / 0ms sleep per slice, uses 80ms work / 20ms sleep — same kernels (FMA/integer), sustained lower average load so temperature stabilizes below TjMax instead of triggering thermal throttling during multi-hour runs.">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center" Effect="{x:Null}"><Canvas Width="24" Height="24"><Path x:Name="BtnEnduranceIcon" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M3.5,12 A8.5,8.5 0 0 1 20.5,12 A8.5,8.5 0 0 1 3.5,12 M12,2 A10,10 0 0 0 12,22 A10,10 0 0 0 12,2 M12,6.65 A0.75,0.75 0 0 0 10.5,6.75 L10.5,12.85 C10.56,13.22 10.87,13.5 11.25,13.5 L15.35,13.5 A0.75,0.75 0 0 0 15.25,12 L12,12 L12,6.65"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtBtnEnduranceMode" Text="Long test" ToolTip="Holds the load at 80 % — for tests of 30 minutes or more" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
+                </StackPanel>
+              </ui:Button>
+
+
+              </StackPanel>
+            </DockPanel>
+          </Grid>
+
+          <!-- ══ On the left the CPU and GPU cards (dial + large temperature + load | frequency), on the right, full height,
+               "All sensors" (now · min · max) and Top processes. Data: MainWindow.StressCards.cs. ═ -->
+          <ScrollViewer x:Name="StressScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" SizeChanged="StressScroll_SizeChanged">
+          <!-- height = the window (min 640, see StressScroll_SizeChanged): CPU and GPU share the height, the charts grow with it -->
+          <Grid x:Name="StressLayoutGrid" Margin="16,0,16,6">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="440"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/><RowDefinition Height="12"/><RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border x:Name="StCpuCard" Grid.Row="0" Style="{StaticResource CompCardStyle}" Cursor="Arrow" MinHeight="280" ContextMenuOpening="StressCardRange_ContextMenuOpening">
+              <Border.ContextMenu><ContextMenu/></Border.ContextMenu>
+              <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <DockPanel Margin="0,0,0,4" LastChildFill="True">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStCpuStatus}"/>
+                    <TextBlock x:Name="TxtStCpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Style="{StaticResource CompStatusText}"/></StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M15.25,2 C15.63,2 15.95,2.28 15.99,2.65 L16,2.75 L16,5.08 A3.8,3.8 0 0 1 18.93,8 L21.25,8 A0.75,0.75 0 0 1 21.35,9.5 L19,9.5 L19,11.25 L21.25,11.25 C21.63,11.25 21.95,11.53 21.99,11.9 L22,12 C22,12.38 21.72,12.7 21.35,12.74 L21.25,12.75 L19,12.75 L19,14.5 L21.25,14.5 C21.63,14.5 21.95,14.78 21.99,15.15 L22,15.25 C22,15.63 21.72,15.95 21.35,15.99 L21.25,16 L18.92,16 A3.8,3.8 0 0 1 16,18.92 L16,21.25 A0.75,0.75 0 0 1 14.5,21.35 L14.5,19 L12.75,19 L12.75,21.25 C12.75,21.63 12.47,21.95 12.1,21.99 L12,22 A0.75,0.75 0 0 1 11.26,21.35 L11.25,21.25 L11.25,19 L9.5,19 L9.5,21.25 C9.5,21.63 9.22,21.95 8.85,21.99 L8.75,22 A0.75,0.75 0 0 1 8.01,21.35 L8,21.25 L8,18.93 A3.8,3.8 0 0 1 5.08,16 L2.75,16 A0.75,0.75 0 0 1 2.65,14.5 L5,14.5 L5,12.75 L2.75,12.75 A0.75,0.75 0 0 1 2.01,12.1 L2,12 C2,11.62 2.28,11.3 2.65,11.26 L2.75,11.25 L5,11.25 L5,9.5 L2.75,9.5 A0.75,0.75 0 0 1 2.01,8.85 L2,8.75 C2,8.37 2.28,8.05 2.65,8.01 L2.75,8 L5.08,8 A3.8,3.8 0 0 1 8,5.07 L8,2.75 A0.75,0.75 0 0 1 9.5,2.65 L9.5,5 L11.25,5 L11.25,2.75 C11.25,2.37 11.53,2.05 11.9,2.01 L12,2 C12.38,2 12.7,2.28 12.74,2.65 L12.75,2.75 L12.75,5 L14.5,5 L14.5,2.75 C14.5,2.4 14.73,2.11 15.05,2.03 L15.15,2.01 Z M15.25,6.5 L8.75,6.5 C7.51,6.5 6.5,7.5 6.5,8.75 L6.5,15.25 C6.5,16.49 7.5,17.5 8.75,17.5 L15.25,17.5 C16.49,17.5 17.5,16.5 17.5,15.25 L17.5,8.75 C17.5,7.51 16.5,6.5 15.25,6.5 M12,9 A3,3 0 0 1 12,15 A3,3 0 0 1 12,9 M12,10.5 A1.5,1.5 0 0 0 12,13.5 A1.5,1.5 0 0 0 12,10.5"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Text, ElementName=TxtCpuModelHeader}" Style="{StaticResource DashRowName}" ToolTip="Processor"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+                <Grid Grid.Row="1" Margin="0,0,0,5">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="0.8*"/><ColumnDefinition Width="2.4*"/></Grid.ColumnDefinitions>
+                  <Grid>
+                                        <Viewbox Style="{StaticResource CompDialBox}">
+                    <Grid Style="{StaticResource CompDialGridRange}">
+                      <local:PercentGauge x:Name="StCpuGauge" ShowValue="False" Segments="20" WarnAt="80" CritAt="90"/>
+                      <StackPanel Style="{StaticResource CompDialText}">
+                        <TextBlock Style="{StaticResource CompDialUnitGhost}" Text="{DynamicResource TempUnitSymbol}"/>
+                        <TextBlock Style="{StaticResource CompDialValue}" x:Name="TxtStCpuTemp" Text="—"/>
+                        <TextBlock Style="{StaticResource CompDialUnit}" Text="{DynamicResource TempUnitSymbol}" Foreground="{Binding Foreground, ElementName=TxtStCpuTemp}"/>
+                      </StackPanel>
+                      <TextBlock Style="{StaticResource CompDialSub}" Text="package"/>
+                      <TextBlock x:Name="TxtStCpuMinMax" Style="{StaticResource CompDialRange}" FontWeight="SemiBold"/>
+                    </Grid>
+                  </Viewbox>
+                    <!-- while a test runs: how far it is to the chosen stop time, and the time left (MainWindow.StressFx.cs) -->
+                    <StackPanel x:Name="StCpuRunBox" Style="{StaticResource StressRunBox}">
+                      <Border Style="{StaticResource StressRunTrack}">
+                        <Border x:Name="StCpuRunFill" Style="{StaticResource StressRunFill}"/>
+                      </Border>
+                      <TextBlock x:Name="TxtStCpuRunLeft" Style="{StaticResource StressRunText}"/>
+                    </StackPanel>
+                  </Grid>
+                  <Grid Grid.Column="1" Margin="8,0,0,0">
+                    <!-- each chart's note ("max …") sits in its header, not on a separate row: the height gained goes to the charts -->
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="1.2*"/><RowDefinition Height="6"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.ColumnSpan="3">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStCpuTempHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStCpuTempNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StCpuChartTemp" Grid.Row="1" MinHeight="48" Margin="0,2,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Grid.Column="0">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStCpuLoadHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStCpuLoadNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StCpuChartLoad" Grid.Row="1" MinHeight="40" Margin="0,2,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Grid.Column="2">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStCpuClockHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStCpuClockNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StCpuChartClock" Grid.Row="1" MinHeight="40" Margin="0,2,0,0"/>
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Border Grid.Row="2" Style="{StaticResource CompFootBand}">
+                  <UniformGrid Columns="4"><Border Style="{StaticResource CompFootCellFirst}"><StackPanel><TextBlock Text="Power" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStCpuPower" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock Text="VCore" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStCpuVCore" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock x:Name="TxtStCpuHotKey" Text="Hottest core" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStCpuHot" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock Text="Throttling" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStCpuThrottle" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border></UniformGrid>
+                </Border>
+              </Grid>
+            </Border>
+            <Border x:Name="StGpuCard" Grid.Row="2" Style="{StaticResource CompCardStyle}" Cursor="Arrow" MinHeight="280" ContextMenuOpening="StressCardRange_ContextMenuOpening">
+              <Border.ContextMenu><ContextMenu/></Border.ContextMenu>
+              <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <DockPanel Margin="0,0,0,4" LastChildFill="True">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStGpuStatus}"/>
+                    <TextBlock x:Name="TxtStGpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Style="{StaticResource CompStatusText}"/></StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F0 M12.46,11.01 L12.34,10.48 L12.09,9.86 L11.8,9.4 L11.1,8.7 L10.54,8.36 L10.02,8.16 L9.49,8.04 L8.51,8.04 L7.98,8.16 L7.36,8.41 L6.9,8.7 L6.2,9.4 L5.91,9.86 L5.66,10.48 L5.54,11.01 L5.54,11.99 L5.69,12.64 L5.91,13.14 L6.49,13.93 L6.9,14.3 L7.36,14.59 L7.98,14.84 L8.51,14.96 L9.49,14.96 L10.14,14.81 L10.64,14.59 L11.1,14.3 L11.8,13.6 L12.14,13.04 L12.34,12.52 L12.46,11.99 Z M10.9,12.12 L10.62,12.67 L10.41,12.91 L9.91,13.28 L9.31,13.47 L8.69,13.47 L8.38,13.4 L7.83,13.12 L7.38,12.67 L7.22,12.41 L7.03,11.81 L7.03,11.19 L7.1,10.88 L7.22,10.59 L7.59,10.09 L8.09,9.72 L8.69,9.53 L9,9.5 L9.62,9.6 L10.17,9.88 L10.41,10.09 L10.78,10.59 L10.97,11.19 L11,11.5 Z M4.65,5.76 L3.95,5.88 L3.29,6.17 L2.88,6.49 L2.42,7.04 L2.13,7.7 L2,8.5 L2.01,14.6 L2.13,15.3 L2.33,15.79 L2.88,16.51 L3.46,16.92 L3.95,17.12 L4.65,17.24 L5.25,17.25 L5.28,19.19 L5.47,19.53 L5.62,19.65 L6,19.75 L13.19,19.72 L13.53,19.53 L13.72,19.19 L13.75,17.25 L17.25,17.25 L18.05,17.12 L18.71,16.83 L19.26,16.37 L19.67,15.79 L19.87,15.3 L19.97,14.75 L21.44,14.72 L21.78,14.53 L21.9,14.38 L22,14 L21.97,8.81 L21.78,8.47 L21.44,8.28 L19.97,8.25 L19.87,7.7 L19.58,7.04 L19.12,6.49 L18.54,6.08 L17.87,5.82 L17.25,5.75 Z M12.25,17.25 L12.25,18.25 L6.75,18.25 L6.75,17.25 Z M20,9.75 L20.5,9.75 L20.5,13.25 L20,13.25 Z M18.13,7.62 L18.33,7.88 L18.45,8.18 L18.5,8.55 L18.5,14.45 L18.45,14.82 L18.33,15.12 L18.13,15.38 L17.87,15.58 L17.57,15.7 L17.2,15.75 L4.8,15.75 L4.43,15.7 L4.13,15.58 L3.87,15.38 L3.67,15.12 L3.55,14.82 L3.5,14.45 L3.5,8.55 L3.55,8.18 L3.67,7.88 L3.87,7.62 L4.13,7.42 L4.43,7.3 L4.8,7.25 L17.2,7.25 L17.57,7.3 L17.87,7.42 Z M16.96,11.13 L16.65,10.37 L16.13,9.85 L15.37,9.54 L14.63,9.54 L13.87,9.85 L13.35,10.37 L13.04,11.13 L13.04,11.87 L13.35,12.63 L13.87,13.15 L14.63,13.46 L15.37,13.46 L16.13,13.15 L16.65,12.63 L16.96,11.87 Z M15.44,11.73 L15.15,11.97 L14.77,11.94 L14.53,11.65 L14.56,11.27 L14.85,11.03 L15.23,11.06 L15.47,11.35 Z"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Text, ElementName=TxtGpuModelHeader}" Style="{StaticResource DashRowName}" ToolTip="Graphics"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+                <Grid Grid.Row="1" Margin="0,0,0,5">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="0.8*"/><ColumnDefinition Width="2.4*"/></Grid.ColumnDefinitions>
+                  <Grid>
+                                        <Viewbox Style="{StaticResource CompDialBox}">
+                    <Grid Style="{StaticResource CompDialGridRange}">
+                      <local:PercentGauge x:Name="StGpuGauge" ShowValue="False" Segments="20" WarnAt="80" CritAt="90"/>
+                      <StackPanel Style="{StaticResource CompDialText}">
+                        <TextBlock Style="{StaticResource CompDialUnitGhost}" Text="{DynamicResource TempUnitSymbol}"/>
+                        <TextBlock Style="{StaticResource CompDialValue}" x:Name="TxtStGpuTemp" Text="—"/>
+                        <TextBlock Style="{StaticResource CompDialUnit}" Text="{DynamicResource TempUnitSymbol}" Foreground="{Binding Foreground, ElementName=TxtStGpuTemp}"/>
+                      </StackPanel>
+                      <TextBlock Style="{StaticResource CompDialSub}" Text="core"/>
+                      <TextBlock x:Name="TxtStGpuMinMax" Style="{StaticResource CompDialRange}" FontWeight="SemiBold"/>
+                    </Grid>
+                  </Viewbox>
+                    <!-- while a test runs: how far it is to the chosen stop time, and the time left (MainWindow.StressFx.cs) -->
+                    <StackPanel x:Name="StGpuRunBox" Style="{StaticResource StressRunBox}">
+                      <Border Style="{StaticResource StressRunTrack}">
+                        <Border x:Name="StGpuRunFill" Style="{StaticResource StressRunFill}"/>
+                      </Border>
+                      <TextBlock x:Name="TxtStGpuRunLeft" Style="{StaticResource StressRunText}"/>
+                    </StackPanel>
+                  </Grid>
+                  <Grid Grid.Column="1" Margin="8,0,0,0">
+                    <!-- each chart's note ("max …") sits in its header, not on a separate row: the height gained goes to the charts -->
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="1.2*"/><RowDefinition Height="6"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.ColumnSpan="3">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStGpuTempHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStGpuTempNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StGpuChartTemp" Grid.Row="1" MinHeight="48" Margin="0,2,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Grid.Column="0">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStGpuLoadHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStGpuLoadNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StGpuChartLoad" Grid.Row="1" MinHeight="40" Margin="0,2,0,0"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Grid.Column="2">
+                      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                      <DockPanel Style="{StaticResource CompChartHead}">
+                        <TextBlock Text="clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="TxtStGpuClockHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
+                        <TextBlock x:Name="TxtStGpuClockNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
+                      </DockPanel>
+                      <local:MiniLineChart x:Name="StGpuChartClock" Grid.Row="1" MinHeight="40" Margin="0,2,0,0"/>
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Border Grid.Row="2" Style="{StaticResource CompFootBand}">
+                  <UniformGrid Columns="4"><Border Style="{StaticResource CompFootCellFirst}"><StackPanel><TextBlock Text="VRAM used" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStGpuVram" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock Text="Memory clock" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStGpuMemClk" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock x:Name="TxtStGpuPowerKey" Text="Power" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStGpuPower" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border><Border Style="{StaticResource CompFootCell}"><StackPanel><TextBlock x:Name="TxtStGpuHotKey" Text="Hot spot" Style="{StaticResource CompFootKey}"/><TextBlock x:Name="TxtStGpuHot" Text="—" Style="{StaticResource CompFootVal}"/></StackPanel></Border></UniformGrid>
+                </Border>
+              </Grid>
+            </Border>
+            <!-- right, full height: the sensors, then Top processes -->
+            <!-- the right column: only the sensor table, full height (the processes are in Process Monitor) -->
+            <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+            <!-- ────────────────── LEFT TABLE ────────────────────────────── -->
+            <Border Grid.Row="0" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="0,14,0,6">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>     <!-- continut scroll -->
+                </Grid.RowDefinitions>
+                <DockPanel Margin="18,0,18,8" LastChildFill="True">
+                  <TextBlock DockPanel.Dock="Right" Text="Click a sensor to chart it" Style="{StaticResource DashRowInlineSub}"/>
+                  <StackPanel Orientation="Horizontal">
+                    <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M2,5.75 C2,5.34 2.34,5 2.75,5 L18.25,5 A0.75,0.75 0 0 1 18.25,6.5 L2.75,6.5 A0.75,0.75 0 0 1 2,5.75 M2,18.75 C2,18.34 2.34,18 2.75,18 L13.25,18 A0.75,0.75 0 0 1 13.25,19.5 L2.75,19.5 A0.75,0.75 0 0 1 2,18.75 M2.75,11.5 A0.75,0.75 0 0 0 2.75,13 L21.25,13 A0.75,0.75 0 0 0 21.25,11.5 Z"/></Viewbox>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="All sensors" Style="{StaticResource DashRowCaption}"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DockPanel>
+
+                <!-- Table rows with scrolling -->
+                <ScrollViewer x:Name="SensorScroll" ScrollChanged="SensorScroll_Changed" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Padding="0,4,0,4">
+                  <StackPanel x:Name="SensorTablePanel" Margin="0,0,0,0">
+
+                    <!-- The sensor groups: CPU on the left, GPU + system on the right when there is room (SensorGroupsGrid_SizeChanged);
+                         a single column on narrow screens. Clicking a group title collapses / expands it. -->
+                    <Grid x:Name="SensorGroupsGrid" SizeChanged="SensorGroupsGrid_SizeChanged">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="0"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <StackPanel x:Name="SensorColLeft" Grid.Column="0">
+                    <!-- ─── HEADER coloane ──────────────────────────────── -->
+                    <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="{DynamicResource RadiusCardTop}">
+                    <Grid Margin="12,6,12,4">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="1" Text="Sensor" FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="2" Text="Now"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="3" Text="Min"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="4" Text="Max"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="5" Text="Avg"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <Border Grid.ColumnSpan="6" Height="1" VerticalAlignment="Bottom"
+                              Background="{DynamicResource CardBorderBrush}" Opacity="0.5" Margin="0,4,0,0"/>
+                    </Grid>
+                    </Border>
+
+                    <!-- ─── CATEGORIA CPU ───────────────────────────────── -->
+                    <!-- Stress indicator inclus in header categorie -->
+                    <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="6" Margin="4,6,4,2" Cursor="Hand" Tag="SensorGrpCpu" MouseLeftButtonUp="SensorGroup_Toggle" ToolTip="Click to show or hide this group">
+                    <Grid Margin="8,10,8,3">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource AccentLightBrush}" CornerRadius="4" Padding="8,3">
+                          <TextBlock Text="CPU" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                        </Border>
+                        <TextBlock x:Name="TxtCpuModelHeader" Text="" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.9"
+                                   Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+                      <Border x:Name="CpuThrottleBadge" Grid.Column="1" Visibility="Collapsed"
+                              Background="{DynamicResource ActionRedBrush}" CornerRadius="4" Padding="8,3" Margin="4,0,0,0"
+                              ToolTip="Thermal or power limit throttling detected">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="⚠" FontSize="{StaticResource FontSizeXS}" Foreground="White" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                          <TextBlock x:Name="TxtCpuThrottleBadge" Text="THROTTLE" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                      <!-- Indicator stress activ -->
+                      <Border x:Name="CpuStressIndicator" Grid.Column="2" Visibility="Collapsed"
+                              Background="{DynamicResource Lift.Surface}" BorderBrush="{DynamicResource Lift.DangerBorder}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                          <Ellipse Width="6" Height="6" Fill="{DynamicResource Lift.DangerText}" VerticalAlignment="Center" Margin="0,0,5,0">
+                            <Ellipse.Triggers>
+                              <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                  <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.2" Duration="0:0:0.6" AutoReverse="True"/>
+                                  </Storyboard>
+                                </BeginStoryboard>
+                              </EventTrigger>
+                            </Ellipse.Triggers>
+                          </Ellipse>
+                          <TextBlock x:Name="TxtCpuStressBadgeLabel" Text="STRESS" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource Lift.DangerText}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtCpuStressTimer" Text="" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource Lift.DangerText}" VerticalAlignment="Center" Typography.NumeralAlignment="Tabular"/>
+                        </StackPanel>
+                      </Border>
+                      <Border x:Name="BdprochotBadge" Grid.Column="3" Visibility="Collapsed"
+                              Background="{DynamicResource ActionRedBrush}" CornerRadius="4" Padding="8,3" Margin="4,0,0,0"
+                              ToolTip="Charger/EC signals overcurrent to the processor — CPU frequency forced low">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="⚠" FontSize="{StaticResource FontSizeXS}" Foreground="White" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                          <TextBlock Text="BD PROCHOT" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                    </Border>
+                    <StackPanel x:Name="SensorGrpCpu">
+
+                    <!-- CPU Temperature -->
+                    <Grid x:Name="RowCpuTemp" Margin="8,1,8,1" Cursor="Hand"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="CpuTemp" MinHeight="32">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkCpuTemp" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Temperature" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock x:Name="TxtCpuTempSensorName" Text="Package" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.65"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtStressCpuTemp"  Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular" FontFamily="{DynamicResource MonoFont}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuTempMin"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuTempMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource StatusWarnBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuTempAvg"     Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- CPU Frequency -->
+                    <Grid x:Name="RowCpuFreq" Margin="8,1,8,1" Cursor="Hand"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="CpuFreq" MinHeight="32">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkCpuFreq" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Frequency" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuFreq"        Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular" FontFamily="{DynamicResource MonoFont}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuFreqMin"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuFreqMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuFreqAvg"     Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- CPU Load -->
+                    <Grid x:Name="RowCpuLoad" Margin="8,1,8,1" Cursor="Hand"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="CpuLoad" MinHeight="32">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkCpuLoad" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Load" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuLoad"        Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular" FontFamily="{DynamicResource MonoFont}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuLoadMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuLoadMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuLoadAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- CPU Power -->
+                    <Grid x:Name="RowCpuPower" Margin="8,1,8,1" Cursor="Hand" Visibility="Collapsed"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="CpuPower" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkCpuPower" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Power" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuPower"       Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuPowerMM"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuPowerMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuPowerAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowCpuCoresPower" Margin="8,1,8,1" MinHeight="26" Visibility="Collapsed"
+                          ToolTip="Power drawn by the CPU compute cores only — a breakdown of the Power row above (Intel RAPL sub-domain).">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
+                        <Border Width="3" Height="12" CornerRadius="2" Background="{DynamicResource StatusOkBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Cores" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuCoresPower" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowCpuUncorePower" Margin="8,1,8,6" MinHeight="26" Visibility="Collapsed"
+                          ToolTip="Power drawn by cache and the integrated memory controller (not the cores themselves) — a breakdown of the Power row above (Intel RAPL sub-domain).">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
+                        <Border Width="3" Height="12" CornerRadius="2" Background="{DynamicResource StatusOkBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Uncore / DRAM" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuUncorePower" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowCpuVCore" Margin="8,1,8,6" Cursor="Hand" Visibility="Collapsed"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="CpuVCore" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkCpuVCore" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="VCore" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCpuVCoreVal"  Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuVCoreMin"  Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuVCoreMax"  Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCpuVCoreAvg"  Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowCpuCoreTemps" Margin="8,1,8,1" Cursor="Hand"
+                          MouseLeftButtonUp="RowCpuCoreTemps_Click" MinHeight="28" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource BgHoverBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <TextBlock Grid.Column="0" Text="›" FontSize="{StaticResource FontSizeS}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" x:Name="TxtCoreTempsChevron"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Per-core temperatures" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock x:Name="TxtCoreTempsSubtitle" Text="" FontSize="{StaticResource FontSizeS}"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtCoreTempsNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCoreTempsMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCoreTempsMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtCoreTempsAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+                    <!-- Container for the per-core rows (generated dynamically) -->
+                    <StackPanel x:Name="CoreTempsExpandPanel" Visibility="Collapsed" Margin="0"/>
+
+                    <Grid x:Name="RowVrmTemp" Margin="8,1,8,1" MinHeight="26" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="VRM / MOSFET" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="Motherboard" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtVrmTempNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowChipsetTemp" Margin="8,1,8,6" MinHeight="26" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Chipset / PCH" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="Motherboard" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtChipsetTempNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+
+                    <!-- A visible separator between the CPU section and the GPU section -->
+                    <Border Height="1" Margin="8,6,8,0" Background="{DynamicResource CardBorderBrush}" Opacity="0.4"/>
+
+                    </StackPanel>
+                    </StackPanel>
+                    <StackPanel x:Name="SensorColRight" Grid.Column="0" Grid.Row="1">
+                    <Border x:Name="SensorHeaderRight" Visibility="Collapsed">
+                    <!-- ─── HEADER coloane ──────────────────────────────── -->
+                    <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="{DynamicResource RadiusCardTop}">
+                    <Grid Margin="12,6,12,4">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="1" Text="Sensor" FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="2" Text="Now"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="3" Text="Min"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="4" Text="Max"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="5" Text="Avg"   FontSize="{StaticResource FontSizeS}" FontWeight="Bold"
+                                 Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <Border Grid.ColumnSpan="6" Height="1" VerticalAlignment="Bottom"
+                              Background="{DynamicResource CardBorderBrush}" Opacity="0.5" Margin="0,4,0,0"/>
+                    </Grid>
+                    </Border>
+
+                    </Border>
+                    <!-- ─── CATEGORIA GPU ────────────────────────────────── -->
+                    <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="6" Margin="4,6,4,2" Cursor="Hand" Tag="SensorGrpGpu" MouseLeftButtonUp="SensorGroup_Toggle" ToolTip="Click to show or hide this group">
+                    <Grid Margin="8,7,8,2">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource AccentLightBrush}" CornerRadius="4" Padding="8,3">
+                          <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="GPU" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                            <Canvas x:Name="SignatureMarkGpu" Width="14" Height="12" Margin="6,0,0,0"
+                                    VerticalAlignment="Center" Visibility="Collapsed"/>
+                          </StackPanel>
+                        </Border>
+                        <TextBlock x:Name="TxtGpuModelHeader" Text="" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.9"
+                                   Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+                      <Border x:Name="GpuStressIndicator" Grid.Column="1" Visibility="Collapsed"
+                              Background="{DynamicResource Lift.Surface}" BorderBrush="{DynamicResource Lift.DangerBorder}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                          <Ellipse Width="6" Height="6" Fill="{DynamicResource Lift.DangerText}" VerticalAlignment="Center" Margin="0,0,5,0">
+                            <Ellipse.Triggers>
+                              <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                  <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.2" Duration="0:0:0.6" AutoReverse="True"/>
+                                  </Storyboard>
+                                </BeginStoryboard>
+                              </EventTrigger>
+                            </Ellipse.Triggers>
+                          </Ellipse>
+                          <TextBlock x:Name="TxtGpuStressBadgeLabel" Text="STRESS" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource Lift.DangerText}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtGpuStressTimer" Text="" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource Lift.DangerText}" VerticalAlignment="Center" Typography.NumeralAlignment="Tabular"/>
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                    </Border>
+                    <StackPanel x:Name="SensorGrpGpu">
+
+                    <!-- GPU Temperature -->
+                    <Grid x:Name="RowGpuTemp" Margin="8,1,8,1" Cursor="Hand"
+                          MouseLeftButtonUp="SensorRow_Click" Tag="GpuTemp" MinHeight="32">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuTemp" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Temperature" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtStressGpuTemp"  Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuTempMin"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuTempMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource StatusWarnBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuTempAvg"     Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- GPU Load -->
+                    <Grid Margin="8,1,8,1" Cursor="Hand" MouseLeftButtonUp="SensorRow_Click" Tag="GpuLoad" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuLoad" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Load" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtKpiGpuLoad"     Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuLoadMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuLoadMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuLoadAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <!-- Stub: TxtStressGpuMM was double-used by GPU temp MM label — now hidden -->
+                      <TextBlock x:Name="TxtStressGpuMM" Visibility="Collapsed"/>
+                    </Grid>
+
+                    <!-- GPU Clock + VRAM -->
+                    <Grid Margin="8,1,8,1" Cursor="Hand" MouseLeftButtonUp="SensorRow_Click" Tag="GpuClock" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuClock" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Clock" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuFreq"        Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuFreqMM"      Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuClockMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuClockAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="8,1,8,6" Cursor="Hand" MouseLeftButtonUp="SensorRow_Click" Tag="GpuVram" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuVram" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="VRAM Used" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuVramUsed"     Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuVramMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuVramMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuVramAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowGpuMemClock" Margin="8,1,8,6" Cursor="Hand" Visibility="Collapsed" MouseLeftButtonUp="SensorRow_Click" Tag="GpuMemClock" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuMemClock" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Memory Clock" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuMemClockVal" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuMemClockMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuMemClockMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuMemClockAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowGpuHotSpot" Margin="8,1,8,1" MinHeight="26" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Hot Spot" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="Junction / die max" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuHotSpotNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowGpuVramTemp" Margin="8,1,8,6" MinHeight="26" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="VRAM Temp" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="Memory junction" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuVramTempNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowNvmeTemp" Margin="8,1,8,6" MinHeight="26" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="NVMe / SSD" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="Storage temperature" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtNvmeTempNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Border Height="1" Margin="8,6,8,0" Background="{DynamicResource CardBorderBrush}" Opacity="0.4"/>
+
+                    <Grid x:Name="RowIntegratedGpu" Visibility="Collapsed">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                      </Grid.RowDefinitions>
+                      <Border Grid.Row="0" Background="{DynamicResource BgHoverBrush}" Opacity="0.6">
+                        <Grid Margin="8,7,8,2">
+                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="{DynamicResource AccentLightBrush}" CornerRadius="4" Padding="8,3">
+                              <TextBlock Text="iGPU" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                            </Border>
+                            <TextBlock x:Name="TxtIntegratedGpuName" Text="iGPU" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.9"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                      <Grid Grid.Row="1" Margin="8,1,8,6" MinHeight="26">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="194"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                          <TextBlock Text="Temp / Load" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtIntegratedGpuValues" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      </Grid>
+                    </Grid>
+
+                    </StackPanel>
+                    <!-- ─── SISTEM (RAM + Power + Fan-uri + temp SMART) ─────── -->
+                    <Border Background="{DynamicResource BgHoverBrush}" CornerRadius="6" Margin="4,6,4,2" Cursor="Hand" Tag="SensorGrpSys" MouseLeftButtonUp="SensorGroup_Toggle" ToolTip="Click to show or hide this group">
+                      <Grid Margin="8,4,8,2">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                          <Border Background="{DynamicResource AccentLightBrush}" CornerRadius="4" Padding="8,3">
+                            <TextBlock Text="SYSTEM" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                          </Border>
+                          <TextBlock x:Name="TxtMemoryModelHeader" Text="" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.9"
+                                     Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                          <Canvas x:Name="SignatureMarkMemory" Width="14" Height="12" Margin="6,0,0,0"
+                                  VerticalAlignment="Center" Visibility="Collapsed"/>
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                    <StackPanel x:Name="SensorGrpSys">
+                    <Grid Margin="8,1,8,6" Cursor="Hand" MouseLeftButtonUp="SensorRow_Click" Tag="RamLoad" MinHeight="32">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkRamLoad" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="RAM Used" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock x:Name="TxtKpiRamDetail" Text="—" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtKpiRamPct"      Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtRamLoadMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtRamLoadMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtRamLoadAvg" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid x:Name="RowGpuPower" Margin="8,1,8,6" Cursor="Hand" Visibility="Collapsed" MouseLeftButtonUp="SensorRow_Click" Tag="SysPower" MinHeight="28">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <Grid.Style><Style TargetType="Grid"><Setter Property="Background" Value="Transparent"/><Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource AccentLightBrush}"/></Trigger>
+                      </Style.Triggers></Style></Grid.Style>
+                      <Border x:Name="ChkGpuPower" Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                              Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1.5"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="System Power" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                          <TextBlock Text="CPU + GPU + base (est.)" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.6"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuPowerVal"  Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuPowerMin2" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuPowerMax2" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuPowerAvg2" Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <StackPanel x:Name="FanRowsContainer" Margin="0"/>
+
+                    <StackPanel x:Name="DiskTempRowsContainer" Margin="0"/>
+                    </StackPanel>
+                    </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="8,2,8,4" Visibility="Collapsed">
+                      <StackPanel>
+                        <TextBlock x:Name="TxtStressThrottleLabel" Text="No throttle"/>
+                        <TextBlock x:Name="TxtThrottleInfo" Text=""/>
+                        <Ellipse x:Name="ThrottleDot"/>
+                      </StackPanel>
+                    </Grid>
+
+                  </StackPanel>
+
+                </ScrollViewer>
+                <!-- hint: there are more rows below the visible ones (appears only when the table can scroll down) -->
+                <Border x:Name="SensorScrollFade" Grid.Row="1" Height="22" VerticalAlignment="Bottom" IsHitTestVisible="False"
+                        Background="{DynamicResource BgCardBrush}" Visibility="Collapsed">
+                  <Border.OpacityMask>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                      <GradientStop Color="#00000000" Offset="0"/>
+                      <GradientStop Color="#FF000000" Offset="1"/>
+                    </LinearGradientBrush>
+                  </Border.OpacityMask>
+                </Border>
+
+                <!-- MinMax compat stubs for code-behind -->
+                <Grid Visibility="Collapsed" Grid.RowSpan="2">
+                  <TextBlock x:Name="TxtCpuTempMinS_c"    Text=""/><TextBlock x:Name="TxtCpuTempMaxS_c"    Text=""/>
+                  <TextBlock x:Name="TxtCpuTempAvgS_c"    Text=""/><TextBlock x:Name="TxtGpuTempMinS_c"    Text=""/>
+                  <TextBlock x:Name="TxtGpuTempMaxS_c"    Text=""/><TextBlock x:Name="TxtGpuTempAvgS_c"    Text=""/>
+                  <TextBlock x:Name="TxtCpuTempAvgS2"   Text=""/><TextBlock x:Name="TxtGpuTempAvgChart" Text=""/>
+                  <TextBlock x:Name="TxtGpuTempMinChart" Text=""/><TextBlock x:Name="TxtGpuTempMaxChart" Text=""/>
+                  <TextBlock x:Name="TxtStressCpuMM"    Text=""/><TextBlock x:Name="TxtCpuClockMM"    Text=""/>
+                  <TextBlock x:Name="TxtCpuFreqMM"      Text=""/><TextBlock x:Name="TxtGpuClockMM"    Text=""/>
+                  <TextBlock x:Name="TxtGpuLoadMM"      Text=""/><TextBlock x:Name="TxtGpuFreqKpi"    Text=""/>
+                  <TextBlock x:Name="TxtGpuLoad"        Text=""/><TextBlock x:Name="TxtGpuClock"      Text=""/>
+                  <TextBlock x:Name="TxtGpuPower"       Text=""/><TextBlock x:Name="TxtGpuPowerMM"    Text=""/>
+                  <TextBlock x:Name="TxtGpuVram"        Text=""/><TextBlock x:Name="TxtGpuVramChart"  Text=""/>
+                  <TextBlock x:Name="TxtGpuVramFreq"    Text=""/><TextBlock x:Name="TxtCpuVCore"      Text=""/>
+                  <TextBlock x:Name="TxtStressVCoreHeader"  Text=""/><TextBlock x:Name="TxtStressGpuLoadPct" Text=""/>
+                  <TextBlock x:Name="TxtStressGpuTempHeader" Text=""/><TextBlock x:Name="TxtStressGpuFreqOverlay" Text=""/>
+                  <TextBlock x:Name="TxtStressGpuLoadHeader" Text=""/><TextBlock x:Name="TxtStressGpuVramHeader" Text=""/>
+                  <TextBlock x:Name="TxtStressGpuVramInline" Text=""/><TextBlock x:Name="TxtStressVramBadge" Text=""/>
+                  <TextBlock x:Name="TxtStressVramHeader" Text=""/><TextBlock x:Name="TxtStressVramOverlay" Text=""/>
+                  <TextBlock x:Name="TxtStressCpuFreqHeader" Text=""/><TextBlock x:Name="TxtStressCpuLoadHeader" Text=""/>
+                  <TextBlock x:Name="TxtStressCpuTempLive_c"   Text=""/><TextBlock x:Name="TxtStressCpuFreqOverlay" Text=""/>
+                  <TextBlock x:Name="TxtStressCpuLoadOverlay" Text=""/><TextBlock x:Name="TxtStressGpuTempLive" Text=""/>
+                  <TextBlock x:Name="TxtCpuUsageLive"   Text=""/><TextBlock x:Name="TxtGpuFanLive"    Text=""/>
+                  <TextBlock x:Name="TxtGpuPowerLive"   Text=""/><TextBlock x:Name="TxtGpuLiveLoad"   Text=""/>
+                  <TextBlock x:Name="TxtGpuLiveTemp"    Text=""/><TextBlock x:Name="TxtGpuLiveVram"   Text=""/>
+                  <TextBlock x:Name="TxtThrottleLabel"  Text=""/><TextBlock x:Name="TxtThrottleLedLabel" Text=""/>
+                  <TextBlock x:Name="TxtFanSourceLabel" Text=""/><TextBlock x:Name="TxtTempBackend2"  Text=""/>
+                  <TextBlock x:Name="TxtVCore"          Text=""/><TextBlock x:Name="TxtGpuFreqKpi2"   Text=""/>
+                  <TextBlock x:Name="TxtCpuPowerMM2"    Text=""/>
+                  <Ellipse  x:Name="ThrottleLed"        Width="0" Height="0"/>
+                  <Border   x:Name="ThrottleBanner"/><Border x:Name="StressRamBar" Width="0"/>
+                  <Border   x:Name="StressVramBar" Width="0"/><Border x:Name="GpuLoadBar"/>
+                  <Border   x:Name="GpuTempBar"/><Border x:Name="GpuVramBar"/>
+                  <Border   x:Name="BenchResultPanel"/><Border x:Name="ThrottleBadge"/>
+                  <Border   x:Name="FanSpeedsCard"/>
+                  <StackPanel x:Name="CpuStressBannerPanel"/><StackPanel x:Name="GpuStressBannerPanel"/>
+                  <ItemsControl x:Name="CoreFreqList"/><ItemsControl x:Name="FanSpeedsList"/>
+                  <TextBlock x:Name="TxtBenchResult"   Text=""/><TextBlock x:Name="TxtBenchPct"      Text=""/>
+                  <Border   x:Name="BenchScoreBar"/>
+                  <TextBlock x:Name="TxtCpuStressLabel" Text=""/><TextBlock x:Name="TxtGpuStressLabel" Text=""/>
+                  <TextBlock x:Name="TxtCpuStressActive" Text=""/><TextBlock x:Name="TxtGpuStressActive" Text=""/>
+                  <TextBlock x:Name="TxtCpuStressBannerStats" Text=""/><TextBlock x:Name="TxtGpuStressBannerStats" Text=""/>
+                  <TextBlock x:Name="TxtCpuHandles"    Text=""/><TextBlock x:Name="TxtCpuProcesses"  Text=""/>
+                  <TextBlock x:Name="TxtCpuThreads"    Text=""/>
+                </Grid>
+              </Grid>
+            </Border>
+
+
+
+              <Border Grid.Row="2" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,14">
+                <Grid>
+                  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                  <DockPanel Margin="0,0,0,10" LastChildFill="True">
+                    <StackPanel Orientation="Horizontal">
+                      <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.46,6.8 L11.75,20.43 C11.92,21.16 12.95,21.2 13.19,20.48 L16.45,10.36 L17.03,12.46 C17.13,12.78 17.42,13 17.75,13 L21.25,13 A0.75,0.75 0 0 0 21.25,11.5 L18.32,11.5 L17.22,7.55 A0.75,0.75 0 0 0 15.78,7.52 L12.58,17.48 L9.23,3.58 C9.04,2.82 7.97,2.81 7.77,3.56 L5.67,11.5 L2.75,11.5 A0.75,0.75 0 0 0 2.75,13 L6.25,13 C6.59,13 6.88,12.77 6.97,12.44 Z"/></Viewbox>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Top processes" Style="{StaticResource DashRowName}" ToolTip="By CPU"/>
+                      </StackPanel>
+                    </StackPanel>
+                  </DockPanel>
+                  <StackPanel x:Name="StressTopList" Grid.Row="1" VerticalAlignment="Top"/>
+                </Grid>
+              </Border>
+            </Grid>
+            <!-- "My charts": the 4 charts chosen from the sensor table; they replace the CPU / GPU cards while open
+                 (SetStressChartsMode, MainWindow.SensorCharts.cs) -->
+            <Grid x:Name="StressLegacyCharts" Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" Visibility="Collapsed">
+            <!-- ────────────────── RIGHT CHARTS ────────────────────────── -->
+            <Border Style="{StaticResource CardStyle}" Padding="10,8">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>   <!-- antet -->
+                  <RowDefinition Height="*"/>      <!-- grafic 1 -->
+                  <RowDefinition Height="Auto"/>   <!-- separator -->
+                  <RowDefinition Height="*"/>      <!-- grafic 2 -->
+                  <RowDefinition Height="Auto"/>   <!-- separator -->
+                  <RowDefinition Height="*"/>      <!-- grafic 3 -->
+                  <RowDefinition Height="Auto"/>   <!-- separator -->
+                  <RowDefinition Height="*"/>      <!-- grafic 4 -->
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="4,2,4,10">
+                  <ui:Button DockPanel.Dock="Right" Appearance="Secondary" Padding="14,6" VerticalAlignment="Center" Click="StressChartsBack_Click" ToolTip="Show the CPU and GPU cards again">
+                    <StackPanel Orientation="Horizontal">
+                      <Viewbox Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M10.73,19.8 A0.76,0.76 0 0 0 11.77,18.7 L5.52,12.75 L20.25,12.75 A0.75,0.75 0 0 0 20.25,11.25 L5.52,11.25 L11.77,5.3 A0.76,0.76 0 0 0 10.73,4.2 L3.31,11.28 A1,1 0 0 0 3.31,12.72 Z"/></Viewbox>
+                      <TextBlock Text="Back to cards" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </ui:Button>
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="My charts" Style="{StaticResource DashRowName}"/>
+                    <TextBlock Text="Click a sensor in the table to add or remove it" Style="{StaticResource DashRowInlineSub}"/>
+                  </StackPanel>
+                </DockPanel>
+
+                <!-- ── Grafic 1 ──────────────────────────────────────────── -->
+                <Grid Grid.Row="1" x:Name="ChartSlot1">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0" Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtChartLabel1" Text="CPU Temperature" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                      <TextBlock x:Name="TxtChartVal1" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                                 Foreground="{DynamicResource ChartGreenBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                      <TextBlock x:Name="TxtStressCpuTempLive2" Text="" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                                 Foreground="{DynamicResource ChartGreenBrush}" Grid.Column="1" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    </StackPanel>
+                  </Grid>
+                  <Canvas x:Name="CpuTempCanvas" Grid.Row="1" ClipToBounds="True" MinHeight="118"
+                          SizeChanged="CpuTempChart_SizeChanged"
+                          MouseMove="StressChart_MouseMove" MouseLeave="StressChart_MouseLeave">
+                    <Canvas.ContextMenu>
+                      <ContextMenu>
+                        
+                        <MenuItem Header="Vertical gridlines" IsCheckable="True" Click="ChartCtxGridlines_Click" Loaded="ChartGridlinesMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Stress test marking:" IsEnabled="False" FontWeight="SemiBold"/>
+                                                <MenuItem Header="   Full highlight"    IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Full"   Loaded="StressMarkMenuItem_Loaded"/>
+                        <MenuItem Header="   Subtle highlight"  IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Subtle" Loaded="StressMarkMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Chart color:" IsEnabled="False" FontWeight="SemiBold"/>
+                        <MenuItem Header="   Blue"          IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Accent" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Light blue"            IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="LightBlue" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Colorful" IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gradient" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Gray"                  IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gray" Loaded="ChartColorMenuItem_Loaded"/>
+                      </ContextMenu>
+                    </Canvas.ContextMenu>
+                  </Canvas>
+                  <!-- the flowing chart (as in the CPU / GPU cards); the canvas above stays for sensors without history (fans) -->
+                  <local:MiniLineChart x:Name="SlotChart1" Grid.Row="1" MinHeight="90" Margin="0,4,0,0" Visibility="Collapsed"/>
+                  <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0" Visibility="Collapsed">
+                    <TextBlock Text="Min " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuTempMinS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Max " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuTempMaxS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Avg " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuTempAvgS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                  </StackPanel>
+                </Grid>
+
+                <!-- Separator 1→2 -->
+                <Border Grid.Row="2" Height="1" Background="{DynamicResource CardBorderBrush}" Opacity="0.4" Margin="0,4,0,4"/>
+
+                <!-- ── Grafic 2 ───────────────────────────────────────────── -->
+                <Grid Grid.Row="3" x:Name="ChartSlot2">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0" Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtChartLabel2" Text="CPU Frequency" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtChartVal2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}" Grid.Column="1" VerticalAlignment="Center"/>
+                  </Grid>
+                  <Canvas x:Name="CpuFreqCanvas" Grid.Row="1" ClipToBounds="True" MinHeight="118"
+                          SizeChanged="CpuFreqChart_SizeChanged"
+                          MouseMove="StressChart_MouseMove" MouseLeave="StressChart_MouseLeave">
+                    <Canvas.ContextMenu>
+                      <ContextMenu>
+                        
+                        <MenuItem Header="Vertical gridlines" IsCheckable="True" Click="ChartCtxGridlines_Click" Loaded="ChartGridlinesMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Stress test marking:" IsEnabled="False" FontWeight="SemiBold"/>
+                                                <MenuItem Header="   Full highlight"    IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Full"   Loaded="StressMarkMenuItem_Loaded"/>
+                        <MenuItem Header="   Subtle highlight"  IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Subtle" Loaded="StressMarkMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Chart color:" IsEnabled="False" FontWeight="SemiBold"/>
+                        <MenuItem Header="   Blue"          IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Accent" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Light blue"            IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="LightBlue" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Colorful" IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gradient" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Gray"                  IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gray" Loaded="ChartColorMenuItem_Loaded"/>
+                      </ContextMenu>
+                    </Canvas.ContextMenu>
+                  </Canvas>
+                  <!-- the flowing chart (as in the CPU / GPU cards); the canvas above stays for sensors without history (fans) -->
+                  <local:MiniLineChart x:Name="SlotChart2" Grid.Row="1" MinHeight="90" Margin="0,4,0,0" Visibility="Collapsed"/>
+                  <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0" Visibility="Collapsed">
+                    <TextBlock Text="Min " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuFreqMin_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Max " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuFreqMax_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Avg " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuFreqAvg_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                  </StackPanel>
+                </Grid>
+
+                <!-- Separator 2→3 -->
+                <Border Grid.Row="4" Height="1" Background="{DynamicResource CardBorderBrush}" Opacity="0.4" Margin="0,4,0,4"/>
+
+                <!-- ── Grafic 3 ───────────────────────────────────────────── -->
+                <Grid Grid.Row="5" x:Name="ChartSlot3">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0" Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtChartLabel3" Text="CPU Load" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtChartVal3" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}" Grid.Column="1" VerticalAlignment="Center"/>
+                  </Grid>
+                  <Canvas x:Name="CpuUsageCanvas" Grid.Row="1" ClipToBounds="True" MinHeight="118"
+                          SizeChanged="CpuUsageChart_SizeChanged"
+                          MouseMove="StressChart_MouseMove" MouseLeave="StressChart_MouseLeave">
+                    <Canvas.ContextMenu>
+                      <ContextMenu>
+                        
+                        <MenuItem Header="Vertical gridlines" IsCheckable="True" Click="ChartCtxGridlines_Click" Loaded="ChartGridlinesMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Stress test marking:" IsEnabled="False" FontWeight="SemiBold"/>
+                                                <MenuItem Header="   Full highlight"    IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Full"   Loaded="StressMarkMenuItem_Loaded"/>
+                        <MenuItem Header="   Subtle highlight"  IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Subtle" Loaded="StressMarkMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Chart color:" IsEnabled="False" FontWeight="SemiBold"/>
+                        <MenuItem Header="   Blue"          IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Accent" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Light blue"            IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="LightBlue" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Colorful" IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gradient" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Gray"                  IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gray" Loaded="ChartColorMenuItem_Loaded"/>
+                      </ContextMenu>
+                    </Canvas.ContextMenu>
+                  </Canvas>
+                  <!-- the flowing chart (as in the CPU / GPU cards); the canvas above stays for sensors without history (fans) -->
+                  <local:MiniLineChart x:Name="SlotChart3" Grid.Row="1" MinHeight="90" Margin="0,4,0,0" Visibility="Collapsed"/>
+                  <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0" Visibility="Collapsed">
+                    <TextBlock Text="Min " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuLoadMin_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Max " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuLoadMax_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Avg " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtCpuLoadAvg_c" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                  </StackPanel>
+                </Grid>
+
+                <!-- Separator 3→4 -->
+                <Border Grid.Row="6" Height="1" Background="{DynamicResource CardBorderBrush}" Opacity="0.4" Margin="0,4,0,4"/>
+
+                <!-- ── Grafic 4 ───────────────────────────────────────────── -->
+                <Grid Grid.Row="7" x:Name="ChartSlot4">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0" Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtChartLabel4" Text="GPU Temperature" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtChartVal4" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                               Foreground="{DynamicResource OrangeBrush}" Grid.Column="1" VerticalAlignment="Center"/>
+                  </Grid>
+                  <Canvas x:Name="GpuTempCanvas" Grid.Row="1" ClipToBounds="True" MinHeight="118"
+                          SizeChanged="GpuTempChart_SizeChanged"
+                          MouseMove="StressChart_MouseMove" MouseLeave="StressChart_MouseLeave">
+                    <Canvas.ContextMenu>
+                      <ContextMenu>
+                        
+                        <MenuItem Header="Vertical gridlines" IsCheckable="True" Click="ChartCtxGridlines_Click" Loaded="ChartGridlinesMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Stress test marking:" IsEnabled="False" FontWeight="SemiBold"/>
+                                                <MenuItem Header="   Full highlight"    IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Full"   Loaded="StressMarkMenuItem_Loaded"/>
+                        <MenuItem Header="   Subtle highlight"  IsCheckable="True" Click="ChartCtxStressMark_Click" Tag="Subtle" Loaded="StressMarkMenuItem_Loaded"/>
+                        <Separator/>
+                        <MenuItem Header="Chart color:" IsEnabled="False" FontWeight="SemiBold"/>
+                        <MenuItem Header="   Blue"          IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Accent" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Light blue"            IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="LightBlue" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Colorful" IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gradient" Loaded="ChartColorMenuItem_Loaded"/>
+                        <MenuItem Header="   Gray"                  IsCheckable="True" Click="ChartCtxColorMode_Click" Tag="Gray" Loaded="ChartColorMenuItem_Loaded"/>
+                      </ContextMenu>
+                    </Canvas.ContextMenu>
+                  </Canvas>
+                  <!-- the flowing chart (as in the CPU / GPU cards); the canvas above stays for sensors without history (fans) -->
+                  <local:MiniLineChart x:Name="SlotChart4" Grid.Row="1" MinHeight="90" Margin="0,4,0,0" Visibility="Collapsed"/>
+                  <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0" Visibility="Collapsed">
+                    <TextBlock Text="Min " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtGpuTempMinS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Max " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtGpuTempMaxS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="  Avg " FontSize="{StaticResource FontSizeXS}" Opacity="0.55" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <TextBlock x:Name="TxtGpuTempAvgS" Text="—" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                  </StackPanel>
+                </Grid>
+
+                <!-- Stub canvases for the less used charts -->
+                <Grid Visibility="Collapsed" Grid.RowSpan="8">
+                  <Canvas x:Name="GpuLoadCanvas"   SizeChanged="GpuLoadChart_SizeChanged"/>
+                  <Canvas x:Name="GpuStressChart"  SizeChanged="GpuStressChart_SizeChanged" Height="0"/>
+                  <!-- Overlay temp cursors -->
+                  <Canvas x:Name="CpuTempChart"    SizeChanged="CpuTempChart_SizeChanged"/>
+                  <Canvas x:Name="GpuTempChart"    SizeChanged="GpuTempChart_SizeChanged"/>
+                  <Canvas x:Name="GpuLoadChart"    SizeChanged="GpuLoadChart_SizeChanged"/>
+                  <Canvas x:Name="CpuUsageChart"   SizeChanged="CpuUsageChart_SizeChanged"/>
+                  <Canvas x:Name="CpuFreqChart"    SizeChanged="CpuFreqChart_SizeChanged"/>
+                  <TextBlock x:Name="TxtStressCpuTempLive" Text=""/>
+                  <TextBlock x:Name="TxtGpuPowerLabel" Text=""/>
+                  <TextBlock x:Name="TxtGpuStressFps"  Text=""/>
+                  <TextBlock x:Name="TxtGpuStressInfo" Text=""/>
+                  <TextBlock x:Name="TxtGpuStressLoad" Text=""/>
+                  <TextBlock x:Name="TxtGpuStressStatus" Text=""/>
+                  <TextBlock x:Name="TxtGpuStressTemp"  Text=""/>
+                  <TextBlock x:Name="TxtGpuStressVram"  Text=""/>
+                  <Border    x:Name="GpuStressIdlePlaceholder"/>
+                  <Border    x:Name="GpuStressRunPanel"/>
+                  <Border    x:Name="StressActiveBanner"/>
+                  <!-- KPI compat stubs -->
+                  <Border x:Name="KpiCpuTemp"  /><Border x:Name="KpiCpuClock" /><Border x:Name="KpiCpuPower"/>
+                  <Border x:Name="KpiGpuLoad"  /><Border x:Name="KpiGpuClock" /><Border x:Name="KpiVram"/>
+                  <Border x:Name="KpiRam"      /><Border x:Name="KpiVCore"    />
+                  <!-- Mouse overlays -->
+                  <Grid x:Name="CpuTempPanel"/><Grid x:Name="GpuTempPanel"/>
+                </Grid>
+              </Grid>
+            </Border>
+          
+            </Grid>
+          
+          </Grid>
+          </ScrollViewer>
+
+          <!-- ══ ROW 3: Butoane Stress + Benchmark + Turbo ══════════════════════ -->
+          <Border Grid.Row="2" Margin="16,6,16,10" Style="{StaticResource CardStyle}" Padding="12,8" Visibility="Collapsed">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+
+              <ui:Button x:Name="BtnRunBench" Appearance="Secondary" Height="32" MinHeight="32" MaxHeight="32"
+                      Click="OpenCpuBenchWindow_Click" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="CPU Bench" VerticalAlignment="Center"/>
+                </StackPanel>
+              </ui:Button>
+              <ui:Button x:Name="BtnGpuBench" Appearance="Secondary" Height="32" MinHeight="32" MaxHeight="32"
+                      Click="OpenGpuBenchWindow_Click" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock x:Name="TxtBtnGpuBench" Text="GPU Bench" VerticalAlignment="Center"/>
+                </StackPanel>
+              </ui:Button>
+
+              <ui:Button x:Name="BtnTurbo" Grid.Column="8" Appearance="Secondary" Height="32" MinHeight="32" MaxHeight="32"
+                      HorizontalAlignment="Stretch" Click="ToggleTurbo_Click" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path x:Name="IconTurbo" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtBtnTurbo" Text="Turbo: ON" VerticalAlignment="Center"/>
+                </StackPanel>
+              </ui:Button>
+
+              <ui:Button x:Name="BtnFanControl" Grid.Column="10" Appearance="Secondary" Height="32" MinHeight="32" MaxHeight="32"
+                      HorizontalAlignment="Stretch" Click="OpenFanControl_Click" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M12,14 A2,2 0 0 0 12,10 A2,2 0 0 0 12,14 M6,12 A6,6 0 0 1 18,12 A6,6 0 0 1 6,12 M12,7.5 A4.5,4.5 0 0 0 12,16.5 A4.5,4.5 0 0 0 12,7.5 M2,12 A10,10 0 0 1 22,12 A10,10 0 0 1 2,12 M12,3.5 A8.5,8.5 0 0 0 12,20.5 A8.5,8.5 0 0 0 12,3.5"/></Canvas></Viewbox>
+                  <TextBlock Text="Fan Control" VerticalAlignment="Center"/>
+                </StackPanel>
+              </ui:Button>
+
+
+              <!-- Compat stubs -->
+              <Grid Visibility="Collapsed">
+                <Button x:Name="BtnBench" Click="RunBench_Click"/>
+                <Button x:Name="BtnPsuStress" Click="TogglePsuStress_Click"/>
+                <TextBlock x:Name="TxtBtnPsuStress" Text=""/>
+              </Grid>
+            </Grid>
+          </Border>
+
+          <!-- ══ BENCHMARK RESULT — inline card (hidden until benchmark runs) ══ -->
+          <Border x:Name="InlineBenchCard" Grid.Row="3" Margin="16,0,16,6"
+                  Style="{StaticResource CardStyle}" Padding="16,12" Visibility="Collapsed">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+
+              <!-- Header: title + close + status -->
+              <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="CPU + RAM + SSD Benchmark" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtBenchStatus" Grid.Column="1"
+                           Text="Initializing…" FontSize="{StaticResource FontSizeS}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" Margin="12,0,0,0"/>
+                <!-- Total score badge -->
+                <Border x:Name="BenchScoreBadge" Grid.Column="2" CornerRadius="6"
+                        Background="{DynamicResource SbItemActiveBg}"
+                        BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1"
+                        Padding="10,3" Margin="8,0,8,0" Visibility="Collapsed">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="TxtBenchTotalScore" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text=" / 100" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtBenchGrade" Text="" FontSize="{StaticResource FontSizeS}"
+                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                  </StackPanel>
+                </Border>
+                <ui:Button Grid.Column="3" Appearance="Secondary"
+                        Padding="6,3" FontSize="{StaticResource FontSizeS}" Content="✕"
+                        Click="BenchClose_Click"/>
+              </Grid>
+
+              <!-- Progress bar -->
+              <Border x:Name="BenchProgressBg" Grid.Row="1" Height="4" CornerRadius="2"
+                      Background="{DynamicResource BgHoverBrush}" Margin="0,0,0,10">
+                <Border x:Name="BenchProgressFg" Height="4" CornerRadius="2"
+                        Background="{DynamicResource DataBrush}"
+                        HorizontalAlignment="Left" Width="0"/>
+              </Border>
+
+              <!-- 4 component rows: CPU, RAM, SSD, GPU -->
+              <Grid x:Name="BenchResultRows" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="110"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="55"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="24"/>
+                  <RowDefinition Height="24"/>
+                  <RowDefinition Height="24"/>
+                  <RowDefinition Height="24"/>
+                </Grid.RowDefinitions>
+
+                <!-- Headers -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Component"
+                           FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="Result"
+                           FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Score"
+                           FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+
+                <!-- CPU -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="CPU" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtBenchCpuVal" Grid.Row="1" Grid.Column="1" Text="—"
+                           FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" Margin="8,0,0,0" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="TxtBenchCpuScore" Grid.Row="1" Grid.Column="2" Text="—"
+                           FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource AccentBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+
+                <!-- RAM -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="RAM" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtBenchRamVal" Grid.Row="2" Grid.Column="1" Text="—"
+                           FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <TextBlock x:Name="TxtBenchRamScore" Grid.Row="2" Grid.Column="2" Text="—"
+                           FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource AccentBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+
+                <!-- SSD -->
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="SSD" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtBenchSsdVal" Grid.Row="3" Grid.Column="1" Text="—"
+                           FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <TextBlock x:Name="TxtBenchSsdScore" Grid.Row="3" Grid.Column="2" Text="—"
+                           FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+                           Foreground="{DynamicResource AccentBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+              </Grid>
+            </Grid>
+          </Border>
+
+
+        </Grid>
+</UserControl>

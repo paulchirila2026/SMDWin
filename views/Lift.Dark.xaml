@@ -1,0 +1,56 @@
+<!--
+  Lift.Dark.xaml — color tokens, DARK theme.
+  Same keys as Lift.Light.xaml. Merge this INSTEAD of the light file
+  (or swap the dictionary at runtime) to flip the whole app.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ===== Surfaces ===== -->
+  <SolidColorBrush x:Key="Lift.Canvas"    Color="#0C0A09" />
+  <SolidColorBrush x:Key="Lift.Surface"   Color="#262320" />
+  <SolidColorBrush x:Key="Lift.Surface2"  Color="#312E2B" />
+  <SolidColorBrush x:Key="Lift.Border"    Color="#55504A" />
+  <SolidColorBrush x:Key="Lift.Border2"   Color="#57534E" />
+
+  <!-- ===== Text ===== -->
+  <SolidColorBrush x:Key="Lift.Text"        Color="#FAFAF9" />
+  <SolidColorBrush x:Key="Lift.TextMuted"   Color="#D6D3D1" />
+  <SolidColorBrush x:Key="Lift.TextSoft"    Color="#A8A29E" />
+  <SolidColorBrush x:Key="Lift.TextDim"     Color="#78716C" />
+
+  <!-- ===== Accent (lighter indigo for dark bg) ===== -->
+  <SolidColorBrush x:Key="Lift.Accent"       Color="#818CF8" />
+  <SolidColorBrush x:Key="Lift.AccentHover"  Color="#A5B4FC" />
+  <SolidColorBrush x:Key="Lift.AccentPress"  Color="#C7D2FE" />
+
+  <!-- ===== Primary CTA (inverted — light pill on dark) ===== -->
+  <SolidColorBrush x:Key="Lift.PrimaryBg"       Color="#FAFAF9" />
+  <SolidColorBrush x:Key="Lift.PrimaryBgHover"  Color="#E7E5E4" />
+  <SolidColorBrush x:Key="Lift.PrimaryBgPress"  Color="#D6D3D1" />
+  <SolidColorBrush x:Key="Lift.PrimaryFg"       Color="#0C0A09" />
+
+  <!-- ===== Danger ===== -->
+  <SolidColorBrush x:Key="Lift.DangerText"        Color="#FCA5A5" />
+  <SolidColorBrush x:Key="Lift.DangerBorder"      Color="#7F1D1D" />
+  <SolidColorBrush x:Key="Lift.DangerHoverBg"     Color="#450A0A" />
+  <SolidColorBrush x:Key="Lift.DangerHoverBorder" Color="#B91C1C" />
+  <SolidColorBrush x:Key="Lift.DangerPressBg"     Color="#7F1D1D" />
+
+  <!-- ===== Shadows (deeper in dark) ===== -->
+  <DropShadowEffect x:Key="Lift.Shadow1"
+      BlurRadius="6" ShadowDepth="1" Direction="270"
+      Opacity="0.55" Color="#000000" RenderingBias="Quality" />
+  <DropShadowEffect x:Key="Lift.Shadow2"
+      BlurRadius="12" ShadowDepth="2" Direction="270"
+      Opacity="0.70" Color="#000000" RenderingBias="Quality" />
+  <DropShadowEffect x:Key="Lift.ShadowPrimary"
+      BlurRadius="6" ShadowDepth="1" Direction="270"
+      Opacity="0.45" Color="#000000" RenderingBias="Quality" />
+
+  <!-- ===== Type ===== -->
+  <FontFamily x:Key="Lift.Font">Segoe UI</FontFamily>
+  <Color x:Key="BgHoverColor">#2C2926</Color>
+
+</ResourceDictionary>

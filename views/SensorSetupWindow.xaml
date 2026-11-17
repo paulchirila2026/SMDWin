@@ -1,0 +1,234 @@
+<Window x:Class="SMDWin.Views.SensorSetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:local="clr-namespace:SMDWin.Views"
+        Title="SMD Win"
+        Width="500" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+  <!-- The welcome window that offers the sensor driver (PawnIO), in the About style (variant A, decided 10.11.2026): the live
+       logo with the About animation, the wordmark, a short title, three chips with what the driver brings, one row about PawnIO,
+       and two buttons. The technical details (driver name, the
+       old WinRing0 driver) stay behind "What is this?". The install runs inside this window: a slim moving line and the
+       current step, then "Done — sensors active". All colours come from the theme, so it fits Light and Dark. -->
+  <shell:WindowChrome.WindowChrome>
+    <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="0"
+                        GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+  </shell:WindowChrome.WindowChrome>
+
+  <Window.Resources>
+    <!-- one line with a green check in front -->
+    <Style x:Key="SetupCheckText" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{StaticResource FontSizeM}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <!-- a chip: what the driver brings (accent-tinted pill with an icon) -->
+    <Style x:Key="SetupChip" TargetType="Border">
+      <!-- half the chip height: a larger radius makes WPF scale the corners into an oval (10.11.2026) -->
+      <Setter Property="CornerRadius" Value="14"/>
+      <Setter Property="Padding" Value="11,6,13,6"/>
+      <Setter Property="Margin" Value="4,0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush">
+        <Setter.Value><SolidColorBrush Color="{DynamicResource AccentColor}" Opacity="0.28"/></Setter.Value>
+      </Setter>
+      <Setter Property="Background">
+        <Setter.Value><SolidColorBrush Color="{DynamicResource AccentColor}" Opacity="0.10"/></Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="SetupChipIcon" TargetType="Path">
+      <Setter Property="Width" Value="14"/>
+      <Setter Property="Height" Value="14"/>
+      <Setter Property="Stretch" Value="Uniform"/>
+      <Setter Property="Margin" Value="0,0,7,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="StrokeThickness" Value="1.7"/>
+      <Setter Property="StrokeLineJoin" Value="Round"/>
+      <Setter Property="StrokeStartLineCap" Value="Round"/>
+      <Setter Property="StrokeEndLineCap" Value="Round"/>
+    </Style>
+    <Style x:Key="SetupChipText" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="{StaticResource FontSizeS}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style x:Key="SetupLink" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="FontSize" Value="{StaticResource FontSizeS}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Bd" Background="Transparent" CornerRadius="8" Padding="8,5">
+              <ContentPresenter VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgHoverBrush}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="14">
+    <!-- the shadow on a separate layer, behind the content -->
+    <Border CornerRadius="14" Background="{DynamicResource BgDarkBrush}">
+      <Border.Effect>
+        <DropShadowEffect BlurRadius="30" ShadowDepth="6" Direction="270" Color="Black" Opacity="0.35" RenderingBias="Performance"/>
+      </Border.Effect>
+    </Border>
+    <Border x:Name="Card" CornerRadius="14" ClipToBounds="True"
+            Background="{DynamicResource BgDarkBrush}"
+            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+            RenderTransformOrigin="0.5,0.5">
+      <Border.RenderTransform><ScaleTransform x:Name="CardScale" ScaleX="1" ScaleY="1"/></Border.RenderTransform>
+      <Grid>
+        <!-- the soft glow at the top, as in About (softened from code on Light) -->
+        <Ellipse x:Name="HeroGlow" Width="520" Height="280" VerticalAlignment="Top" HorizontalAlignment="Center"
+                 Margin="-60,-150,-60,0" IsHitTestVisible="False" Opacity="0.85">
+          <Ellipse.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+              <GradientStop Color="{DynamicResource DataColor}" Offset="0.2"/>
+              <GradientStop Color="{DynamicResource DataEndColor}" Offset="0.8"/>
+            </LinearGradientBrush>
+          </Ellipse.Fill>
+          <Ellipse.OpacityMask>
+            <RadialGradientBrush>
+              <GradientStop Color="#40000000" Offset="0"/>
+              <GradientStop Color="#26000000" Offset="0.35"/>
+              <GradientStop Color="#0E000000" Offset="0.65"/>
+              <GradientStop Color="Transparent" Offset="1"/>
+            </RadialGradientBrush>
+          </Ellipse.OpacityMask>
+        </Ellipse>
+
+        <!-- title bar: drags the window + close button (same as "Not now") -->
+        <Grid Height="44" VerticalAlignment="Top" Background="Transparent" MouseLeftButtonDown="TitleBar_DragMove">
+          <Button x:Name="BtnClose" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,8,0"
+                  Style="{StaticResource CaptionCloseBtnStyle}" Click="BtnNotNow_Click" ToolTip="Close (Esc)">✕</Button>
+        </Grid>
+
+        <StackPanel Margin="28,34,28,22">
+          <!-- the live logo (same drawing and animation as About), the wordmark, the title -->
+          <local:SmdLogo x:Name="SetupLogo" Width="112" Height="112" HorizontalAlignment="Center" Margin="0,-8,0,-8"/>
+          <local:SmdWordmark HorizontalAlignment="Center" Margin="0,10,0,0" FontSize="26"
+                             Foreground="{DynamicResource TextPrimaryBrush}"/>
+          <TextBlock x:Name="TxtTitle" Text="Welcome" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,12,0,0"
+                     FontSize="{StaticResource FontSizeTitleLg}" FontWeight="SemiBold" FontFamily="{StaticResource AppFontDisplay}"
+                     Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+          <TextBlock x:Name="TxtSubtitle" Text="One small step and the sensors come alive" HorizontalAlignment="Center" TextAlignment="Center"
+                     Margin="0,4,0,0" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+
+          <!-- what the driver brings (step: ask) -->
+          <WrapPanel x:Name="PanelChecks" HorizontalAlignment="Center" Margin="0,18,0,0">
+            <Border Style="{StaticResource SetupChip}">
+              <StackPanel Orientation="Horizontal">
+                <Path Style="{StaticResource SetupChipIcon}" Data="M14,14.8 L14,5 A2,2 0 0 0 10,5 L10,14.8 A4,4 0 1 0 14,14.8 Z"/>
+                <TextBlock x:Name="TxtPoint1" Text="Temperatures" Style="{StaticResource SetupChipText}"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource SetupChip}">
+              <StackPanel Orientation="Horizontal">
+                <Path Style="{StaticResource SetupChipIcon}" StrokeThickness="1.5"
+                      Data="M12,10 C12,6 13,3 16,3 C18,3 19,5 18,7 C17,8.5 15,9.5 12,10 Z M14,12 C18,12 21,13 21,16 C21,18 19,19 17,18 C15.5,17 14.5,15 14,12 Z M12,14 C12,18 11,21 8,21 C6,21 5,19 6,17 C7,15.5 9,14.5 12,14 Z M10,12 C6,12 3,11 3,8 C3,6 5,5 7,6 C8.5,7 9.5,9 10,12 Z"/>
+                <TextBlock x:Name="TxtPoint2" Text="Fan speeds" Style="{StaticResource SetupChipText}"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource SetupChip}">
+              <StackPanel Orientation="Horizontal">
+                <Path Style="{StaticResource SetupChipIcon}" Data="M13,2 L4,14 L11,14 L10,22 L19,10 L12,10 Z"/>
+                <TextBlock x:Name="TxtPoint3" Text="Voltages &amp; power" Style="{StaticResource SetupChipText}"/>
+              </StackPanel>
+            </Border>
+          </WrapPanel>
+
+          <!-- one row about the driver; the install progress appears inside it -->
+          <Border Margin="0,16,0,0" CornerRadius="12" Padding="14,12" Background="{DynamicResource CardSurfaceBrush}"
+                  BorderBrush="{DynamicResource CardEdgeBrush}" BorderThickness="1">
+            <StackPanel>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- a round tile with a shield -->
+                <Border x:Name="IconTile" Width="36" Height="36" CornerRadius="18" VerticalAlignment="Center" Margin="0,0,12,0">
+                  <Border.Background>
+                    <SolidColorBrush Color="{DynamicResource AccentColor}" Opacity="0.14"/>
+                  </Border.Background>
+                  <Path Width="18" Height="18" Stretch="Uniform" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.7"
+                        StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                        Data="M12,3 L19,6 L19,12 C19,16.5 16,19.7 12,21 C8,19.7 5,16.5 5,12 L5,6 Z M9,12 L11,14 L15,10"/>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock x:Name="TxtCardTitle" Text="PawnIO sensor driver" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextPrimaryBrush}"/>
+                  <TextBlock x:Name="TxtCardText" Margin="0,2,0,0" TextWrapping="Wrap" FontSize="{StaticResource FontSizeS}"
+                             Foreground="{DynamicResource TextSecondaryBrush}"
+                             Text="Digitally signed · open source · installed once, Windows asks for permission"/>
+                </StackPanel>
+              </Grid>
+
+              <!-- the green check used by the "done" step -->
+              <Path x:Name="Check1" Visibility="Collapsed"
+                    Data="F1 M12,2 A10,10 0 1 1 2,12 A10,10 0 0 1 12,2 Z M16.28,8.97 A0.75,0.75 0 0 0 15.22,8.97 L10.5,13.69 L8.78,11.97 A0.75,0.75 0 0 0 7.72,13.03 L9.97,15.28 A0.75,0.75 0 0 0 11.03,15.28 L16.28,10.03 A0.75,0.75 0 0 0 16.28,8.97 Z"/>
+
+              <!-- the install progress (step: installing / done / failed) -->
+              <StackPanel x:Name="PanelProgress" Margin="48,12,0,0" Visibility="Collapsed">
+                <Canvas x:Name="ProgressTrack" Height="4" ClipToBounds="True" Background="{DynamicResource GaugeTrackBrush}">
+                  <Border x:Name="ProgressFill" Height="4" Width="90" CornerRadius="2" Background="{DynamicResource AccentBrush}">
+                    <Border.RenderTransform><TranslateTransform x:Name="ProgressMove" X="-90"/></Border.RenderTransform>
+                  </Border>
+                </Canvas>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                  <Path x:Name="DoneIcon" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center" Visibility="Collapsed"
+                        Fill="{DynamicResource StatusGoodBrush}" Data="{Binding Data, ElementName=Check1}"/>
+                  <TextBlock x:Name="TxtProgress" Text="Installing…" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center"
+                             Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" MaxWidth="300"/>
+                </StackPanel>
+                <TextBlock x:Name="TxtProgressSub" Margin="0,4,0,0" FontSize="{StaticResource FontSizeS}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextSecondaryBrush}" Visibility="Collapsed"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- the technical details, shown on "What is this?" -->
+          <TextBlock x:Name="TxtDetails" Margin="4,12,4,0" TextWrapping="Wrap" FontSize="{StaticResource FontSizeS}" LineHeight="19"
+                     Foreground="{DynamicResource TextSecondaryBrush}" Visibility="Collapsed"/>
+
+          <!-- buttons -->
+          <Grid Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="BtnWhatIs" Style="{StaticResource SetupLink}" Click="BtnWhatIs_Click" VerticalAlignment="Center" Margin="-8,0,0,0">
+              <TextBlock x:Name="TxtWhatIs" Text="What is this?"/>
+            </Button>
+            <Button x:Name="BtnNotNow" Grid.Column="2" Style="{StaticResource SecondaryButtonStyle}" Click="BtnNotNow_Click"
+                    MinWidth="96" Margin="0,0,10,0" Content="Not now"/>
+            <Button x:Name="BtnInstall" Grid.Column="3" Style="{StaticResource PrimaryButtonStyle}" Click="BtnInstall_Click"
+                    Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}" Foreground="White" FontWeight="SemiBold"
+                    FontSize="{StaticResource FontSizeM}" Padding="18,8" IsDefault="True" Content="Install (recommended)"/>
+          </Grid>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>
