@@ -186,7 +186,7 @@ namespace SMDWin
 
             // the splash appears now, within the first seconds — before the main window starts building
             // (settings and language first, so its texts are in the chosen language)
-            try { SMDWin.Views.MainWindow.PrepareSettingsAndLanguage(); } catch (Exception ex) { AppLogger.Warning(ex, "OnStartup: setari / limba"); }
+            try { SMDWin.Views.MainWindow.PrepareSettingsAndLanguage(); } catch (Exception ex) { AppLogger.Warning(ex, "OnStartup: settings / language"); }
             try { SMDWin.Views.SplashHost.ShowOnOwnThread(); } catch (Exception ex) { AppLogger.Warning(ex, "OnStartup: splash"); }
             SMDWin.Services.BootTiming.Mark("App: splash shown");
 

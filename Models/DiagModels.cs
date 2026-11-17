@@ -710,10 +710,10 @@ namespace SMDWin.Models
         };
         public string SignTooltip => SignStatus switch
         {
-            "signed"    => "Are semnătură digitală Authenticode validă (verificare locală, rapidă — nu e o garanție legală de autenticitate).",
-            "untrusted" => "Are semnătură digitală, dar lanțul de certificare nu s-a validat local — deseori pentru că un certificat intermediar nu e încă în cache-ul Windows, nu neapărat pentru că fișierul e suspect. Pentru verificare completă: click dreapta pe exe → Properties → Digital Signatures.",
-            "unsigned"  => "Nu are nicio semnătură digitală Authenticode. Nu înseamnă automat malware — multe programe legitime, mai vechi sau open-source, nu sunt semnate — dar merită mai multă atenție decât un exe semnat de un vendor cunoscut.",
-            _           => "Semnătura nu a fost încă verificată."
+            "signed"    => SMDWin.Services.LiteralTexts.Translate("Has a valid Authenticode digital signature (a quick local check — not a legal guarantee of authenticity)."),
+            "untrusted" => SMDWin.Services.LiteralTexts.Translate("Has a digital signature, but the certificate chain could not be validated locally — often because an intermediate certificate is not yet in the Windows cache, not necessarily because the file is suspicious. For a full check: right-click the exe → Properties → Digital Signatures."),
+            "unsigned"  => SMDWin.Services.LiteralTexts.Translate("Has no Authenticode digital signature. That does not mean malware — many legitimate programs, older or open-source, are not signed — but it deserves more attention than an exe signed by a known vendor."),
+            _           => SMDWin.Services.LiteralTexts.Translate("The signature has not been checked yet.")
         };
         public bool   IsNew        { get; set; }
 
@@ -1340,8 +1340,9 @@ namespace SMDWin.Models
         public float TempWarnCpu { get; set; } = 90f;
         public float TempWarnGpu { get; set; } = 90f;
         public string CrystalDiskInfoPath { get; set; } = @"C:\Program Files\CrystalDiskInfo\DiskInfo64.exe";
+        public bool   SensorSafeMode { get; set; } = false;       // set after a start that closed while the sensor libraries were opening (SensorStartGuard)
         public bool   BetaNoticeShown { get; set; } = false;      // the one-time "beta, no warranty, what it can change" notice
-        public string DriverSearchSite { get; set; } = "google";      // "google" (default since) or "driverpack" — a diagnostics app should not send people to a third-party driver site by default
+        public string DriverSearchSite { get; set; } = "google";      // "google" (the default) or "driverpack" — a diagnostics app should not send people to a third-party driver site by default
         public string DriverViewMode { get; set; } = "Basic";     // "Basic" or "Advanced"
         public int ProcessRefreshSec { get; set; } = 2;
         public bool UseMica { get; set; } = (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build >= 22000);

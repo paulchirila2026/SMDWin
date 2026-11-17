@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
 using System.Text;
 using System.Diagnostics;
@@ -238,7 +239,10 @@ namespace SMDWin.Services
                     double vram = rawRam / (1024.0 * 1024 * 1024);
                     if (vram > 24.0) vram = 0;
 
-                    string gpuName = !string.IsNullOrEmpty(cache.GpuName) ? cache.GpuName : Wmi(o, "Name");
+                    // each adapter keeps its own name (the cached name used to be copied onto every entry, so a
+                    // second adapter got the first one's name with its own driver version)
+                    string gpuName = Wmi(o, "Name");
+                    if (gpuName.Length == 0) gpuName = cache.GpuName ?? "";
                     bool isIntel = gpuName.Contains("Intel", StringComparison.OrdinalIgnoreCase);
                     bool isIntelDiscrete = isIntel &&
                                           (gpuName.Contains("Arc", StringComparison.OrdinalIgnoreCase) ||
@@ -261,6 +265,9 @@ namespace SMDWin.Services
                     });
                 }
                 }
+                // Windows' basic/virtual adapters are dropped when a real card is listed too
+                if (Gpus.Any(g => !WmiCache.IsBasicOrVirtualAdapter(g.Name)))
+                    Gpus.RemoveAll(g => WmiCache.IsBasicOrVirtualAdapter(g.Name));
             }
             catch (Exception ex) { AppLogger.Warning(ex, "HardwareInfo.LoadGpuFromCache"); }
         }
@@ -446,6 +453,8 @@ namespace SMDWin.Services
                     });
                 }
                 }
+                if (Gpus.Any(g => !WmiCache.IsBasicOrVirtualAdapter(g.Name)))
+                    Gpus.RemoveAll(g => WmiCache.IsBasicOrVirtualAdapter(g.Name));
             }
             catch (Exception ex) { AppLogger.Warning(ex, "HardwareInfo"); }
         }

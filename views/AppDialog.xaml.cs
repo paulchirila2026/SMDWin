@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Application    = System.Windows.Application;
 using Button         = System.Windows.Controls.Button;
+using Brush          = System.Windows.Media.Brush;
 using Color          = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 
@@ -114,15 +115,16 @@ namespace SMDWin.Views
                         dlg.Resources.MergedDictionaries.Add(rd);
             }
 
-            if (!dlg.Resources.Contains("BgCardBrush"))
+            // the theme in use, applied on the dialog itself: with "Auto" (follow Windows) the copied resources could still be
+            // the dark start-up ones, and the welcome notice opened dark on the Light theme
+            try
             {
-                try
-                {
-                    string normalized = SMDWin.Services.ThemeManager.Normalize(SMDWin.Services.SettingsService.Current.ThemeName);
-                    SMDWin.Services.ThemeManager.Apply(normalized, dlg.Resources);
-                }
-                catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"AppDialog.ShowCore theme fallback: {ex.Message}"); }
+                string themeName = SMDWin.Services.SettingsService.Current.ThemeName == "Auto"
+                    ? SMDWin.Services.ThemeManager.ResolveAuto()
+                    : SMDWin.Services.ThemeManager.Normalize(SMDWin.Services.SettingsService.Current.ThemeName);
+                SMDWin.Services.ThemeManager.Apply(themeName, dlg.Resources);
             }
+            catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"AppDialog.ShowCore theme: {ex.Message}"); }
 
             dlg.TxtTitle.Text   = title;
             dlg.TxtMessage.Text = message;
@@ -146,9 +148,42 @@ namespace SMDWin.Views
                 catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"AppDialog activate: {ex.Message}"); }
             };
 
-            dlg.ShowDialog();
+            // the window behind is dimmed while the dialog is open, so the dialog stands out
+            var dim = DimOwner(dlg.Owner);
+            try { dlg.ShowDialog(); }
+            finally { dim?.Invoke(); }
             _lastChoice = dlg._choice;
             return dlg._result;
+        }
+
+        /// <summary>Darkens the owner window's content under the dialog; returns the action that removes it.</summary>
+        internal static Action? DimOwner(Window? owner)
+        {
+            try
+            {
+                if (owner?.Content is not UIElement content) return null;
+                var layer = System.Windows.Documents.AdornerLayer.GetAdornerLayer(content);
+                if (layer == null) return null;
+                bool light = false;
+                try
+                {
+                    string t = SMDWin.Services.SettingsService.Current.ThemeName == "Auto"
+                        ? SMDWin.Services.ThemeManager.ResolveAuto() : SMDWin.Services.SettingsService.Current.ThemeName;
+                    light = SMDWin.Services.ThemeManager.IsLight(SMDWin.Services.ThemeManager.Normalize(t));
+                }
+                catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"DimOwner theme: {ex.Message}"); }
+                var adorner = new DimAdorner(content, Color.FromArgb(light ? (byte)0x55 : (byte)0x80, 0, 0, 0));
+                layer.Add(adorner);
+                return () => { try { layer.Remove(adorner); } catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"DimOwner remove: {ex.Message}"); } };
+            }
+            catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"DimOwner: {ex.Message}"); return null; }
+        }
+
+        private sealed class DimAdorner : System.Windows.Documents.Adorner
+        {
+            private readonly Brush _brush;
+            public DimAdorner(UIElement el, Color c) : base(el) { _brush = new SolidColorBrush(c); _brush.Freeze(); IsHitTestVisible = true; }
+            protected override void OnRender(DrawingContext dc) => dc.DrawRectangle(_brush, null, new Rect(AdornedElement.RenderSize));
         }
 
         // ──────────────────────────────────────────────────────────────

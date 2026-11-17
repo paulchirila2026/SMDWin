@@ -831,8 +831,8 @@ namespace SMDWin.Views
             try { DrawChart(SparkRam,          _cRam ?? Array.Empty<float>(),     GetSparkPen(_penChartGreen, LastSparkVal(_cRam), ChartValKind.Percent),        showFill, 0f,   100f); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             try { DrawChart(SparkDiskActivity, _cDiskR ?? Array.Empty<float>(),   GetSparkPen(_penDiskRead),   showFill, 0f,    -1f, _cDiskW ?? Array.Empty<float>(),  GetSparkPen(_penDiskWrite));  } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             try { DrawChart(SparkNetActivity,  _cNetDown ?? _arrNetDown, GetSparkPen(_penNetDown),    showFill, 0f,    -1f, _cNetUp ?? _arrNetUp,  GetSparkPen(_penNetUp));      } catch (Exception ex) { AppLogger.Debug(ex.Message); }
-            try { DrawChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, showFill, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Lo, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Hi); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
-            try { DrawChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, showFill, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Lo, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Hi); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
+            try { DrawDashTempChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, showFill); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
+            try { DrawDashTempChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, showFill); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             try { DrawChart(DashPingChart,     _cPing ?? _arrPing,    _penDashPingDynamic,   showFill, 0f,    -1f); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             UpdateDashCollecting();
         }
@@ -1554,7 +1554,7 @@ namespace SMDWin.Views
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
             {
                 if (DashCpuTempChart?.ActualWidth >= 4 && _qCpuTemp.Count >= 2)
-                    try { DrawChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Lo, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Hi); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
+                    try { DrawDashTempChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             }));
         }
         internal void DashGpuTempChart_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1563,7 +1563,7 @@ namespace SMDWin.Views
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
             {
                 if (DashGpuTempChart?.ActualWidth >= 4 && _qGpuTemp.Count >= 2)
-                    try { DrawChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Lo, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Hi); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
+                    try { DrawDashTempChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
             }));
         }
         internal void SparkDiskActivity_SizeChanged(object sender, SizeChangedEventArgs e)

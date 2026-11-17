@@ -436,22 +436,39 @@ namespace SMDWin.Services
                     dynamic searcher = session.CreateUpdateSearcher();
                     ct.ThrowIfCancellationRequested();
                     dynamic searchResult = searcher.Search("IsInstalled=0 and IsHidden=0");
-                    int count = (int)searchResult.Updates.Count;
+                    int total = (int)searchResult.Updates.Count;
 
+                    // Only the updates Windows Update itself would install: the optional ones (optional driver and
+                    // feature previews, "BrowseOnly" or not auto-selected) are left out — Windows Settings says "You're up
+                    // to date" while they are listed, and counting them reported "2 pending" on an up-to-date PC.
+                    int count = 0, optional = 0;
                     bool hasCriticalSecurityUpdate = false;
-                    for (int i = 0; i < count; i++)
+                    var titles = new List<string>();
+                    for (int i = 0; i < total; i++)
                     {
                         try
                         {
-                            string? msrc = searchResult.Updates.Item(i).MsrcSeverity as string;
-                            if (string.Equals(msrc, "Critical", StringComparison.OrdinalIgnoreCase))
+                            dynamic u = searchResult.Updates.Item(i);
+                            bool browseOnly = false, autoSelect = true;
+                            try { browseOnly = (bool)u.BrowseOnly; } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
+                            try { autoSelect = (bool)u.AutoSelectOnWebSites; } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
+                            string title = "";
+                            try { title = (string)u.Title ?? ""; } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
+                            if (browseOnly || !autoSelect) { optional++; titles.Add("(optional) " + title); continue; }
+                            count++;
+                            titles.Add(title);
+                            try
                             {
-                                hasCriticalSecurityUpdate = true;
-                                break;
+                                string? msrc = u.MsrcSeverity as string;
+                                if (string.Equals(msrc, "Critical", StringComparison.OrdinalIgnoreCase)) hasCriticalSecurityUpdate = true;
                             }
+                            catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); /* a property missing on some updates (e.g. drivers) — ignored */ }
                         }
-                        catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); /* a property missing on some updates (e.g. drivers) — ignored */ }
+                        catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
                     }
+                    if (total > 0)
+                        AppLogger.Info($"Windows Update: {count} to install, {optional} optional — {string.Join(" | ", titles.Take(8))}");
+                    if (optional > 0) result.Details["OptionalCount"] = optional.ToString();
 
                     result.Severity = hasCriticalSecurityUpdate ? DiagnosticSeverity.Critical
                                      : count >= 1 ? DiagnosticSeverity.Warning
@@ -1119,7 +1136,7 @@ namespace SMDWin.Services
 
         private static DiagnosticPhaseResult NotTested(DiagnosticPhase phase, string what)
         {
-            var r = new DiagnosticPhaseResult { Phase = phase, Success = true, Severity = DiagnosticSeverity.Ok, Summary = Tx("Not tested yet · {0}", what) };
+            var r = new DiagnosticPhaseResult { Phase = phase, Success = true, Severity = DiagnosticSeverity.Ok, Summary = Tx("Not tested yet · {0}", Tx(what)) };
             r.Details["NotTested"] = "1";
             return r;
         }

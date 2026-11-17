@@ -612,6 +612,8 @@ namespace SMDWin.Views
             InitializeComponent();
             // texts coloured with a fixed status brush keep the old theme's colour — tied to the theme after every change
             SMDWin.Services.ThemeManager.ThemeChanged += () => Dispatcher.BeginInvoke(new Action(RemapStatusColorsAfterTheme), System.Windows.Threading.DispatcherPriority.Background);
+            // every modal window opened over the app (reports, driver search, PDF export…) dims the window behind it, like the dialogs
+            ModalDim.Register();
             SMDWin.Services.BootTiming.Mark("MainWindow(): InitializeComponent (building the window and the pages)");
             CaptureLiteralSources();   // the XAML texts, before data or translations change them
             ApplyTempUnit();
@@ -755,7 +757,7 @@ namespace SMDWin.Views
             Loaded += MainWindow_Loaded;
             Loaded += (_, _) => StartBatteryPowerSampler();   // the power history is collected even when the Battery page is not open
             Loaded += (_, _) => StartPlanPerSource();
-            Loaded += (_, _) => _betaNoticeTask = ShowBetaNoticeOnceAsync();   // first start only (MainWindow.BetaNotice.cs)         // laptop: the plan chosen for plugged in / on battery (MainWindow.PowerRedesign.cs)
+            Loaded += (_, _) => _betaNoticeTask = ShowStartNoticesAsync();   // beta notice (first start only), then the safe-sensor notice (MainWindow.SensorSafeNotice.cs)         // laptop: the plan chosen for plugged in / on battery (MainWindow.PowerRedesign.cs)
 
             Loaded += (_, _) =>
             {

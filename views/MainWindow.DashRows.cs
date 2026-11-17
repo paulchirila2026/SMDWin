@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -594,13 +595,16 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// Automatic scale for the dashboard temperature charts: instead of a fixed 30–105 °C (the line stayed flat in the
-        /// middle), the range follows the values in the visible window, with a ~6 °C margin and at least 20 °C between the ends
-        /// (small variations do not look dramatic).
+        /// The scale of a dashboard temperature chart, kept steady: the ends are multiples of 5 °C at least 10 °C apart, with
+        /// a 2 °C margin around the readings in the window. The scale grows at once when a reading goes past an end, and
+        /// shrinks only after the readings have stayed inside a smaller scale for 20 s — so it does not move with every new
+        /// value (a scale recomputed on every frame made the line jump up and down).
         /// </summary>
-        private static (float Lo, float Hi) DashTempRange(float[]? arr)
+        private readonly Dictionary<object, (float Lo, float Hi, DateTime SmallerSinceUtc)> _dashTempScale = new();
+
+        private static (float Lo, float Hi) DashTempTarget(float[]? arr)
         {
-            if (arr == null || arr.Length == 0) return (30f, 105f);
+            if (arr == null || arr.Length == 0) return (float.NaN, float.NaN);
             var slice = SliceLastN(arr, SettingsService.Current.ChartWindowSeconds);
             float mn = float.MaxValue, mx = float.MinValue;
             foreach (var v in slice)
@@ -609,11 +613,55 @@ namespace SMDWin.Views
                 if (v < mn) mn = v;
                 if (v > mx) mx = v;
             }
-            if (mx < mn) return (30f, 105f);
-            float lo = (float)Math.Floor((mn - 6f) / 5f) * 5f;
-            float hi = (float)Math.Ceiling((mx + 6f) / 5f) * 5f;
-            if (hi - lo < 20f) { float mid = (hi + lo) / 2f; lo = mid - 10f; hi = mid + 10f; }
-            return (Math.Max(0f, lo), Math.Min(120f, hi));
+            if (mx < mn) return (float.NaN, float.NaN);
+            float lo = (float)Math.Floor((mn - 2f) / 5f) * 5f;
+            float hi = (float)Math.Ceiling((mx + 2f) / 5f) * 5f;
+            if (hi - lo < 10f) { hi = lo + 10f; if (hi < mx + 2f) { hi += 5f; } }
+            return (Math.Max(0f, lo), Math.Min(125f, hi));
+        }
+
+        private (float Lo, float Hi) DashTempRange(object key, float[]? arr)
+        {
+            var (tLo, tHi) = DashTempTarget(arr);
+            var now = DateTime.UtcNow;
+            if (float.IsNaN(tLo))
+                return _dashTempScale.TryGetValue(key, out var keep) ? (keep.Lo, keep.Hi) : (30f, 105f);
+            if (!_dashTempScale.TryGetValue(key, out var cur))
+            {
+                _dashTempScale[key] = (tLo, tHi, DateTime.MaxValue);
+                return (tLo, tHi);
+            }
+            float lo = cur.Lo, hi = cur.Hi;
+            bool grow = tLo < lo || tHi > hi;
+            if (grow)
+            {
+                lo = Math.Min(lo, tLo); hi = Math.Max(hi, tHi);
+                _dashTempScale[key] = (lo, hi, DateTime.MaxValue);
+                return (lo, hi);
+            }
+            bool smaller = tLo > lo || tHi < hi;
+            if (!smaller) { _dashTempScale[key] = (lo, hi, DateTime.MaxValue); return (lo, hi); }
+            var since = cur.SmallerSinceUtc == DateTime.MaxValue ? now : cur.SmallerSinceUtc;
+            if ((now - since).TotalSeconds >= 20)
+            {
+                _dashTempScale[key] = (tLo, tHi, DateTime.MaxValue);
+                return (tLo, tHi);
+            }
+            _dashTempScale[key] = (lo, hi, since);
+            return (lo, hi);
+        }
+
+        /// <summary>Draws a dashboard temperature chart on its own scale and writes the two ends of the scale on it.</summary>
+        private void DrawDashTempChart(System.Windows.Controls.Canvas? canvas, float[] arr, System.Windows.Media.Pen pen, bool showFill)
+        {
+            if (canvas == null) return;
+            var (lo, hi) = DashTempRange(canvas, arr);
+            DrawChart(canvas, arr, pen, showFill, lo, hi);
+            string prefix = canvas == DashCpuTempChart ? "DashCpuTempScale" : canvas == DashGpuTempChart ? "DashGpuTempScale" : "";
+            if (prefix.Length == 0) return;
+            bool hasData = arr.Any(v => !float.IsNaN(v) && v > 0);
+            if (FindName(prefix + "Hi") is TextBlock tHi) { string t = hasData ? TempUnit.Deg(hi) : ""; if (tHi.Text != t) tHi.Text = t; }
+            if (FindName(prefix + "Lo") is TextBlock tLo) { string t = hasData ? TempUnit.Deg(lo) : ""; if (tLo.Text != t) tLo.Text = t; }
         }
 
         /// <summary>The "Activity" row: the top 3 processes by CPU and by memory + the number of processes.</summary>

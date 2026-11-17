@@ -444,7 +444,7 @@ namespace SMDWin.Services
                 lock (_runLock) isCurrent = ReferenceEquals(_currentRun, run);
                 if (IsDeviceLost(ex, device))
                 {
-                    AppLogger.Warning(ex, "GpuStress: driverul GPU s-a resetat (TDR / device removed) in timpul testului");
+                    AppLogger.Warning(ex, "GpuStress: the graphics driver was reset (TDR / device removed) during the test");
                     if (isCurrent)
                     {
                         DriverResetDetected = true;

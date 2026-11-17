@@ -475,9 +475,20 @@ namespace SMDWin.Services
             }
         }
 
+        private static bool _igclFirstCallDone;
+
         private static void TryIntelIgcl(TempSnapshot snap)
         {
-            var samples = IgclService.ReadAll();   // empty list if IGCL is unavailable (negative cache, zero cost)
+            if (SensorStartGuard.SafeMode) return;   // native library: not loaded after a crashed start
+            IReadOnlyList<IgclGpuSample> samples;
+            if (!_igclFirstCallDone)
+            {
+                // the first call loads Intel's native library: guarded like the LibreHardwareMonitor open
+                SensorStartGuard.Begin("the Intel graphics library (IGCL)");
+                try { samples = IgclService.ReadAll(); }
+                finally { _igclFirstCallDone = true; SensorStartGuard.End("the Intel graphics library (IGCL)"); }
+            }
+            else samples = IgclService.ReadAll();   // empty list if IGCL is unavailable (negative cache, zero cost)
             if (samples.Count == 0) return;
 
             // "Primary" Intel sample: the discrete card (Arc) is preferred, then the integrated one.

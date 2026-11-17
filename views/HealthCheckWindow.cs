@@ -414,6 +414,11 @@ namespace SMDWin.Views
             _txtVerdictFoot.VerticalAlignment = VAlign.Center;
             _btnMissing = Net.NetWindowHelper.SecondaryButton(P("Run missing tests"), P("Opens the page of the first test that has not been run yet"));
             _btnMissing.Visibility = Visibility.Collapsed;
+            // a compact button on the line of the footer text: the standard size stuck out under the card edge
+            _btnMissing.Padding = new Thickness(12, 3, 12, 3);
+            _btnMissing.FontSize = Ui.FontS;
+            _btnMissing.MinHeight = 0;
+            _btnMissing.VerticalAlignment = VAlign.Center;
             _btnMissing.Click += (_, _) => { if (_btnMissing.Tag is Phase ph) Open(ph); };
             DockPanel.SetDock(_btnMissing, Dock.Right);
             _verdictFoot = new DockPanel { Margin = new Thickness(0, 4, 0, 0), Visibility = Visibility.Collapsed };
@@ -586,7 +591,7 @@ namespace SMDWin.Views
                 foreach (var r in _rows.Values) { r.Severity = null; r.Skip = false; r.NotTested = false; r.Info = false; r.Summary = ""; r.Container.Visibility = Visibility.Visible; }
                 _shownRunAt = _cachedAt; _shownRunSeconds = _cachedSeconds;
                 foreach (var r in _cachedResults) OnPhaseCompleted(r);
-                _txtStatus.Text = $"{_cachedResults.Count(r => !r.Skip)} checks · result from {_cachedAt:HH:mm} · Re-run to check again";
+                _txtStatus.Text = P("{0} checks · result from {1} · run the check again for fresh values", _cachedResults.Count(r => !r.Skip), _cachedAt.ToString("HH:mm"));
                 RefreshSummary();
                 return;
             }

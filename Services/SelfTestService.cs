@@ -62,7 +62,7 @@ namespace SMDWin.Services
             {
                 double diff = Math.Abs(actual - expected);
                 if (diff <= tolerance)
-                    Ok(label, $"{actual:F2}{unit} (asteptat {expected:F2}{unit})");
+                    Ok(label, $"{actual:F2}{unit} (expected {expected:F2}{unit})");
                 else
                     Fail(label, $"got {actual:F2}{unit}, expected {expected:F2}{unit} (diff {diff:F2}, toleranta {tolerance:F2})");
             }
@@ -117,12 +117,12 @@ namespace SMDWin.Services
                 var seventySeven = RingProgressCalculator.Calculate(diameter, thickness, 77);
                 double visiblePx = RingProgressCalculator.VisibleArcLengthPx(seventySeven, thickness);
                 double expectedVisiblePx = seventySeven.CircumferencePx * 0.77;
-                Expect("Ring @ 77% — arc vizibil (px)", visiblePx, expectedVisiblePx, 0.5, "px");
+                Expect("Ring @ 77% — visible arc (px)", visiblePx, expectedVisiblePx, 0.5, "px");
 
                 // 50% -> half of the circle visible
                 var half = RingProgressCalculator.Calculate(diameter, thickness, 50);
                 double halfVisiblePx = RingProgressCalculator.VisibleArcLengthPx(half, thickness);
-                Expect("Ring @ 50% — arc vizibil (px)", halfVisiblePx, half.CircumferencePx * 0.5, 0.5, "px");
+                Expect("Ring @ 50% — visible arc (px)", halfVisiblePx, half.CircumferencePx * 0.5, 0.5, "px");
             }
             catch (Exception ex) { Fail("RingProgressCalculator self-check threw an exception", ex.Message); }
 

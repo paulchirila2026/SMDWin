@@ -256,8 +256,8 @@ namespace SMDWin.Services
                 int szIni = Marshal.SizeOf<CtlInitArgs>();
                 if (szTel != 808 || szIni != 36)
                 {
-                    string telStatus = szTel != 808 ? $"telemetry={szTel} (asteptat 808)" : "telemetry=OK";
-                    string iniStatus = szIni != 36  ? $"init={szIni} (asteptat 36)"       : "init=OK";
+                    string telStatus = szTel != 808 ? $"telemetry={szTel} (expected 808)" : "telemetry=OK";
+                    string iniStatus = szIni != 36  ? $"init={szIni} (expected 36)"       : "init=OK";
                     AppLogger.Warning(new Exception($"IGCL: layout structuri gresit — {telStatus}, {iniStatus} — abandon"), "IgclService");
                     return;
                 }

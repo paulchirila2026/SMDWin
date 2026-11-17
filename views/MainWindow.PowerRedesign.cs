@@ -397,6 +397,9 @@ namespace SMDWin.Views
                 Detach(ups);
                 ups.Margin = new Thickness(0, 0, 0, 12);
                 upsHost.Child = ups;
+                // the host follows the card: without a UPS it is collapsed instead of an empty 0-px row
+                upsHost.SetBinding(UIElement.VisibilityProperty,
+                    new System.Windows.Data.Binding(nameof(UIElement.Visibility)) { Source = ups });
             }
         }
 

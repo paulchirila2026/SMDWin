@@ -196,7 +196,7 @@ namespace SMDWin.Views
                 var captured = chip;
                 var chipBtn = new Button
                 {
-                    Content = captured, Tag = captured,
+                    Content = SMDWin.Views.MainWindow.PT(captured), Tag = captured,
                     Padding = new Thickness(10, 3, 10, 3),
                     Margin  = new Thickness(0, 0, 4, 0),
                     FontSize = Ui.FontXS, Cursor = Cursors.Hand
@@ -238,7 +238,7 @@ namespace SMDWin.Views
             };
             var clearFilter = new Button
             {
-                Content = "✕ Clear filter", Padding = new Thickness(8, 3, 8, 3),
+                Content = "✕ " + SMDWin.Views.MainWindow.PT("Clear filter"), Padding = new Thickness(8, 3, 8, 3),
                 Margin  = new Thickness(8, 0, 0, 0), Cursor = Cursors.Hand, Visibility = Visibility.Collapsed
             };
             if (Application.Current.Resources["OutlineButtonStyle"] is Style cs) clearFilter.Style = cs;

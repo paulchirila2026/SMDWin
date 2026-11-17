@@ -114,6 +114,13 @@ namespace SMDWin.Services
             catch (Exception ex) { AppLogger.Warning(ex, "WmiCache.FetchCpu"); }
         }
 
+        /// <summary>Windows' own fallback and virtual display adapters: never chosen over a real graphics card.</summary>
+        internal static bool IsBasicOrVirtualAdapter(string name) =>
+            name.Contains("Basic Display", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("Basic Render", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("Remote Display", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("Indirect Display", StringComparison.OrdinalIgnoreCase);
+
         private void FetchGpu()
         {
             try
@@ -123,6 +130,7 @@ namespace SMDWin.Services
                 string bestName = "";
                 long   bestRam  = -1;
                 bool   bestIsDedicated = false;
+                bool   bestIsBasic = false;
 
                 using (var __wmiTmp2 = s.Get())
                 {
@@ -137,15 +145,22 @@ namespace SMDWin.Services
                     bool isDedicated = !compat.Contains("INTEL") &&
                                        !n.ToUpperInvariant().Contains("INTEL");
 
-                    // Preference: dedicated > integrated; on a tie → more RAM
+                    // Preference: a real card over Windows' basic/virtual adapters, then dedicated > integrated,
+                    // then more RAM. A laptop can list "Microsoft Basic Display Adapter" next to a working AMD/Intel
+                    // card; it used to win the tie as "not Intel = dedicated".
                     if (n.Length == 0) continue;
+                    bool isBasic = IsBasicOrVirtualAdapter(n);
+                    if (isBasic) isDedicated = false;
                     if (bestName.Length == 0 ||
-                        (!bestIsDedicated && isDedicated) ||
-                        (bestIsDedicated == isDedicated && ram > bestRam))
+                        (bestIsBasic && !isBasic) ||
+                        (bestIsBasic == isBasic &&
+                            ((!bestIsDedicated && isDedicated) ||
+                             (bestIsDedicated == isDedicated && ram > bestRam))))
                     {
                         bestName = n;
                         bestRam  = ram;
                         bestIsDedicated = isDedicated;
+                        bestIsBasic = isBasic;
                     }
                 }
                 }

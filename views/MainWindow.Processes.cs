@@ -371,7 +371,7 @@ namespace SMDWin.Views
                 TxtProcCountLabel.Text = (_currentProcTab == "background" && string.IsNullOrEmpty(search)
                     && _procBackgroundTotalCount > BackgroundTopCount)
                     ? PT("processes — top {0} by usage of {1} background (see \"All\" for everything)", BackgroundTopCount, _procBackgroundTotalCount)
-                    : "processes";
+                    : PT("processes");
             }
 
             if (selectedPid >= 0)

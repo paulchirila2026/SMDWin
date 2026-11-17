@@ -853,17 +853,20 @@ namespace SMDWin.Views
 
             var drawing = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
             // a slim battery (about 2.3 : 1) with an even gap all round the charge, the terminal on the right
-            var shell = new Border { Width = 40, Height = 18, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(4.5), Padding = new Thickness(2) };
+            // no pixel rounding inside the drawing: at 125 % scaling the rounding put the charge 1 px higher than centre
+            var shell = new Border { Width = 40, Height = 18, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(4.5), Padding = new Thickness(2),
+                                     UseLayoutRounding = false, SnapsToDevicePixels = false, VerticalAlignment = WpfVAlign.Center };
             shell.SetResourceReference(Border.BorderBrushProperty, "TextSecondaryBrush");
             var level = new Grid();
             level.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Math.Max(pct, 1), GridUnitType.Star) });
             level.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Math.Max(100 - pct, 0.01), GridUnitType.Star) });
-            var fill = new Border { CornerRadius = new CornerRadius(2.5), SnapsToDevicePixels = true };
+            var fill = new Border { CornerRadius = new CornerRadius(2.5), SnapsToDevicePixels = false, UseLayoutRounding = false };
             fill.SetResourceReference(Border.BackgroundProperty, pct >= 20 ? "StatusGoodBrush" : "StatusProblemBrush");
             level.Children.Add(fill);
             shell.Child = level;
             drawing.Children.Add(shell);
-            var nub = new Border { Width = 2.5, Height = 7, CornerRadius = new CornerRadius(0, 1.5, 1.5, 0), VerticalAlignment = WpfVAlign.Center, Margin = new Thickness(1, 0, 0, 0) };
+            var nub = new Border { Width = 2.5, Height = 7, CornerRadius = new CornerRadius(0, 1.5, 1.5, 0), VerticalAlignment = WpfVAlign.Center, Margin = new Thickness(1, 0, 0, 0),
+                                   UseLayoutRounding = false, SnapsToDevicePixels = false };
             nub.SetResourceReference(Border.BackgroundProperty, "TextSecondaryBrush");
             drawing.Children.Add(nub);
             // the charge written next to the battery (not only above it)

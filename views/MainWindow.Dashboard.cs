@@ -148,7 +148,7 @@ namespace SMDWin.Views
                     _dashSlowPending = true;
                     try { PopulateDashboardFromSummary(_summary); } finally { _dashSlowPending = false; }
                     _dashPopulatedOnce = true;
-                    __DashLap("PopulateDashboardFromSummary (fara date lente)");
+                    __DashLap("PopulateDashboardFromSummary (without the slow data)");
                     // license / TPM / last update (WMI, up to ~5 s on laptops) no longer keep the window hidden: their rows are filled in
                     // as they arrive
                     _ = CompleteDashboardSlowDataAsync();
@@ -228,8 +228,8 @@ namespace SMDWin.Views
             Dispatcher.InvokeAsync(() =>
             {
                 _dashSizeChanged = true;
-                try { if (_qCpuTemp.Count >= 2) DrawChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Lo, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Hi); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
-                try { if (_qGpuTemp.Count >= 2) DrawChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Lo, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Hi); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
+                try { if (_qCpuTemp.Count >= 2) DrawDashTempChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
+                try { if (_qGpuTemp.Count >= 2) DrawDashTempChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
                 try { if (_qDiskR.Count >= 2) DrawChart(SparkDiskActivity, _cDiskR ?? _arrDiskR, GetSparkPen(_penDiskRead), SettingsService.Current.ChartShowFill, 0f, -1f, _cDiskW ?? _arrDiskW, GetSparkPen(_penDiskWrite)); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
                 try { if (_qNetDown.Count >= 2) DrawChart(SparkNetActivity, _cNetDown ?? _arrNetDown, GetSparkPen(_penNetDown), SettingsService.Current.ChartShowFill, 0f, -1f, _cNetUp ?? _arrNetUp, GetSparkPen(_penNetUp)); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
                 try { if (_qPing.Count >= 2) DrawChart(DashPingChart, _cPing ?? _arrPing, _penDashPingDynamic, SettingsService.Current.ChartShowFill, 0f, -1f); } catch (Exception ex2) { AppLogger.Debug(ex2.Message); }
@@ -421,8 +421,8 @@ namespace SMDWin.Views
             Dispatcher.InvokeAsync(() =>
             {
                 _dashSizeChanged = true;
-                try { if (_qCpuTemp.Count >= 2) DrawChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Lo, DashTempRange(_cCpuTemp ?? _arrCpuTemp).Hi); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
-                try { if (_qGpuTemp.Count >= 2) DrawChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Lo, DashTempRange(_cGpuTemp ?? _arrGpuTemp).Hi); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
+                try { if (_qCpuTemp.Count >= 2) DrawDashTempChart(DashCpuTempChart, _cCpuTemp ?? _arrCpuTemp, _penDashCpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
+                try { if (_qGpuTemp.Count >= 2) DrawDashTempChart(DashGpuTempChart, _cGpuTemp ?? _arrGpuTemp, _penDashGpuTemp, SettingsService.Current.ChartShowFill); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
                 try { if (_qDiskR.Count >= 2) DrawChart(SparkDiskActivity, _cDiskR ?? _arrDiskR, GetSparkPen(_penDiskRead), SettingsService.Current.ChartShowFill, 0f, -1f, _cDiskW ?? _arrDiskW, GetSparkPen(_penDiskWrite)); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
                 try { if (_qNetDown.Count >= 2) DrawChart(SparkNetActivity, _cNetDown ?? _arrNetDown, GetSparkPen(_penNetDown), SettingsService.Current.ChartShowFill, 0f, -1f, _cNetUp ?? _arrNetUp, GetSparkPen(_penNetUp)); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }
                 try { if (_qPing.Count >= 2) DrawChart(DashPingChart, _cPing ?? _arrPing, _penDashPingDynamic, SettingsService.Current.ChartShowFill, 0f, -1f); } catch (Exception logEx) { AppLogger.Debug(logEx.Message); }

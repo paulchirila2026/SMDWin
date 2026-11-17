@@ -44,7 +44,13 @@ namespace SMDWin.Views.Net
             NetWindowHelper.SetupWindow(this, "Firewall Rules — SMDWin", 1180, 620);
             Content = BuildUI();
             Loaded += OnFirstLoaded;
-                    }
+            // the Allow / Block colours are converted for the current theme: converted again after a theme change
+            // (the Light green stayed on the Dark background)
+            void OnTheme() { try { _grid?.Items.Refresh(); } catch (Exception ex) { AppLogger.Debug($"Firewall theme refresh: {ex.Message}"); } }
+            ThemeManager.ThemeChanged += OnTheme;
+            Unloaded += (_, _) => ThemeManager.ThemeChanged -= OnTheme;
+            Loaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; ThemeManager.ThemeChanged += OnTheme; };
+        }
 
         private UIElement BuildUI()
         {

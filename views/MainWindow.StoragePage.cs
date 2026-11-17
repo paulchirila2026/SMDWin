@@ -128,7 +128,7 @@ namespace SMDWin.Views
             if (FindName("StActScanStats") is FrameworkElement ss) ss.Visibility = tag == "Surface" ? Visibility.Visible : Visibility.Collapsed;
             if (FindName("TxtStActTitle") is TextBlock t)
                 t.Text = tag == "Surface" ? PT("All drives · the scan reads the selected drive")
-                       : tag == "Bench" ? "All drives · the benchmark uses the selected drive" : "All drives";
+                       : tag == "Bench" ? PT("All drives · the benchmark uses the selected drive") : PT("All drives");
             HighlightStActWin();
             DrawStorageActChart();
             Dispatcher.BeginInvoke(new Action(UpdatePerDiskCards), System.Windows.Threading.DispatcherPriority.Loaded);   // after the tab is shown
@@ -420,8 +420,8 @@ namespace SMDWin.Views
                 long unsafeOff = disk.SmartAttributes.FirstOrDefault(a => a.Id is 0xC0 or 0xAE)?.RawValue ?? -1;
                 string status, key, text;
                 if (count == 0) { status = "No data"; key = "TextSecondaryBrush"; text = disk.Bus == "NVMe" || (disk.Kind ?? "").Contains("NVMe", StringComparison.OrdinalIgnoreCase)
-                    ? "Windows reports this drive as Healthy, but its storage driver does not pass on the detailed counters (temperature, wear, power-on hours). This is common when the laptop uses the Intel RST / VMD driver; the drive maker's own tool (for example SanDisk Dashboard) can read them."
-                    : "The drive does not report SMART data here (common for USB sticks and some adapters)."; }
+                    ? PT("Windows reports this drive as Healthy, but its storage driver does not pass on the detailed counters (temperature, wear, power-on hours). This is common when the laptop uses the Intel RST / VMD driver; the drive maker's own tool (for example SanDisk Dashboard) can read them.")
+                    : PT("The drive does not report SMART data here (common for USB sticks and some adapters)."); }
                 else if (warnNames.Count == 0 && hp >= 90)
                 {
                     status = "Healthy"; key = "StatusOkBrush";
@@ -430,10 +430,10 @@ namespace SMDWin.Views
                 else
                 {
                     status = hp < 60 ? "Failing" : "Watch"; key = hp < 60 ? "StatusCritBrush" : "StatusWarnBrush";
-                    text = warnNames.Count > 0 ? $"{warnNames.Count} value{(warnNames.Count > 1 ? "s" : "")} need attention: {string.Join(", ", warnNames.Take(3))}{(warnNames.Count > 3 ? "…" : "")}. Back up important data."
-                                               : "The drive reports reduced health. Back up important data.";
+                    text = warnNames.Count > 0 ? PT("Values that need attention: {0}. Back up important data.", string.Join(", ", warnNames.Take(3)) + (warnNames.Count > 3 ? "…" : ""))
+                                               : PT("The drive reports reduced health. Back up important data.");
                 }
-                if (FindName("TxtSmartVerdictStatus") is TextBlock st) { st.Text = status; st.SetResourceReference(TextBlock.ForegroundProperty, key); }
+                if (FindName("TxtSmartVerdictStatus") is TextBlock st) { st.Text = PT(status); st.SetResourceReference(TextBlock.ForegroundProperty, key); }
                 if (FindName("TxtSmartVerdictText") is TextBlock tx) tx.Text = text;
                 UpdateSmartLife(disk, disk.NvmeHealthRows);
                 if (FindName("TxtSmartAttrCount") is TextBlock ac) ac.Text = count > 0 ? PT("{0} values", count) : PT("Values reported by the drive");

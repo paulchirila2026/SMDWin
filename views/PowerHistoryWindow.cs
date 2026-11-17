@@ -355,7 +355,7 @@ namespace SMDWin.Views
             });
             sp.Children.Add(new TextBlock
             {
-                Text = label, FontSize = Ui.FontXS, Foreground = Res("TextSecondaryBrush"),
+                Text = SMDWin.Views.MainWindow.PT(label), FontSize = Ui.FontXS, Foreground = Res("TextSecondaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center
             });
             return sp;

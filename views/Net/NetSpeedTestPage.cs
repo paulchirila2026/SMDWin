@@ -580,7 +580,7 @@ namespace SMDWin.Views.Net
             var sp = new StackPanel { Margin = new Thickness(36,0,36,0),
                 HorizontalAlignment = HorizontalAlignment.Center };
             sp.Children.Add(new TextBlock { Text = lbl, FontSize = 9,
-                FontWeight = FontWeights.SemiBold, Opacity = 0.55,
+                FontWeight = FontWeights.SemiBold, Opacity = 0.85,
                 Foreground = NetWindowHelper.Res("TextSecondaryBrush"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0,0,0,4) });
@@ -590,7 +590,7 @@ namespace SMDWin.Views.Net
                 HorizontalAlignment = HorizontalAlignment.Center };
             sp.Children.Add(valTb);
             if (!string.IsNullOrEmpty(unit))
-                sp.Children.Add(new TextBlock { Text = unit, FontSize = 9, Opacity = 0.45,
+                sp.Children.Add(new TextBlock { Text = unit, FontSize = 9, Opacity = 0.75,
                     Foreground = NetWindowHelper.Res("TextSecondaryBrush"),
                     HorizontalAlignment = HorizontalAlignment.Center });
             parent.Children.Add(sp);

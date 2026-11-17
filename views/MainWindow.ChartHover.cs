@@ -358,8 +358,8 @@ namespace SMDWin.Views
             if (canvas == SparkCpu)               { queue = _cCpu ?? _arrCpu;     unit = "%";    yMin = 0;  yMax = 100; }
             else if (canvas == SparkGpu)          { queue = _cGpu ?? _arrGpu;     unit = "%";    yMin = 0;  yMax = 100; }
             else if (canvas == SparkRam)          { queue = _cRam ?? _arrRam;     unit = "%";    yMin = 0;  yMax = 100; }
-            else if (canvas == DashCpuTempChart)  { queue = _cCpuTemp ?? _arrCpuTemp; unit = "°C"; yMin = 30; yMax = 105; }
-            else if (canvas == DashGpuTempChart)  { queue = _cGpuTemp ?? _arrGpuTemp; unit = "°C"; yMin = 30; yMax = 105; }
+            else if (canvas == DashCpuTempChart)  { queue = _cCpuTemp ?? _arrCpuTemp; unit = "°C"; (yMin, yMax) = DashTempRange(canvas, queue); }   // the same scale as the drawn line
+            else if (canvas == DashGpuTempChart)  { queue = _cGpuTemp ?? _arrGpuTemp; unit = "°C"; (yMin, yMax) = DashTempRange(canvas, queue); }
             else if (canvas == DashPingChart)     { queue = _cPing ?? _arrPing;    unit = " ms";   yMin = 0;  yMax = 100; }
             else if (canvas == SparkDiskActivity) { queue = _cDiskR ?? _arrDiskR;   unit = " KB/s"; yMin = 0;  yMax = -1; }
             else if (canvas == SparkNetActivity)  { queue = _cNetDown ?? _arrNetDown; unit = " KB/s"; yMin = 0;  yMax = -1; }

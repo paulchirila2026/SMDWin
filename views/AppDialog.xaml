@@ -24,7 +24,7 @@
     <!-- the shadow on its own empty layer: an Effect on the element with text would blur the text -->
     <Border CornerRadius="{DynamicResource RadiusCard}" Background="{DynamicResource BgCardBrush}" IsHitTestVisible="False">
       <Border.Effect>
-      <DropShadowEffect BlurRadius="22" ShadowDepth="5" Direction="270" Color="#000000" Opacity="0.30"/>
+      <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Color="#000000" Opacity="0.45"/>
     </Border.Effect>
     </Border>
     <Border CornerRadius="{DynamicResource RadiusCard}"

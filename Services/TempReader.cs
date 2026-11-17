@@ -302,7 +302,7 @@ namespace SMDWin.Services
                 if (!gotGlobalLock)
                 {
                     AppLogger.Warning("TryInitLhm: could not take the global LHM lock within 4s (another TempReader instance is initializing at the same time) — giving up the init, Backend stays unavailable until the next attempt.");
-                    Backend = "none (LHM: alta initializare in curs)";
+                    Backend = "none (LHM: another initialization in progress)";
                     return;
                 }
                 TryInitLhmCore();
@@ -331,6 +331,12 @@ namespace SMDWin.Services
 
         private void TryInitLhmCore()
         {
+            if (SensorStartGuard.SafeMode)
+            {
+                // a previous start closed while LibreHardwareMonitor was opening (SensorStartGuard): Windows readings only
+                Backend = "none (safe sensor mode)";
+                return;
+            }
             try
             {
                 var c = new Computer
@@ -342,7 +348,9 @@ namespace SMDWin.Services
                     IsMemoryEnabled      = false,  // enabled lazily only in Full mode
                     IsStorageEnabled     = false,
                 };
-                c.Open();
+                SensorStartGuard.Begin("LibreHardwareMonitor (processor, graphics, board)");
+                try { c.Open(); }
+                finally { SensorStartGuard.End("LibreHardwareMonitor"); }
                 _computer    = c;
                 _currentMode = LhmSensorMode.CpuGpuOnly; // real sync with the state above
                 Backend      = "LibreHardwareMonitor";
@@ -542,7 +550,7 @@ namespace SMDWin.Services
                                 string val = s.Value.HasValue ? s.Value.Value.ToString("F2") : "null";
                                 lines.Add($"    {s.SensorType,-12} {s.Name,-30} = {val}");
                             }
-                            catch (Exception ex) { lines.Add($"    (eroare senzor: {ex.Message})"); }
+                            catch (Exception ex) { lines.Add($"    (sensor error: {ex.Message})"); }
                         }
                         foreach (var sub in hw.SubHardware)
                         {
@@ -554,14 +562,14 @@ namespace SMDWin.Services
                                     string val = s.Value.HasValue ? s.Value.Value.ToString("F2") : "null";
                                     lines.Add($"      {s.SensorType,-12} {s.Name,-30} = {val}");
                                 }
-                                catch (Exception ex) { lines.Add($"      (eroare senzor: {ex.Message})"); }
+                                catch (Exception ex) { lines.Add($"      (sensor error: {ex.Message})"); }
                             }
                         }
                     }
-                    catch (Exception ex) { lines.Add($"  (eroare hardware {hw?.Name}: {ex.Message})"); }
+                    catch (Exception ex) { lines.Add($"  (hardware error {hw?.Name}: {ex.Message})"); }
                 }
             }
-            catch (Exception ex) { lines.Add($"(eroare enumerare: {ex.Message})"); }
+            catch (Exception ex) { lines.Add($"(enumeration error: {ex.Message})"); }
             return lines;
         }
 

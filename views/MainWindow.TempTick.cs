@@ -1645,7 +1645,7 @@ namespace SMDWin.Views
                 if (throttleConfirmed && _throttleConsecutiveTicks == ThrottleConfirmTicks)
                 {
                     AppLogger.Warning(
-                        "S2-DIAG Throttle CONFIRMAT: reason={0} freqMHz={1:F0} loadPct={2:F0} " +
+                        "S2-DIAG Throttle CONFIRMED: reason={0} freqMHz={1:F0} loadPct={2:F0} " +
                         "after {3} consecutive ticks (threshold={4})",
                         _tSnapNotif?.Reason.ToString() ?? "?", _tSnapNotif?.FreqMHz ?? -1,
                         snap?.CpuLoadPct ?? -1, _throttleConsecutiveTicks, ThrottleConfirmTicks);

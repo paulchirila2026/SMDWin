@@ -1366,7 +1366,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <Viewbox Style="{StaticResource CompDialBox}">
                     <Grid Style="{StaticResource CompDialGrid}">
@@ -1385,7 +1385,7 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="0"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <ContentControl Grid.Column="0" Focusable="False" Visibility="Collapsed"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock x:Name="DashLoadLabelCpu" Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
                       <Canvas x:Name="SparkCpu" Grid.Row="1" MinHeight="40" ClipToBounds="True" Background="Transparent" Margin="0,3,0,0"
@@ -1394,9 +1394,9 @@
                     </Grid></ContentControl>
                     <ContentControl Grid.Column="2" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock Style="{StaticResource DashChartLabel}" Text="temperature" VerticalAlignment="Bottom"/>
-                        <TextBlock Style="{StaticResource CompChartValue}"
+                        <TextBlock Style="{StaticResource DashCompChartValue}"
                                    Foreground="{Binding Foreground, ElementName=TxtDashCpuTempBig}"
                                    x:Name="TxtDialCpuTemp" Text="{Binding Text, ElementName=TxtDashCpuTempBig, Converter={StaticResource DashTempConv}, Mode=OneTime}"/>
                       </DockPanel>
@@ -1406,6 +1406,9 @@
                       <Canvas x:Name="DashCpuTempChart" Grid.Row="1" MinHeight="40" ClipToBounds="True" Background="Transparent" Margin="0,3,0,0"
                               SizeChanged="DashCpuTempChart_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
+                      <!-- the two ends of the temperature scale, small, on the left of the chart -->
+                      <TextBlock x:Name="DashCpuTempScaleHi" Grid.Row="1" Style="{StaticResource DashChartScaleText}" VerticalAlignment="Top" Margin="2,4,0,0"/>
+                      <TextBlock x:Name="DashCpuTempScaleLo" Grid.Row="1" Style="{StaticResource DashChartScaleText}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
                     </Grid></ContentControl>
                   </Grid>
                 </Grid>
@@ -1467,7 +1470,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <Viewbox Style="{StaticResource CompDialBox}">
                     <Grid Style="{StaticResource CompDialGrid}">
@@ -1486,7 +1489,7 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="0"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <ContentControl Grid.Column="0" Focusable="False" Visibility="Collapsed"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock x:Name="DashLoadLabelGpu" Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
                       <Canvas x:Name="SparkGpu" Grid.Row="1" MinHeight="40" ClipToBounds="True" Background="Transparent" Margin="0,3,0,0"
@@ -1495,9 +1498,9 @@
                     </Grid></ContentControl>
                     <ContentControl Grid.Column="2" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock Style="{StaticResource DashChartLabel}" Text="temperature" VerticalAlignment="Bottom"/>
-                        <TextBlock Style="{StaticResource CompChartValue}"
+                        <TextBlock Style="{StaticResource DashCompChartValue}"
                                    Foreground="{Binding Foreground, ElementName=TxtDashGpuTempBig}"
                                    x:Name="TxtDialGpuTemp" Text="{Binding Text, ElementName=TxtDashGpuTempBig, Converter={StaticResource DashTempConv}, Mode=OneTime}"/>
                       </DockPanel>
@@ -1507,6 +1510,9 @@
                       <Canvas x:Name="DashGpuTempChart" Grid.Row="1" MinHeight="40" ClipToBounds="True" Background="Transparent" Margin="0,3,0,0"
                               SizeChanged="DashGpuTempChart_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
+                      <!-- the two ends of the temperature scale, small, on the left of the chart -->
+                      <TextBlock x:Name="DashGpuTempScaleHi" Grid.Row="1" Style="{StaticResource DashChartScaleText}" VerticalAlignment="Top" Margin="2,4,0,0"/>
+                      <TextBlock x:Name="DashGpuTempScaleLo" Grid.Row="1" Style="{StaticResource DashChartScaleText}" VerticalAlignment="Bottom" Margin="2,0,0,1"/>
                     </Grid></ContentControl>
                   </Grid>
                 </Grid>
@@ -1575,7 +1581,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <Viewbox Style="{StaticResource CompDialBox}">
                     <Grid Style="{StaticResource CompDialGrid}">
@@ -1592,9 +1598,9 @@
                   <Grid Grid.Column="1" MaxHeight="240" Margin="8,0,0,0">
                     <Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock x:Name="DashLoadLabelRam" Text="usage" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
-                        <TextBlock Style="{StaticResource CompChartValue}" FontSize="17" x:Name="TxtDialRamUsed">
+                        <TextBlock Style="{StaticResource DashCompChartValue}" FontSize="17" x:Name="TxtDialRamUsed">
                           <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}{1}">
                               <Binding Path="Text" ElementName="TxtDashRamUsed"/>
@@ -1668,7 +1674,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <Viewbox Style="{StaticResource CompDialBox}">
                     <Grid Style="{StaticResource CompDialGridRange}">
@@ -1763,7 +1769,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <Viewbox Style="{StaticResource CompDialBox}">
                     <Grid Style="{StaticResource CompDialGrid}">
@@ -1782,7 +1788,7 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <ContentControl Grid.Column="0" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}">
+                      <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"><Run Text="traffic  ·  "/><Run Text="{Binding Text, ElementName=TxtDashNetUp, Mode=OneWay}"/></TextBlock>
                       </DockPanel>
                       <!-- the chart scale ("of 9.8 MB/s") is in the tooltip: in the header it did not fit next to the label -->
@@ -1793,8 +1799,8 @@
                     </Grid></ContentControl>
                     <ContentControl Grid.Column="2" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                      <DockPanel Style="{StaticResource CompChartHead}" Background="Transparent" ToolTip="{Binding Text, ElementName=TxtDashPingHost, StringFormat='Ping to {0} - current and maximum since start'}">
-                        <TextBlock Style="{StaticResource CompChartValue}" x:Name="TxtDialPing" Text="{Binding Text, ElementName=TxtDashPingMs, Mode=OneTime}"/>
+                      <DockPanel Style="{StaticResource DashCompChartHead}" Background="Transparent" ToolTip="{Binding Text, ElementName=TxtDashPingHost, StringFormat='Ping to {0} - current and maximum since start'}">
+                        <TextBlock Style="{StaticResource DashCompChartValue}" x:Name="TxtDialPing" Text="{Binding Text, ElementName=TxtDashPingMs, Mode=OneTime}"/>
                         <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" Text="ping"/>
                       </DockPanel>
                       <Canvas x:Name="DashPingChart" Grid.Row="1" MinHeight="40" ClipToBounds="True" Background="Transparent" Margin="0,3,0,0"
@@ -1880,7 +1886,7 @@
                     </StackPanel>
                   </StackPanel>
                 </DockPanel>
-                <Grid Grid.Row="1" Margin="0,4,0,12">
+                <Grid Grid.Row="1" Margin="0,2,0,8">
                   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
                   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource CompValue}" FontSize="31" LineHeight="33" HorizontalAlignment="Center" Text="{Binding Text, ElementName=TxtOsBuildV, Converter={StaticResource DashOsVer}, ConverterParameter=ver}"/>

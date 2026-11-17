@@ -1011,7 +1011,8 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
               <!-- a dot in the state colour (grey = not checked, green, orange, red); the numbers are in the tooltip -->
               <Ellipse x:Name="HealthDot" Width="8" Height="8" Margin="0,0,7,0" VerticalAlignment="Center" Fill="{DynamicResource StatusNaBrush}"/>
-              <TextBlock Text="Health" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
+              <!-- its own text ("PC health"), so Romanian can say "Stare PC" here while "Sănătate" stays right for disks -->
+              <TextBlock Text="PC health" FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
                          Foreground="{DynamicResource TextPrimaryBrush}" Opacity="0.85" VerticalAlignment="Center"/>
             </StackPanel>
           </Border>

@@ -410,7 +410,7 @@ namespace SMDWin.Services
         {
             1 => "Full dump", 2 => "Kernel dump", 4 => "Minidump (triage)",
             5 => "Bitmap dump", 6 => "Live kernel bitmap", 8 => "Kernel memory dump",
-            9 => "Kernel+user memory dump", 0xA => "Complete memory dump", _ => $"tip {t}"
+            9 => "Kernel+user memory dump", 0xA => "Complete memory dump", _ => $"type {t}"
         };
 
         private static string ShortName(string path)

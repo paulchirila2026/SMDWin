@@ -323,6 +323,7 @@ namespace SMDWin.Views
         public async Task RunSelfTestGpuStressAsync(Action<string> log, int seconds, CancellationToken ct)
         {
             log($"GPU Stress — {seconds}s:");
+            var gpuTestStartUtc = DateTime.UtcNow;
             double maxLoad = 0, sumLoad = 0; int loadSamples = 0;
             double maxUiLagMs = 0;
             long maxDispatchHz = 0;
@@ -366,7 +367,9 @@ namespace SMDWin.Views
                 try { SetNavTaskBadge("TaskBadgeStress", _cpuStress.Running || _gpuStress.IsRunning); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
             }
 
-            if (maxDispatchHz <= 0)
+            if (_lastThermalStopUtc >= gpuTestStartUtc)
+                log($"  ⚠ GPU stress was stopped by the temperature safety ({_lastThermalStopText}) — the test is not judged; the computer is already too hot");
+            else if (maxDispatchHz <= 0)
                 log("  ✘ GPU stress did NOT actually run — DispatchHz stayed at 0 for the whole test");
             else if (loadSamples == 0)
                 log($"  ⚠ GPU stress ran (DispatchHz max {maxDispatchHz}), but the GPU doesn't expose load% through sensors — normal on some iGPUs.");

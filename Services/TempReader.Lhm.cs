@@ -9,6 +9,30 @@ namespace SMDWin.Services
 {
     public partial class TempReader
     {
+        // A laptop graphics card asleep in power saving answers every read in ~250 ms: logged once, then a summary every
+        // 10 minutes (one line per read filled the log with thousands of identical lines).
+        private static readonly Dictionary<string, (DateTime Last, int Count, long MaxMs)> _slowReadLog = new();
+        private static void LogSlowRead(string what, long ms)
+        {
+            lock (_slowReadLog)
+            {
+                var now = DateTime.UtcNow;
+                if (!_slowReadLog.TryGetValue(what, out var e))
+                {
+                    _slowReadLog[what] = (now, 0, 0);
+                    AppLogger.Warning($"LHM Read slow: {what} — {ms}ms (repeats are summarised every 10 min)");
+                    return;
+                }
+                e = (e.Last, e.Count + 1, Math.Max(e.MaxMs, ms));
+                if ((now - e.Last).TotalMinutes >= 10)
+                {
+                    AppLogger.Info($"LHM Read slow: {what} — {e.Count} slow reads in the last {(now - e.Last).TotalMinutes:F0} min, the slowest {e.MaxMs}ms");
+                    e = (now, 0, 0);
+                }
+                _slowReadLog[what] = e;
+            }
+        }
+
         // ── Metoda 1: LibreHardwareMonitor ────────────────────────────────────
         private double _cpuUpdateCostMs;
         private bool _cpuSkippedThisRead;   // true when the CPU read was skipped on purpose in this tick → no "frozen sensor" checks
@@ -110,13 +134,13 @@ namespace SMDWin.Services
                         // /* LHM bug on some CPUs (e.g. i5-4570) — continue */
                     }
                     if (swHw.ElapsedMilliseconds > 150)
-                        AppLogger.Warning($"LHM Read slow: {hw.Name} ({hw.HardwareType}) — {swHw.ElapsedMilliseconds}ms");
+                        LogSlowRead($"{hw.Name} ({hw.HardwareType})", swHw.ElapsedMilliseconds);
                     foreach (var sub in hw.SubHardware)
                     {
                         var swSub = System.Diagnostics.Stopwatch.StartNew();
                         try { sub.Update(); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
                         if (swSub.ElapsedMilliseconds > 150)
-                            AppLogger.Warning($"LHM Read slow (sub): {hw.Name}/{sub.Name} — {swSub.ElapsedMilliseconds}ms");
+                            LogSlowRead($"{hw.Name}/{sub.Name}", swSub.ElapsedMilliseconds);
                     }
 
                     bool isCpu  = hw.HardwareType == HardwareType.Cpu;
@@ -162,11 +186,14 @@ namespace SMDWin.Services
                             // ── CPU Clock (MHz) ──────────────────────────────
                             if (isCpu && s.SensorType == SensorType.Clock && v > 0)
                             {
-                                if (n.Contains("core") && !n.Contains("bus") && !n.Contains("ring"))
+                                // one clock per core: AMD also reports "Core #N (Effective)" and "Cores (Average)"
+                                // / "Cores (Average Effective)", which made an 8-core Ryzen show 18 "cores"
+                                if (n.Contains("core") && !n.Contains("bus") && !n.Contains("ring")
+                                    && !n.Contains("effective") && !n.Contains("average"))
                                     coreFreqs.Add(v);
                                 // "CPU Core #1" or "Bus Speed" — take highest core
                                 if (!snap.CpuFreqMHz.HasValue || v > snap.CpuFreqMHz.Value)
-                                    if (n.Contains("core") && !n.Contains("bus"))
+                                    if (n.Contains("core") && !n.Contains("bus") && !n.Contains("effective") && !n.Contains("average"))
                                         snap.CpuFreqMHz = v;
                             }
 

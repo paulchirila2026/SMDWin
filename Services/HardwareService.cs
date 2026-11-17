@@ -783,8 +783,8 @@ namespace SMDWin.Services
                         // Safety margin: penalize progressively as CurrentValue approaches Threshold, not only when it reaches it.
                         int margin = attr.CurrentValue - attr.ThresholdValue;
                         if (margin <= 0) { score -= 40; penalized.Add($"0x{attr.Id:X2} FAILED (cur={attr.CurrentValue} <= thr={attr.ThresholdValue})"); }
-                        else if (margin <= 5) { score -= 20; penalized.Add($"0x{attr.Id:X2} aproape de prag (cur={attr.CurrentValue}, thr={attr.ThresholdValue})"); }
-                        else if (margin <= 15) { score -= 8; penalized.Add($"0x{attr.Id:X2} marja mica (cur={attr.CurrentValue}, thr={attr.ThresholdValue})"); }
+                        else if (margin <= 5) { score -= 20; penalized.Add($"0x{attr.Id:X2} close to the threshold (cur={attr.CurrentValue}, thr={attr.ThresholdValue})"); }
+                        else if (margin <= 15) { score -= 8; penalized.Add($"0x{attr.Id:X2} small margin (cur={attr.CurrentValue}, thr={attr.ThresholdValue})"); }
                     }
 
                     var pohAttr = target.SmartAttributes.FirstOrDefault(a => a.Id == 0x09);
@@ -824,13 +824,13 @@ namespace SMDWin.Services
                             basis = $"raw={attr.RawValue}";
                         }
                         score -= penalty;
-                        penalized.Add($"0x{attr.Id:X2} ({attr.Name}) {basis} — atribut cu putere predictiva dovedita (Backblaze), fara threshold vendor dar nu ignorat");
+                        penalized.Add($"0x{attr.Id:X2} ({attr.Name}) {basis} — an attribute with proven predictive value (Backblaze), no vendor threshold but not ignored");
                     }
                     var untrustedWear = target.SmartAttributes.FirstOrDefault(a =>
                         (a.Id == 0xE9 || a.Id == 0xE7 || a.Id == 0xE8) && a.CurrentValue is > 0 and <= 100 && a.ThresholdValue == 0);
                     if (untrustedWear != null)
-                        penalized.Add($"(informativ, ignorat la scor) 0x{untrustedWear.Id:X2}={untrustedWear.CurrentValue}%, threshold=0 — fara angajament real al producatorului");
-                    scoreSource = penalized.Count > 0 ? string.Join("; ", penalized) : "toate atributele critice OK sau fara threshold real";
+                        penalized.Add($"(informative, not scored) 0x{untrustedWear.Id:X2}={untrustedWear.CurrentValue}%, threshold=0 — no real commitment from the maker");
+                    scoreSource = penalized.Count > 0 ? string.Join("; ", penalized) : "all critical attributes OK or without a real threshold";
                 }
                 score = Math.Max(0, Math.Min(100, score));
 
@@ -1325,8 +1325,9 @@ namespace SMDWin.Services
 
                     if (hw.Gpus.Count > 0)
                     {
-                        var chosenGpu = hw.Gpus.FirstOrDefault(g =>
-                            !string.IsNullOrEmpty(g.Name) && !g.Name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+                        var realGpus = hw.Gpus.Where(g => !string.IsNullOrEmpty(g.Name) && !WmiCache.IsBasicOrVirtualAdapter(g.Name)).ToList();
+                        var chosenGpu = realGpus.FirstOrDefault(g => !g.Name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+                            ?? realGpus.FirstOrDefault()
                             ?? hw.Gpus[0];
                         s.GpuName = chosenGpu.Name;
                         s.GpuVram = chosenGpu.VramGB > 0 ? $"{chosenGpu.VramGB.ToString("F1", CultureInfo.InvariantCulture)} GB" : "—";
@@ -1654,14 +1655,14 @@ namespace SMDWin.Services
             var predictFail = disk.Status.StartsWith("\u26a0");
 
             if (predictFail)
-                return "Discul a raportat direct o predicție de defecțiune (SMART failure prediction).";
+                return LiteralTexts.Translate("The disk itself reported that it may fail soon (SMART failure prediction).");
             if (uncorrectable != null && uncorrectable.RawValue > 0)
-                return $"{uncorrectable.RawValue} sector(e) cu eroare necorectabilă (SMART 0xC6).";
+                return string.Format(LiteralTexts.Translate("{0} sector(s) with uncorrectable errors (SMART 0xC6)."), uncorrectable.RawValue);
             if (realloc != null && realloc.RawValue > 0)
-                return $"{realloc.RawValue} sector(e) realocate — au fost defecte și înlocuite intern de disc (SMART 0x05).";
+                return string.Format(LiteralTexts.Translate("{0} reallocated sector(s) — they were bad and the disk replaced them internally (SMART 0x05)."), realloc.RawValue);
             if (pending != null && pending.RawValue > 0)
-                return $"{pending.RawValue} sector(e) în așteptare de realocare (SMART 0xC5) — posibil defecte, încă neconfirmate.";
-            return "Unul sau mai multe atribute SMART sunt sub pragul normal.";
+                return string.Format(LiteralTexts.Translate("{0} sector(s) waiting to be reallocated (SMART 0xC5) — possibly bad, not confirmed yet."), pending.RawValue);
+            return LiteralTexts.Translate("One or more SMART attributes are below the normal threshold.");
         }
         private static readonly Dictionary<string, string> _jedecBank1Ids = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -1669,7 +1670,7 @@ namespace SMDWin.Services
             ["80CE"] = "Samsung",
             ["80AD"] = "Hynix",     // JEP106: "Hyundai Electronics" — renamed SK Hynix, the same code
             ["8098"] = "Toshiba",
-            ["80C1"] = "Infineon", // ulterior Qimonda
+            ["80C1"] = "Infineon", // later Qimonda
             ["80DA"] = "Winbond",
         };
 

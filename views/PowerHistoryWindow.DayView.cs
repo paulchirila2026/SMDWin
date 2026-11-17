@@ -140,7 +140,7 @@ namespace SMDWin.Views
                 });
                 legend.Children.Add(new TextBlock
                 {
-                    Text = label, FontSize = Ui.FontXS, Margin = new Thickness(0, 0, 14, 0),
+                    Text = SMDWin.Views.MainWindow.PT(label), FontSize = Ui.FontXS, Margin = new Thickness(0, 0, 14, 0),
                     Foreground = Res("TextSecondaryBrush"), VerticalAlignment = VerticalAlignment.Center
                 });
             }

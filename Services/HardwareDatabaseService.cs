@@ -184,11 +184,12 @@ namespace SMDWin.Services
         /// (reported by WMI or from the database) — used as a fallback match when the full key is not found.</summary>
         public static string ExtractModelToken(string name)
         {
-            var m = Regex.Match(name, @"\b([iI][3579]-[0-9]{4,5}[A-Za-z]{0,3})\b");
+            // the suffix can end in a digit on laptop chips: i5-1035G1, i7-1165G7, i3-1115G4
+            var m = Regex.Match(name, @"\b([iI][3579]-[0-9]{4,5}(?:[A-Za-z]{1,3}[0-9]?)?)\b");
             if (m.Success) return m.Groups[1].Value.ToUpperInvariant();
             m = Regex.Match(name, @"\b(Ryzen\s+(?:3|5|7|9|Threadripper)\s*[A-Za-z]?\s*[0-9]{3,5}[A-Za-z]{0,3})\b", RegexOptions.IgnoreCase);
             if (m.Success) return Regex.Replace(m.Groups[1].Value.ToUpperInvariant(), @"\s+", " ");
-            m = Regex.Match(name, @"\b((?:RTX|GTX|RX|GT|Arc)\s*[0-9]{3,4}\s*[A-Za-z0-9]{0,4})\b", RegexOptions.IgnoreCase);
+            m = Regex.Match(name, @"\b((?:RTX|GTX|RX|GT|MX|Arc)\s*[0-9]{3,4}\s*[A-Za-z0-9]{0,4})\b", RegexOptions.IgnoreCase);
             if (m.Success) return Regex.Replace(m.Groups[1].Value.ToUpperInvariant(), @"\s+", " ");
             return "";
         }

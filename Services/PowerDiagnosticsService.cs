@@ -281,7 +281,7 @@ namespace SMDWin.Services
             catch (Exception ex) { AppLogger.Debug($"PowerDiagnostics.GetLastWake: {ex.Message}"); return null; }
         }
 
-        /// <summary>Opriri neasteptate (Kernel-Power 41) in ultimele 30 de zile.</summary>
+        /// <summary>Unexpected shutdowns (Kernel-Power 41) in the last 30 days.</summary>
         public static ShutdownStats? GetUnexpectedShutdowns()
         {
             try

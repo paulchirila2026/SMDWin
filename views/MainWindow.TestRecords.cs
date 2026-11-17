@@ -67,6 +67,10 @@ namespace SMDWin.Views
         /// <see cref="StressThermalMarginC"/> °C above its limit in Settings stops all the tests. Laptops protect themselves
         /// too (they slow down or shut down), but a test that is no longer telling anything useful should not keep heating.
         /// </summary>
+        // the last temperature safety stop (the self-test does not count a stopped test as a failed one)
+        private DateTime _lastThermalStopUtc = DateTime.MinValue;
+        private string _lastThermalStopText = "";
+
         private void CheckStressThermalStop(float cpuTemp, float gpuTemp)
         {
             try
@@ -86,6 +90,8 @@ namespace SMDWin.Views
                 float temp = cpuHot ? cpuTemp : gpuTemp;
                 float limit = cpuHot ? s.TempWarnCpu : s.TempWarnGpu;
                 AppLogger.Warning("Stress: safety stop, {0} at {1:F0} °C (limit {2:F0} °C + {3:F0})", part, temp, limit, StressThermalMarginC);
+                _lastThermalStopUtc = DateTime.UtcNow;
+                _lastThermalStopText = $"{part} at {temp:F0} °C";
                 try { StopCpuStress(); } catch (Exception ex) { AppLogger.Warning(ex, "ThermalStop CPU"); }
                 try { StopGpuStress(); } catch (Exception ex) { AppLogger.Warning(ex, "ThermalStop GPU"); }
                 try { StopAllStress(); } catch (Exception ex) { AppLogger.Warning(ex, "ThermalStop all"); }

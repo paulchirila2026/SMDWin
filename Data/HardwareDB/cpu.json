@@ -20902,5 +20902,30 @@
     "memory_channels": 2,
     "release_year": 2013,
     "tjmax_c": 100
+  },
+  {
+    "name": "AMD Ryzen 7 5825U",
+    "key": "AMDRYZEN75825U",
+    "model_token": "5825U",
+    "manufacturer": "AMD",
+    "series": "Ryzen 7 5000 Mobile",
+    "cores": 8,
+    "threads": 16,
+    "base_clock_ghz": 2.0,
+    "boost_clock_ghz": 4.5,
+    "l2_cache_mb": 4,
+    "l3_cache_mb": 16,
+    "tdp_w": 15,
+    "socket": "FP6",
+    "microarchitecture": "Zen 3 (Barcelo)",
+    "lithography": "7 nm",
+    "igpu_model": "Radeon Vega 8",
+    "memory_types": [
+      "DDR4",
+      "LPDDR4"
+    ],
+    "memory_channels": 2,
+    "release_year": 2022,
+    "tjmax_c": 95
   }
 ]
