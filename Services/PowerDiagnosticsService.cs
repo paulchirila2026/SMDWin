@@ -151,7 +151,7 @@ namespace SMDWin.Services
             return RunPowercfg($"/deviceenablewake \"{deviceName}\"") != null;
         }
 
-        // ── Ignoring a program or driver that keeps the PC awake (11.11.2026) ─────────────────────────
+        // ── Ignoring a program or driver that keeps the PC awake ─────────────────────────
         /// <summary>An entry of powercfg /requestsoverride: Kind = PROCESS / SERVICE / DRIVER, Name as Windows stores it.</summary>
         public sealed record RequestOverride(string Kind, string Name, string Requests);
 

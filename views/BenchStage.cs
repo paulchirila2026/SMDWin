@@ -17,7 +17,7 @@ using Size       = System.Windows.Size;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The animation of the Benchmark banner (mockup v4, 14.11.2026) — the part being tested, drawn as the real one in a
+    /// The animation of the Benchmark banner (mockup v4) — the part being tested, drawn as the real one in a
     /// 320 × 200 scene scaled to the control:
     ///   processor: the package of its maker (Intel with side tabs, AMD with the "octopus" lid, ARM / other as a black SoC),
     ///     the engraving taken from the real model name ("intel. / CORE™ i5 / i5-4570", "AMD / RYZEN 5 / 3600"), a thermal

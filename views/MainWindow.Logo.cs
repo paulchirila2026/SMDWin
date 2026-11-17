@@ -9,7 +9,7 @@ using Size = System.Windows.Size;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The logo as a live element (decided 09.11.2026):
+    /// The logo as a live element:
     ///  • sidebar: lit up to the orange segments at rest; while a test, benchmark or scan runs (the same state as the sidebar task
     ///    badges) it rises to red, and falls back when it ends — it only moves when something starts or stops;
     ///  • taskbar button: a moving progress band while a test runs (Windows' own progress on the icon);
@@ -103,7 +103,7 @@ namespace SMDWin.Views
 
                 int px = Math.Max(16, System.Windows.Forms.SystemInformation.SmallIconSize.Width);
                 // the unlit segments follow the TASKBAR's colour, not SMD Win's theme: with the app on Light they were drawn in its dark
-                // grey and looked black on a dark taskbar (10.11.2026)
+                // grey and looked black on a dark taskbar
                 bool lightTaskbar = TaskbarIsLight();
                 var logo = new SmdLogo
                 {
@@ -137,7 +137,7 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Debug($"UpdateTrayGauge: {ex.Message}"); }
         }
 
-        // ── CPU self-watch (10.11.2026: SMD Win at 50 % CPU on an i5-4570, cause not visible in the log) ──────────────────
+        // ── CPU self-watch (SMD Win at 50 % CPU on an i5-4570, cause not visible in the log) ──────────────────
         private System.Windows.Threading.DispatcherTimer? _cpuWatch;
         private TimeSpan _cpuWatchPrev;
         private DateTime _cpuWatchAt;

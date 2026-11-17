@@ -93,9 +93,9 @@ namespace SMDWin.Views
             }
             else
             {
-                // Dark: the lights grow with the window, so each one covers about a third of it (09.11.2026 — before, fixed sizes
+                // Dark: the lights grow with the window, so each one covers about a third of it (before, fixed sizes
                 // left a small patch in a corner on large windows); never smaller than the old fixed sizes
-                // (10.11.2026) about 30 % larger again and at 80 % of the strength: a wide soft wash over the page instead of a
+                // about 30 % larger again and at 80 % of the strength: a wide soft wash over the page instead of a
                 // patch in the corner; with the gentler fall-off in DrawAurora the light fades over a longer distance
                 double rx1 = Math.Max(900 * sx, w * 0.82), ry1 = Math.Max(720 * sy, h * 1.05);   // top left
                 double rx2 = Math.Max(800 * sx, w * 0.66), ry2 = Math.Max(780 * sy, h * 1.00);   // right

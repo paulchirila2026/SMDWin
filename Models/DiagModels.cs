@@ -114,7 +114,7 @@ namespace SMDWin.Models
         public bool UsbSlowLink { get; set; }
 
         /// <summary>
-        /// The disk type in one line, as people say it (11.11.2026): "M.2 NVMe SSD", "M.2 SATA SSD", "2.5\" SATA SSD",
+        /// The disk type in one line, as people say it: "M.2 NVMe SSD", "M.2 SATA SSD", "2.5\" SATA SSD",
         /// "3.5\" HDD · 7200 rpm", "External HDD · 2.5\"", "USB stick"… The USB link is in <see cref="UsbLinkText"/>.
         /// </summary>
         public string TypeText
@@ -1340,8 +1340,8 @@ namespace SMDWin.Models
         public float TempWarnCpu { get; set; } = 90f;
         public float TempWarnGpu { get; set; } = 90f;
         public string CrystalDiskInfoPath { get; set; } = @"C:\Program Files\CrystalDiskInfo\DiskInfo64.exe";
-        public bool   BetaNoticeShown { get; set; } = false;      // the one-time "beta, no warranty, what it can change" notice (16.11.2026)
-        public string DriverSearchSite { get; set; } = "google";      // "google" (default since 16.11.2026) or "driverpack" — a diagnostics app should not send people to a third-party driver site by default
+        public bool   BetaNoticeShown { get; set; } = false;      // the one-time "beta, no warranty, what it can change" notice
+        public string DriverSearchSite { get; set; } = "google";      // "google" (default since) or "driverpack" — a diagnostics app should not send people to a third-party driver site by default
         public string DriverViewMode { get; set; } = "Basic";     // "Basic" or "Advanced"
         public int ProcessRefreshSec { get; set; } = 2;
         public bool UseMica { get; set; } = (Environment.OSVersion.Version.Major == 10 && Environment.OSVersion.Version.Build >= 22000);

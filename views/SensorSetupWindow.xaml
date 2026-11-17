@@ -12,7 +12,7 @@
         Background="Transparent"
         ShowInTaskbar="False"
         UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
-  <!-- The welcome window that offers the sensor driver (PawnIO), in the About style (variant A, decided 10.11.2026): the live
+  <!-- The welcome window that offers the sensor driver (PawnIO), in the About style (variant A, decided): the live
        logo with the About animation, the wordmark, a short title, three chips with what the driver brings, one row about PawnIO,
        and two buttons. The technical details (driver name, the
        old WinRing0 driver) stay behind "What is this?". The install runs inside this window: a slim moving line and the
@@ -32,7 +32,7 @@
     </Style>
     <!-- a chip: what the driver brings (accent-tinted pill with an icon) -->
     <Style x:Key="SetupChip" TargetType="Border">
-      <!-- half the chip height: a larger radius makes WPF scale the corners into an oval (10.11.2026) -->
+      <!-- half the chip height: a larger radius makes WPF scale the corners into an oval -->
       <Setter Property="CornerRadius" Value="14"/>
       <Setter Property="Padding" Value="11,6,13,6"/>
       <Setter Property="Margin" Value="4,0"/>

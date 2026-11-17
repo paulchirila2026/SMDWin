@@ -4,7 +4,7 @@ using Xunit;
 
 namespace SMDWin.Tests
 {
-    // The disk type line shown on the Storage page, System Info and the PDF sheet (11.11.2026), and the smartctl form-factor
+    // The disk type line shown on the Storage page, System Info and the PDF sheet, and the smartctl form-factor
     // names it is built from.
     public class DiskTypeTextTests
     {

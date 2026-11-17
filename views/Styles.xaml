@@ -1248,7 +1248,7 @@
     </Setter>
   </Style>
 
-  <!-- active page = a flat tonal pill (decided 09.11.2026): a faint accent tint, no glass, shadow or outline, 10 px corners
+  <!-- active page = a flat tonal pill: a faint accent tint, no glass, shadow or outline, 10 px corners
        (ThemeManager: SbItemActiveBase, SbItemActivePillFg; the icon colour SbItemActiveIconBrush is set on the icon by
        HighlightActiveNavIcon). The same size and place as the other buttons, so nothing moves when the page changes or the
        menu collapses. -->

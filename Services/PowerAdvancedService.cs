@@ -116,7 +116,7 @@ namespace SMDWin.Services
             return t.Minutes > 0 ? $"{(int)t.TotalHours} h {t.Minutes} min" : $"{(int)t.TotalHours} h";
         }
 
-        // ── The "When the PC is not used" settings (Power page, 11.11.2026) ──────────────────────
+        // ── The "When the PC is not used" settings (Power page) ──────────────────────
         private const string GuidSubButtons   = "4f971e89-eebd-4455-a8de-9e59040e7347";
         private const string GuidLidAction    = "5ca83367-6e45-459f-a27b-476b1d01c936";
         private const string GuidPButtonAction = "7648efa3-dd9c-4e3e-b566-50f929386280";

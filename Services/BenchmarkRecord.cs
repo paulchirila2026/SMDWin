@@ -8,7 +8,7 @@ using System.Text;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// Everything a Benchmark run measured, kept for tuning the marks later (14.11.2026): every raw value with its unit, the
+    /// Everything a Benchmark run measured, kept for tuning the marks later: every raw value with its unit, the
     /// scale it was marked with, the details of each test (disk passes and warnings, GPU batch statistics, CPU sub-tests),
     /// the time of each step and a sensor timeline (one row per second: temperatures, clocks, load, power).
     /// Written to the app log and to Data\Benchmark\benchmark-*.txt (the last 10 runs); the self-test zip takes that folder.

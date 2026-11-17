@@ -116,7 +116,7 @@ namespace SMDWin.Views
             var allIcons = new System.Collections.Generic.List<FrameworkElement>();
             CollectVisualChildren(this, allIcons);
 
-            // Sidebar decision 09.11.2026: the icons of the other pages take the text colour of their button (the secondary grey,
+            // Sidebar: the icons of the other pages take the text colour of their button (the secondary grey,
             // full opacity); the selected page's icon is in the accent (SbItemActiveIconBrush), its text stays dark / light
             foreach (var el in allIcons)
             {
@@ -140,7 +140,7 @@ namespace SMDWin.Views
             foreach (var el in allIcons)
             {
                 if (string.IsNullOrEmpty(el.Name) || !el.Name.StartsWith("Ico")) continue;
-                // the menu's icons: full opacity in both modes — the grey itself is the "secondary" tone (09.11.2026); others as before
+                // the menu's icons: full opacity in both modes — the grey itself is the "secondary" tone; others as before
                 el.Opacity = el.Name.StartsWith("IcoBell") ? (colorful ? 1.0 : 0.75) : 1.0;
             }
         }

@@ -286,7 +286,7 @@ namespace SMDWin.Services
                 threads[idx] = new System.Threading.Thread(() =>
                 {
                     var data = new byte[65536];
-                    new Random(idx * 7919 + 1).NextBytes(data); // samanta fixa, deterministica per-thread
+                    new Random(idx * 7919 + 1).NextBytes(data); // fixed seed, deterministic per thread
                     using var sha = SHA256.Create();
                     byte[]? referenceHash = null;
                     long c = 0, localMismatches = 0;
@@ -391,7 +391,7 @@ namespace SMDWin.Services
         }
 
         /// <summary>
-        /// The Benchmark page's Mandelbrot (14.11.2026): returns WORK per second — the iterations done (+1 per pixel for the
+        /// The Benchmark page's Mandelbrot: returns WORK per second — the iterations done (+1 per pixel for the
         /// pixel's own cost) — instead of pixels per second. With pixels, the threads that drew the top and bottom quarters
         /// (almost no point of the set: ~2 iterations a pixel) counted 25× more pixels than the middle ones (~53), so "all
         /// cores" came out ~12× "one core" on a 4-core i5. Every thread also draws interleaved rows (row = i, i + n, …), so all
@@ -448,7 +448,7 @@ namespace SMDWin.Services
         }
 
         /// <summary>
-        /// The Benchmark page's everyday test (14.11.2026): every thread compresses the same 4 MB of text-like data (words,
+        /// The Benchmark page's everyday test: every thread compresses the same 4 MB of text-like data (words,
         /// numbers, punctuation — compresses about 3:1, like documents and logs) with Deflate, again and again. Returns MB of
         /// input compressed per second, all threads together.
         /// </summary>
@@ -633,7 +633,7 @@ namespace SMDWin.Services
 
             // Normalize each result against i5-8400 baseline (score 500 = solid mid-range)
             // i7-12700K → ~900-950, Celeron J4005 → ~80-150, i5-4570 → ~300-380
-            const double shaRef   = 4_000.0;       // i5-8400 SHA-256 of 64 KB blocks per second (14.11.2026: was 1 200 000, a wrong unit — an i5-4570 measures ~3 600)
+            const double shaRef   = 4_000.0;       // i5-8400 SHA-256 of 64 KB blocks per second (was 1 200 000, a wrong unit — an i5-4570 measures ~3 600)
             const double mbrotRef =  80_000_000.0;  // i5-8400 Mandelbrot pix/s
             const double fftRef   =  14_000.0;       // i5-8400 FFT ops/s
 

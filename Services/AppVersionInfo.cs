@@ -6,7 +6,7 @@ namespace SMDWin.Services
 {
     /// <summary>
     /// Version text, the same everywhere (splash, About, Settings, Features, reports, log, self-test, Debug).
-    /// 11.11.2026: until the public release only the build number is shown — "Build 57". It comes from build-number.txt
+    /// until the public release only the build number is shown — "Build 57". It comes from build-number.txt
     /// (SMDWin.csproj, target SmdBuildNumber): every publish adds 1; an ordinary build from Visual Studio keeps the number and
     /// shows "Build 57 dev". At the public release the stage comes back ("0.1 Beta · build 432").
     /// </summary>

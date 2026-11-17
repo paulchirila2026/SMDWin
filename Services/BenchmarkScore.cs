@@ -5,7 +5,7 @@ using System.Linq;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// The 0–10 marks of the Benchmark page (14.11.2026), like the Windows 7 experience index. Every measured value becomes a
+    /// The 0–10 marks of the Benchmark page, like the Windows 7 experience index. Every measured value becomes a
     /// mark on a logarithmic scale: <c>mark = 6 + log(value / reference) / log(step)</c> — the reference is a decent desktop
     /// PC of a few years ago (≈ i5-8400, DDR4 dual channel, SATA / NVMe SSD, GTX 1060-class graphics) = 6, and "step" is how
     /// much faster one more point means for that test (×1.26 for one core … ×2.2 for graphics, whose range is the widest).
@@ -21,24 +21,24 @@ namespace SMDWin.Services
 
         // ── the scales (value units in brackets) ──────────────────────────────────────────────────────────────────────
         // processor: Mandelbrot + FFT (geometric mean, each divided by 80 Mpix/s and 14 000 FFT/s) — on one thread and on all
-        // threads. 14.11.2026: the first version used SHA-256 for one core (wrong reference ×300, and CPUs with SHA
+        // threads. The first version used SHA-256 for one core (wrong reference ×300, and CPUs with SHA
         // instructions would win unfairly); the references come from the first real run (i5-4570: all threads 3.1 → ≈ 4.7)
-        // 14.11.2026 (2): processor value = one i5-4570 core ≈ 1.0 (see CpuGeo on the Benchmark page). One core: a current
+        // Processor value = one i5-4570 core ≈ 1.0 (see CpuGeo on the Benchmark page). One core: a current
         // mid-range core (~2.2×) ≈ 7; the i5-4570 ≈ 4.3. All cores: i5-4570 (4 × 1) ≈ 4.1, i5-12400 (≈ 13) ≈ 7.2, 8 cores / 16 threads
         // of today (≈ 22) ≈ 8.5. First estimates — to be tuned from the saved results (Data\Benchmark).
         public static readonly Scale CpuSingle    = new(1.6, 1.32);          // one thread [× one i5-4570 core]
         public static readonly Scale CpuMulti     = new(7.9, 1.5);           // all threads [× one i5-4570 core]
         // everyday processor test: Deflate (level "optimal") of text-like data, all threads [MB/s] — i5-4570 ≈ 220 MB/s ≈ 4.2 (estimate)
-        // 16.11.2026: .NET's Deflate is ~3× slower than estimated (i5-10210U at 1.6 GHz, 8 threads: 33 MB/s, while its other
+        // .NET's Deflate is ~3× slower than estimated (i5-10210U at 1.6 GHz, 8 threads: 33 MB/s, while its other
         // processor tests put it at ~2.3) — the reference follows the all-cores test: i5-4570 ≈ 68 MB/s ≈ 4.1
         public static readonly Scale CpuCompress  = new(150, 1.5);
         public static readonly Scale RamBandwidth = new(20, 1.36);           // read [GB/s]
-        public static readonly Scale RamLatency   = new(95, 1.3, true);      // random access [ns] — 16.11.2026: was 85 / 1.19, too steep (a laptop at 177 ns got 1.8); now i5-4570 106 ns ≈ 5.6, laptop DDR4 177 ns ≈ 3.6
+        public static readonly Scale RamLatency   = new(95, 1.3, true);      // random access [ns] — was 85 / 1.19, too steep (a laptop at 177 ns got 1.8); now i5-4570 106 ns ≈ 5.6, laptop DDR4 177 ns ≈ 3.6
         public static readonly Scale DiskSeq      = new(650, 1.67);          // sequential read [MB/s]
         // sequential write [MB/s]: HDD ≈ 120 → 3.2, SATA SSD ≈ 450 → 5.8, NVMe ≈ 2000 → 8.7
         public static readonly Scale DiskWrite    = new(500, 1.67);
         public static readonly Scale Disk4K       = new(80, 2.0);            // 4K random read, one request at a time [MB/s]
-        public static readonly Scale GpuRender    = new(100, 2.2);           // 3D test [frames/s] — 14.11.2026: 300 put a GT 755M at 2.2 for 3D but 3.8 for compute; now both ≈ 3.7
+        public static readonly Scale GpuRender    = new(100, 2.2);           // 3D test [frames/s] — 300 put a GT 755M at 2.2 for 3D but 3.8 for compute; now both ≈ 3.7
         public static readonly Scale GpuCompute   = new(4000, 2.2);          // FP32 [GFLOPS]
         public static readonly Scale GpuMemory    = new(160, 1.57);          // copy, read + write [GB/s]
 

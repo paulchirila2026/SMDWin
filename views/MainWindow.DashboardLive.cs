@@ -990,7 +990,7 @@ namespace SMDWin.Views
             _arrDiskW   = _qDiskW.ToArray();   _arrNetDown = _qNetDown.ToArray();
             _arrNetUp   = _qNetUp.ToArray();   _arrPing    = _qPing.ToArray();
             _arrCpuTemp = _qCpuTemp.ToArray(); _arrGpuTemp = _qGpuTemp.ToArray();
-            _renderDirty = true; // semnalam render ca avem date noi
+            _renderDirty = true; // tell the renderer there is new data
             // the chart glide lasts until the next read (see OnDashRenderTick / DrawChart)
             var glideNow = DateTime.UtcNow;
             double gapMs = _dashLastDataUtc == DateTime.MinValue ? 1000 : (glideNow - _dashLastDataUtc).TotalMilliseconds;
@@ -1085,7 +1085,7 @@ namespace SMDWin.Views
                         // Snap to a multiple of 25 to avoid alternating labels
                         curMax = (float)(Math.Ceiling(curMax / 25.0) * 25.0);
                     }
-                    else curMax = pingCeil; // scala fixa
+                    else curMax = pingCeil; // fixed scale
                 }
                 if (_dynMaxCache.TryGetValue(canvas, out float cached))
                 {

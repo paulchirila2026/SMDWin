@@ -120,7 +120,7 @@ namespace SMDWin.Views
                 };
                 PowerFlowWidget.SetInfo(plan, cpu, gpu, display, ram, disk, usb);
                 // the plan changed / was read: the "When the PC is not used" card and the processor steps follow it
-                // (11.11.2026 — replaces the read-only "What the plan does now" list and the sleep timeline)
+                // (replaces the read-only "What the plan does now" list and the sleep timeline)
                 _ = RefreshPowerSimpleAsync();
             }
             catch (Exception ex) { AppLogger.Warning(ex, "RefreshPowerFlowInfoAsync"); }

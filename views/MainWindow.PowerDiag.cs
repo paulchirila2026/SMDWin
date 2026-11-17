@@ -225,7 +225,7 @@ namespace SMDWin.Views
             List<PowerDiagnosticsService.WakeTimer>? timers, List<string>? devices)
         {
             if (FindName("PowerSleepHost") is not StackPanel host || FindName("PowerSleepCard") is not Border card) return;
-            // 11.11.2026: one strip of chips, each opening its list with the actions (MainWindow.PowerSimple.cs → BuildSleepStrip).
+            // one strip of chips, each opening its list with the actions (MainWindow.PowerSimple.cs → BuildSleepStrip).
             // The older three-column layout below is kept, but no longer reached.
             (_pdStates, _pdFastStartup, _pdBlockers, _pdLastWake, _pdTimers, _pdArmed) =
                 (states ?? _pdStates, fastStartup ?? _pdFastStartup, blockers, lastWake, timers, devices);

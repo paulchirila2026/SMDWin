@@ -62,7 +62,7 @@ namespace SMDWin.Services
         /// <summary>
         /// GPU % per process from the "GPU Engine" counters. One read of the whole category per refresh (ReadCategory), the rate
         /// computed from the previous sample of each instance — not one PerformanceCounter per instance: each of those re-reads the
-        /// whole category on NextValue, so with a few hundred engine instances it cost a full CPU core (10.11.2026, i5-4570:
+        /// whole category on NextValue, so with a few hundred engine instances it cost a full CPU core (i5-4570:
         /// SMD Win at 50 % CPU).
         /// </summary>
         private void RefreshGpuPerProcess()

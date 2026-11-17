@@ -750,7 +750,7 @@ namespace SMDWin.Services
             resources["Ink4Brush"]       = new SolidColorBrush(ParseHex(isLight ? "#9CA3AF" : "#5E6473"));
             // Sidebar active item background — uses actual accent color
             var accentForSb = ParseHex(accentHex);
-            // the active sidebar item (decided 09.11.2026, mockup "stilul 1 – pastilă tonală"): a flat tonal pill — a faint tint of the
+            // the active sidebar item (chosen, mockup "stilul 1 – pastilă tonală"): a flat tonal pill — a faint tint of the
             // accent, no glass, no shadow, no outline, 10 px corners; the icon in the accent, the text dark (Light) / light (Dark) and
             // SemiBold. Dark uses the middle step (26 %) — the lower one did not stand out on the dark menu.
             {
@@ -921,7 +921,7 @@ namespace SMDWin.Services
             // Sidebar text — high contrast on a white/frost sidebar
             try
             {
-                // the pages not selected: text and icon in the secondary grey (sidebar decision 09.11.2026) — about 7:1 on the Light menu,
+                // the pages not selected: text and icon in the secondary grey (sidebar decision) — about 7:1 on the Light menu,
                 // 7.5:1 on the Dark one; the selected page stands out by its tinted pill, not by a brighter grey everywhere else
                 var c = ParseHex(isLight ? "#4B5563" : "#A0A7B1");
                 resources["SidebarTextColor"] = c;

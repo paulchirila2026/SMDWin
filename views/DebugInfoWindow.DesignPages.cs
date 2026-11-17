@@ -495,7 +495,7 @@ namespace SMDWin.Views
             };
             panel.Children.Add(sysInfoCombo);
 
-            // About window: the logo animation (5 proposals, 10.11.2026) — the one kept becomes the final one
+            // About window: the logo animation (5 proposals) — the one kept becomes the final one
             var aboutAnimLabel = new TextBlock
             {
                 Text = "About window — logo animation", FontSize = Ui.FontS,

@@ -23,7 +23,7 @@ namespace SMDWin.Views
         private readonly Dictionary<TempReader.FanController, Slider> _sliders = new();
         private readonly DispatcherTimer _refresh = new() { Interval = TimeSpan.FromSeconds(2) };
         private bool _guardTripped = false;
-        private readonly Dictionary<TempReader.FanController, float> _userDuty = new(); // ce a cerut userul
+        private readonly Dictionary<TempReader.FanController, float> _userDuty = new(); // what the user asked for
 
         private readonly Dictionary<string, (DateTime requestedAt, float baselineRpm, float requestedDuty, bool warned)> _fanVerify = new();
         private readonly Dictionary<string, TextBlock> _fanWarnLabels = new();

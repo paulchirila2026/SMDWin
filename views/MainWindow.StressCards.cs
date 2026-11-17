@@ -249,7 +249,7 @@ namespace SMDWin.Views
                     }
                     else
                     {
-                        // 16.11.2026: with Turbo off in the power plan the clock stays at the base speed and "none" made the processor
+                        // with Turbo off in the power plan the clock stays at the base speed and "none" made the processor
                         // look slow by itself (i5-10210U held at 1.61 GHz)
                         bool turboOff = _stThrottledSec == 0 && TurboOffCached();
                         tt.Text = _stThrottledSec > 0 ? PT("{0} s this session", _stThrottledSec) : turboOff ? PT("Turbo off (power plan)") : PT("none");
@@ -277,7 +277,7 @@ namespace SMDWin.Views
                 }
                 if (!gl.HasValue) StSetText("TxtStGpuLoadNote", "Not reported by this GPU");
                 StSetText("TxtStGpuVram", snap.GpuMemUsedMB is float vr && vr > 0 ? $"{vr:F0} MB" : "—");
-                // integrated graphics have no memory of their own: "shared" instead of an empty "—" (16.11.2026, Intel UHD)
+                // integrated graphics have no memory of their own: "shared" instead of an empty "—" (Intel UHD)
                 StSetText("TxtStGpuMemClk", snap.GpuMemFreqMHz is float mc && mc > 0 ? $"{mc:F0} MHz"
                                           : GpuPackage.IsIntegrated(_summary?.GpuName) ? PT("shared with the system") : "—");
                 if (snap.GpuPowerW is float gp && gp > 0) { StSetText("TxtStGpuPowerKey", "Power"); StSetText("TxtStGpuPower", $"{gp:F1} W"); }

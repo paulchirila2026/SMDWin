@@ -19,7 +19,7 @@
   </Window.Resources>
 
   <!-- Outer shadow wrapper. The 16 px margin leaves room for the shadow inside the window: without it the shadow was cut off
-       by the window edge, and on Light the white dialog disappeared on the white page (11.11.2026). -->
+       by the window edge, and on Light the white dialog disappeared on the white page. -->
   <Grid Margin="16">
     <!-- the shadow on its own empty layer: an Effect on the element with text would blur the text -->
     <Border CornerRadius="{DynamicResource RadiusCard}" Background="{DynamicResource BgCardBrush}" IsHitTestVisible="False">

@@ -35,7 +35,7 @@ namespace SMDWin.Views
     /// The Benchmark page (under Temp &amp; Stress): marks from 0 to 10 for the processor, the memory, the storage and the
     /// graphics, like the Windows 7 experience index; the general mark is their mean (BenchmarkScore). Made for a PC with
     /// problems, not for comparisons over time: the page keeps nothing between runs (the log and Data\Benchmark do).
-    /// Layout (mockup v4, 14.11.2026) — the page fills the window height:
+    /// Layout (mockup v4) — the page fills the window height:
     ///   banner (follows the theme): before the run an intro with Start; while running the animation of the real part
     ///     (BenchStage) with the total progress and the 4 steps; after the run the time, the highest temperatures, whether the
     ///     processor slowed down from heat, "Copy results" and "Run again";
@@ -61,7 +61,7 @@ namespace SMDWin.Views
         /// <summary>How much of its speed the processor kept at the end of the processor step (last seconds / first 2 s).</summary>
         private double? _benchSustained;
         private bool _benchKeysHooked;
-        private Border? _benchWelcome;   // before the first run: one card with what is tested and Start (14.11.2026)
+        private Border? _benchWelcome;   // before the first run: one card with what is tested and Start
         private readonly BenchComp[] _benchComps = new BenchComp[4];
         private CancellationTokenSource? _benchCts;
         private bool _benchRunning;
@@ -217,7 +217,7 @@ namespace SMDWin.Views
         private (double Fps, double GFlops, double MemGBs) _benchGpuRaw;
 
         /// <summary>
-        /// Values that cannot be right (a measuring problem, not a slow PC) are marked "?" and left out of the mark (14.11.2026:
+        /// Values that cannot be right (a measuring problem, not a slow PC) are marked "?" and left out of the mark (
         /// "1 GB/s" on a GT 755M once put the whole card at 1.0). Conservative limits, only clear cases.
         /// </summary>
         private void BenchCheckSuspect()
@@ -241,7 +241,7 @@ namespace SMDWin.Views
             Flag(disk, 0, disk.Raw[0] > 0 && disk.Raw[0] < 3);
             var (fps, gf, mem) = _benchGpuRaw;
             var gpu = _benchComps[3];
-            // 16.11.2026: memory is no longer compared with compute — a wrong compute value (7 455 GFLOPS on an Intel UHD) marked
+            // memory is no longer compared with compute — a wrong compute value (7 455 GFLOPS on an Intel UHD) marked
             // a right memory value. Instead: compute far above what the 3D test allows (real cards: 40–70 GFLOPS per frame/s)
             Flag(gpu, 2, mem > 0 && mem < 2);
             Flag(gpu, 1, gf > 0 && fps > 0 && gf > fps * 400);
@@ -249,7 +249,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// One short piece of advice for a component after the test (14.11.2026) — what a technician would tell the customer.
+        /// One short piece of advice for a component after the test — what a technician would tell the customer.
         /// Only when there is something useful to say.
         /// </summary>
         private string? BenchAdvice(int i)
@@ -284,7 +284,7 @@ namespace SMDWin.Views
 
         private string BenchGpuName() => _benchGpuAdapters?.FirstOrDefault(a => a.Index == _benchGpuAdapter)?.Name ?? "";
 
-        /// <summary>Esc stops a running test (14.11.2026).</summary>
+        /// <summary>Esc stops a running test.</summary>
         private void HookBenchKeys()
         {
             if (_benchKeysHooked) return;
@@ -301,7 +301,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// What can make the marks lower than the PC really is (14.11.2026): on battery (laptops slow the processor down and
+        /// What can make the marks lower than the PC really is: on battery (laptops slow the processor down and
         /// often use the integrated graphics), the "Power saver" plan, other programs already using the processor.
         /// </summary>
         private List<string> BenchPreChecks()
@@ -338,13 +338,13 @@ namespace SMDWin.Views
             return sp;
         }
 
-        /// <summary>"8 GB DDR4-2667 · 1 module" (16.11.2026: the card had no description — the summary was not read yet when
+        /// <summary>"8 GB DDR4-2667 · 1 module" (the card had no description — the summary was not read yet when
         /// the page was built; UpdateBenchCards asks again while it is empty).</summary>
         private string BenchRamDevice()
         {
             var s = _summary;
             var mods = BenchRamModules();
-            // 16.11.2026: "—" on the start card — the summary was not read yet; the modules give the total and the type too
+            // "—" on the start card — the summary was not read yet; the modules give the total and the type too
             double totalGb = s?.RamTotalGB > 0 ? s.RamTotalGB : mods.Sum(m => (double)m.CapacityBytes) / (1024.0 * 1024 * 1024);
             if (totalGb <= 0) return "";
             int mhz = mods.Select(m => m.ConfiguredMHz > 0 ? m.ConfiguredMHz : m.RatedMHz).DefaultIfEmpty(0).Max();
@@ -405,7 +405,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// Turbo is off for the current power source (16.11.2026, ThinkPad E14: "Cool &amp; quiet" on the Power page kept the
+        /// Turbo is off for the current power source (ThinkPad E14: "Cool &amp; quiet" on the Power page kept the
         /// i5-10210U at 1.6 GHz instead of 4.2 — the marks were half of what the processor can do and the advice blamed it).
         /// Off = boost mode Disabled, or the maximum processor state under 100 % (which also stops Turbo).
         /// </summary>
@@ -431,7 +431,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// Too little free space for the storage test (16.11.2026: C: had 1.4 GB free, the test needs its file + a reserve of 2 %
+        /// Too little free space for the storage test (C: had 1.4 GB free, the test needs its file + a reserve of 2 %
         /// of the disk, at least 1 GB — it stopped silently and the card showed "0 MB/s"). Same rule as DiskBenchmarkService.
         /// </summary>
         private string? BenchDiskSpaceShort(string? drive)
@@ -573,7 +573,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>The mark's colour for TEXT: on Light the yellow / light-green part of the scale had 2:1 contrast on white
-        /// (16.11.2026 self-test) — the same hue, 40 % darker.</summary>
+        /// — the same hue, 40 % darker.</summary>
         private static Brush ScaleTextBrush(double mark, bool light)
         {
             var (r, g, b) = BenchmarkScore.ScaleColor(mark);
@@ -637,7 +637,7 @@ namespace SMDWin.Views
             double w = _benchTicks.ActualWidth;
             if (w <= 0) return;
 
-            // 14.11.2026: no numbers under the bar (the mark is in the dial and in the pin) — only a thin line where a class ends
+            // no numbers under the bar (the mark is in the dial and in the pin) — only a thin line where a class ends
             _benchTicks.Children.Clear();
             foreach (var tier in BenchmarkScore.Tiers.Take(BenchmarkScore.Tiers.Length - 1))
             {
@@ -749,7 +749,7 @@ namespace SMDWin.Views
             head.Children.Add(titles);
             g.Children.Add(head);
 
-            // the dial grows with the card (110–205 px; 14.11.2026: a little smaller), the main value of the component under it
+            // the dial grows with the card (110–205 px), the main value of the component under it
             var mid = new Grid { Margin = new Thickness(0, 8, 0, 8) };
             mid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             mid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -988,12 +988,12 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// The page before the first run (14.11.2026): instead of four empty dials, one card in the middle — what the test
+        /// The page before the first run: instead of four empty dials, one card in the middle — what the test
         /// gives, the four components with the names read from this PC and their tests, how long it takes, and Start.
         /// </summary>
         private UIElement BuildBenchWelcome()
         {
-            // 16.11.2026: not a card — the start page was one big card over the whole page, and on hover the card style made it
+            // not a card — the start page was one big card over the whole page, and on hover the card style made it
             // opaque (darker, no Mica / blur behind it). The four component tiles are the cards.
             var card = new Border { Background = Brushes.Transparent, Padding = new Thickness(28, 26, 28, 26) };
             var sp = new StackPanel { MaxWidth = 900, HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
@@ -1428,7 +1428,7 @@ namespace SMDWin.Views
                 BenchSetStep(0, PT("One core (1 of 3)"));
                 _benchHudLeft = PT("1 thread · 100%");
                 // one thread: the same Mandelbrot + FFT as the all-threads test (no SHA-256: CPUs with SHA instructions won unfairly).
-                // 14.11.2026: Mandelbrot counts the work (iterations), not pixels — see BenchmarkMandelbrotWork. The value is the
+                // Mandelbrot counts the work (iterations), not pixels — see BenchmarkMandelbrotWork. The value is the
                 // geometric mean of the two, scaled so that one core of an i5-4570 (Haswell, 2013) ≈ 1 (= 1000 pts).
                 var single = await Task.Run(() =>
                 {

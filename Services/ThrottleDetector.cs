@@ -70,7 +70,7 @@ namespace SMDWin.Services
 
         private readonly System.Collections.Generic.List<(DateTime t, float freq, float load)> _sustainedSamples = new();
         private const int   StuckWindowSeconds     = 20;
-        private const float StuckFreqToleranceMHz  = 60f;   // variatie sub asta = "fixa"
+        private const float StuckFreqToleranceMHz  = 60f;   // variation below this = "fixed"
         private const float StuckRatioCeiling      = 0.75f; // below what fraction of the calibrated max it counts as real throttling
 
         // ── Win32 API for the battery state ─────────────────────────────────

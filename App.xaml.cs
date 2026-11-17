@@ -19,7 +19,7 @@ namespace SMDWin
         protected override void OnStartup(System.Windows.StartupEventArgs e)
         {
             // Every animation at most 30 frames a second (WPF's default is 60). Any running animation keeps WPF redrawing the window;
-            // at 60 that alone kept a core busy on laptops with integrated graphics (10.11.2026). The slow decorative loops ask for 15.
+            // at 60 that alone kept a core busy on laptops with integrated graphics. The slow decorative loops ask for 15.
             try
             {
                 System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(

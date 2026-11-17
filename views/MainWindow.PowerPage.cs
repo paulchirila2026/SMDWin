@@ -76,7 +76,7 @@ namespace SMDWin.Views
                 // The page fills the visible area: the bottom row takes the rest of the height (scroll when the content is larger)
                 double avail = sv.ActualHeight - page.Margin.Top - page.Margin.Bottom - 2;
                 if (avail > 0 && Math.Abs(page.MinHeight - avail) > 1) page.MinHeight = avail;
-                // (11.11.2026: the cards row is sized by its content now — the page fits one screen, no stretched empty cards)
+                // (the cards row is sized by its content now — the page fits one screen, no stretched empty cards)
 
                 // Diagram (PC): height by the column width (660 × 300), at most 430 px, centred; its text stays at the size used in
                 // the rest of the app

@@ -41,7 +41,7 @@ namespace SMDWin.Views
 {
     public partial class MainWindow
     {
-        /// <summary>The Uptime cell (16.11.2026): "34 min" here and "not restarted for 31 days" in Health are two different clocks
+        /// <summary>The Uptime cell: "34 min" here and "not restarted for 31 days" in Health are two different clocks
         /// — the tooltip says which is which (a PC that hibernates was turned on 34 min ago, Windows was restarted 31 days ago).</summary>
         private void SetUptimeCell(string uptimeText)
         {
@@ -950,7 +950,7 @@ namespace SMDWin.Views
                     // _batteryWearPct is loaded in background on startup; -1 means not yet available
                     int health = _batteryWearPct >= 0 ? Math.Max(0, 100 - _batteryWearPct) : 0;
                     TxtDashBatHealth.Text = health > 0 ? $"{health}%" : "—";
-                    // theme status colours (16.11.2026: the fixed bright green had 2.3:1 contrast on Light)
+                    // theme status colours (the fixed bright green had 2.3:1 contrast on Light)
                     TxtDashBatHealth.SetResourceReference(TextBlock.ForegroundProperty,
                         health >= 80 ? "StatusGoodBrush" : health >= 60 ? "StatusCheckBrush" : "StatusProblemBrush");
                 }

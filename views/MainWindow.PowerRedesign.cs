@@ -26,7 +26,7 @@ using RadioButton = System.Windows.Controls.RadioButton;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The Power page, redesigned (mockup v3 approved 11.11.2026):
+    /// The Power page, redesigned (mockup v3 approved):
     ///  • a PC has one page: Power plan (block dial + needle, plans, processor) · When the PC is not used (one slider per time,
     ///    power button) · what keeps the PC awake (three lists side by side) · Start-up and shut-down; on a large screen also
     ///    Recent starts and stops, Power use now, and the advanced processor settings open in the plan card;
@@ -484,7 +484,7 @@ namespace SMDWin.Views
                     var r0 = Row(0, 1, 1.4);
                     Put(r0, 0, _prPlanCard);
                     Put(r0, 1, big ? IdleWithEvents() : _prIdleCard);
-                    // 14.11.2026: the start-up rows are only title + control now: the awake list gets the width
+                    // the start-up rows are only title + control now: the awake list gets the width
                     var r1 = !laptop && big ? Row(1, 2.3, 0.85, 1) : Row(1, laptop && big ? 2.0 : 2.2, 1);
                     Put(r1, 0, _prAwakeCard);
                     Put(r1, 1, _prStartupCard);
@@ -956,7 +956,7 @@ namespace SMDWin.Views
         /// <summary>Power button / lid: Do nothing · Sleep · Hibernate · Shut down (+ Turn off the screen when that is the setting).</summary>
         private FrameworkElement PrActionChoice(string what, bool ac, int? current, string title, bool canSleep, bool hibOn)
         {
-            // the choices share the width of the column (all of them always visible), each in proportion to its label (16.11.2026:
+            // the choices share the width of the column (all of them always visible), each in proportion to its label (
             // equal widths cut "Hibernate" and "Shut down" to "Hibern…" / "Shut d…" while "Sleep" had room to spare); a label
             // that still does not fit is shortened with "…" and the full name is in the tooltip
             var row = new Grid();
@@ -1047,7 +1047,7 @@ namespace SMDWin.Views
                 if (_prAwakeBadge.Parent is DockPanel head && head.Children.Count > 0 && head.Children[0] is Viewbox moon)
                     moon.Visibility = issues > 0 ? Visibility.Collapsed : Visibility.Visible;
 
-                // 14.11.2026: three tabs and one list over the full width (the three narrow columns cut the names)
+                // three tabs and one list over the full width (the three narrow columns cut the names)
                 var tabs = new (string Dot, string Caption, Action<StackPanel> Fill)[]
                 {
                     (bad > 0 ? "StatusCheckBrush" : "StatusGoodBrush", string.Format(PSim("ColStop", "Stop sleep · {0}"), bad), FillBlockers),

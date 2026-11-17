@@ -40,7 +40,7 @@ namespace SMDWin.Services
         {
             if (string.IsNullOrWhiteSpace(path)) return Empty;
             // SMD Win itself: one self-contained exe of 100+ MB — checking it read the whole file and held the process list for
-            // 10.5 s (16.11.2026 log). It is not signed yet, so the answer is known.
+            // 10.5 s. It is not signed yet, so the answer is known.
             if (string.Equals(path, OwnExe, StringComparison.OrdinalIgnoreCase)) return Empty;
 
             DateTime lastWrite;

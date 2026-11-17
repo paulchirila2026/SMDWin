@@ -44,7 +44,7 @@ namespace SMDWin.Tests
             // stability = 100 - 15 - 30 = 55; hwCoverage = 20%
             Assert.Equal(55, result.StabilityPercent);
             Assert.Equal(20, result.HwCoveragePercent);
-            // the score is stability only (16.11.2026); the coverage is reported next to it
+            // the score is stability only; the coverage is reported next to it
             Assert.Equal(55, result.Score);
             Assert.Equal("Acceptable", result.Rating);
         }

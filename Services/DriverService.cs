@@ -245,7 +245,7 @@ namespace SMDWin.Services
         public async Task<List<DriverEntry>> GetUnsignedDriversAsync()
         {
             var all = await GetDriversAsync();
-            // 16.11.2026: a WMI timeout is kept in the list as an "Error" entry — it was counted as one unsigned driver
+            // a WMI timeout is kept in the list as an "Error" entry — it was counted as one unsigned driver
             // ("Unsigned drivers found: 1 — Timed out")
             return all.FindAll(d => !d.IsSigned && d.Status != "Error");
         }

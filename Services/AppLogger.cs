@@ -62,7 +62,7 @@ namespace SMDWin.Services
             Log.Logger = cfg.CreateLogger();
             _log = Log.Logger;
 
-            // the build first: a log sent back must say which build it came from (11.11.2026)
+            // the build first: a log sent back must say which build it came from
             _log.Information("─── SMDWin started ─── {Build} (v{Version}) — logs: {LogDir}",
                 AppVersionInfo.Long,
                 System.Reflection.Assembly.GetExecutingAssembly()

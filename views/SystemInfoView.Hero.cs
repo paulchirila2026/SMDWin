@@ -345,7 +345,7 @@ namespace SMDWin.Views
                     : hp >= 60 ? (L($"health {hp}% · watch", $"sănătate {hp}% · de urmărit", $"Zustand {hp}% · beobachten", $"état {hp}% · à surveiller"), "StatusWarnBrush")
                     : hp > 0   ? (L($"health {hp}% · failing", $"sănătate {hp}% · se defectează", $"Zustand {hp}% · fällt aus", $"état {hp}% · défaillant"), "StatusCritBrush")
                     :            (L("no health data", "fără date de sănătate", "keine Zustandsdaten", "pas de données d'état"), "TextSecondaryBrush");
-                // the exact type ("M.2 SATA SSD", "3.5\" HDD · 7200 rpm") + the USB link for external disks (11.11.2026)
+                // the exact type ("M.2 SATA SSD", "3.5\" HDD · 7200 rpm") + the USB link for external disks
                 string kindText = d.Kind == "Unknown" ? "" : d.TypeText + (d.UsbConnected.Length > 0 ? " · " + d.UsbConnected.Split(" · ")[0] : "");
                 var line = new StackPanel { Orientation = WpfOrientation.Horizontal, Margin = new Thickness(0, 1, 0, 0) };
                 line.Children.Add(HeroText(string.Join(" · ", new[] { kindText, d.Size }.Where(x => !string.IsNullOrWhiteSpace(x))), Ui.FontS, "TextSecondaryBrush"));

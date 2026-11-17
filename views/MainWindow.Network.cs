@@ -244,7 +244,7 @@ namespace SMDWin.Views
             {
                 var adapters = await _netService.GetAdaptersAsync();
                 // the Wi-Fi details (native WLAN calls) are read on a background thread: read here, on the UI thread, they blocked
-                // the window for ~1.3 s when the page opened on a slow laptop (self-test 13.11.2026)
+                // the window for ~1.3 s when the page opened on a slow laptop (self-test)
                 SMDWin.Services.WifiInfo? wifiNow = null;
                 if (adapters.Any(a => a.Type == "Wi-Fi"))
                 {
@@ -252,7 +252,7 @@ namespace SMDWin.Views
                     catch (Exception ex) { AppLogger.Debug($"LoadNetworkAsync Wi-Fi: {ex.Message}"); }
                 }
 
-                // 16.11.2026: the IPv6 address and the totals since start of every adapter are read here, once, in the background.
+                // the IPv6 address and the totals since start of every adapter are read here, once, in the background.
                 // They were read inside the card loop on the UI thread — two full adapter lists per adapter (7 adapters on the
                 // ThinkPad E14 → the window blocked 1.2–1.5 s when the page opened).
                 var niInfo = await Task.Run(() =>

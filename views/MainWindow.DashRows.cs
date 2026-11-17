@@ -423,7 +423,7 @@ namespace SMDWin.Views
                 if (FindName("TxtDashGpuFootClock") is TextBlock gClk)
                     {
                     // Intel integrated graphics (HD / UHD / Iris) do not report their frequency to Windows: the cell then shows the
-                    // graphics power when the sensor has it, instead of a permanent "—" (i3-7100U · HD 620, 13.11.2026)
+                    // graphics power when the sensor has it, instead of a permanent "—" (i3-7100U · HD 620)
                     var gs = _lastTempSnap;
                     bool hasClock = gs?.GpuFreqMHz is float gmhz && gmhz > 50;
                     bool showPower = !hasClock && gs?.GpuPowerW is float gw0 && gw0 > 0.05f;

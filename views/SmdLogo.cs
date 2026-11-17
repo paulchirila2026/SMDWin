@@ -15,7 +15,7 @@ namespace SMDWin.Views
 {
     /// <summary>
     /// The SMD Win logo — a segmented gauge with a pulse line — drawn as vectors, so it is sharp at any size and every part
-    /// can be animated. The same drawing as Assets/smdwin.ico (variant A, chosen 09.11.2026).
+    /// can be animated. The same drawing as Assets/smdwin.ico (variant A).
     ///  • <see cref="Level"/>: how many segments are lit (0…14, fractions fade the next segment in — no visible steps).
     ///  • <see cref="PulseProgress"/>: how much of the pulse line is drawn (0…1).
     ///  • <see cref="PulseDot"/>: a light dot running along the pulse (0…1; negative = hidden).
@@ -36,7 +36,7 @@ namespace SMDWin.Views
         private static readonly Spec Full = new(14,
             new[] { "#22DDFF", "#23D2FF", "#25C7FF", "#26BBFF", "#27B1FF", "#29A7FF", "#2B9CFF", "#2C91FF", "#2E86FF", "#2F7BFF",
                     "#FFB81A", "#FF8A25", "#FF5A2E", "#FF2D3A" }, 98, 124, 3.4, 14);
-        // the ring and pulse 30 % thicker, wider gaps (decided 10.11.2026) — only for the taskbar / tray / .ico, where the normal
+        // the ring and pulse 30 % thicker, wider gaps — only for the taskbar / tray / .ico, where the normal
         // drawing looked thin next to other apps' icons; inside the program it would look heavy, so the program keeps Full
         private static readonly Spec Thick = Full with { RIn = 124 - 26 * 1.3, Gap = 7, PulseW = 18.2 };
         private static readonly Spec Simple = new(9,

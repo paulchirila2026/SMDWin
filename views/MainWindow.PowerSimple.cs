@@ -23,7 +23,7 @@ using RadioButton = System.Windows.Controls.RadioButton;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The Power page, made simple (mockup approved 11.11.2026 — one screen, everything changeable in place):
+    /// The Power page, made simple (mockup approved — one screen, everything changeable in place):
     ///  • header: "Keep awake" for a while (the plan stays as it is) and "Power check" (findings in a small window);
     ///  • "When the PC is not used": screen off / sleep / hard disks / (laptop) lid / power button, each value a click away,
     ///    plugged in and on battery side by side on a laptop;
@@ -438,7 +438,7 @@ namespace SMDWin.Views
             }
             DockPanel.SetDock(acts, Dock.Right);
             d.Children.Add(acts);
-            // 14.11.2026: only the title and the control on the row; the explanation (and the state line, e.g. the size of the
+            // only the title and the control on the row; the explanation (and the state line, e.g. the size of the
             // hibernation file) is shown on hover. A state that needs attention (not restarted for 14+ days) tints the icon.
             string hover = sub.Length > 0 && sub != tip ? sub + "\n" + tip : tip;
             var t = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VAlign.Center, FontSize = Ui.FontM };

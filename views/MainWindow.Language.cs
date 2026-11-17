@@ -376,7 +376,7 @@ namespace SMDWin.Views
 
             // ── Stress ────────────────────────────────────────────────────────────
             T(TxtStressTitle,"Temp & Stress", "Temp & Stress");
-            T(TxtTempSubtitle,"Live sensors • Stress tests", "Senzori live • Teste de stres");   // Benchmark has its own page (14.11.2026)
+            T(TxtTempSubtitle,"Live sensors • Stress tests", "Senzori live • Teste de stres");   // Benchmark has its own page
             T(TxtCpuStressLabel,"CPU Stress","CPU Stress");
             T(TxtGpuStressLabel,"GPU Stress","GPU Stress");
             T(TxtGpuStressInfo,"4 Direct3D 11 windows without VSync — maximizes GPU.",

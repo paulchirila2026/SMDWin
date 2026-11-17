@@ -414,7 +414,7 @@ namespace SMDWin.Services
         /// </summary>
         public static string PictureKind(string? kind, string? model, bool laptop = false, string? formFactor = null)
         {
-            // the form the disk reports about itself wins (DiskHealthEntry.FormFactor, 11.11.2026); the model and the PC type
+            // the form the disk reports about itself wins (DiskHealthEntry.FormFactor); the model and the PC type
             // are only the fallback
             if (kind is "SATA SSD" or "SSD" && (formFactor == "M.2" || (string.IsNullOrEmpty(formFactor) && IsM2Sata(model)))) return "M.2 SATA SSD";
             if (kind == "HDD" && formFactor == "3.5\"") return "HDD";

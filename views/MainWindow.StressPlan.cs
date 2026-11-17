@@ -196,7 +196,7 @@ namespace SMDWin.Views
             {
                 StressIntensity.Long => SP("PlanSayLong", "held at 80 % so the temperature settles — for tests of 30 minutes or more"),
                 _ when _planWhat == StressWhat.System => SP("PlanSaySystemStd", "two cores stay free for the RAM and disk work"),
-                _ when !hasCpu => "",   // 16.11.2026: "…under full load (DirectX 11), full load." said it twice
+                _ when !hasCpu => "",   // "…under full load (DirectX 11), full load." said it twice
                 _ => SP("PlanSayStd", "one core stays free so Windows keeps responding"),
             };
             string stopText = _stressDurationMinutes > 0

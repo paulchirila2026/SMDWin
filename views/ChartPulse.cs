@@ -28,7 +28,7 @@ namespace SMDWin.Views
             var grow = new DoubleAnimation(3.5, 10, dur) { RepeatBehavior = RepeatBehavior.Forever, EasingFunction = ease };
             var fade = new DoubleAnimation(0.45, 0, dur) { RepeatBehavior = RepeatBehavior.Forever, EasingFunction = ease };
             // 15 frames a second is plenty for a slow soft ring; at the default 60 the charts kept WPF drawing the window 60 times a
-            // second on every page (10.11.2026: SMD Win at 15-30 % CPU on a laptop i5 with integrated graphics)
+            // second on every page (SMD Win at 15-30 % CPU on a laptop i5 with integrated graphics)
             Timeline.SetDesiredFrameRate(grow, 15);
             Timeline.SetDesiredFrameRate(fade, 15);
             grow.Freeze(); fade.Freeze();

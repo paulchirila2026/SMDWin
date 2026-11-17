@@ -12,7 +12,7 @@ using D3DBuffer   = SharpDX.Direct3D11.Buffer;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// The graphics part of the Benchmark page (14.11.2026): three short tests on the same D3D11 device, each ~13 s, so the
+    /// The graphics part of the Benchmark page: three short tests on the same D3D11 device, each ~13 s, so the
     /// card reaches its steady clock and a card that slows down when hot shows it:
     ///   1. 3D render — a 1920×1080 off-screen picture, 16 layers of a 48×48 grid of quads with a lighting pixel shader
     ///      (24 lights per pixel) → frames per second;
@@ -53,7 +53,7 @@ namespace SMDWin.Services
         /// <summary>A graphics adapter the test can use (the Microsoft basic renderer is left out).</summary>
         public sealed record AdapterInfo(int Index, string Name, long DedicatedMB);
 
-        /// <summary>The hardware adapters (14.11.2026): on laptops with two (Intel / AMD integrated + NVIDIA / AMD dedicated)
+        /// <summary>The hardware adapters: on laptops with two (Intel / AMD integrated + NVIDIA / AMD dedicated)
         /// the page lets the user choose; by default the one with the most dedicated memory — Windows' default is often the
         /// integrated one, especially on battery.</summary>
         public static List<AdapterInfo> Adapters()
@@ -148,7 +148,7 @@ namespace SMDWin.Services
                     ctx.ComputeShader.Set(null);
                 }
 
-                // 16.11.2026: the 3D and compute resources are freed first. On an iMac (GT 755M, 1 GB, 2560 × 1440 desktop) only
+                // the 3D and compute resources are freed first. On an iMac (GT 755M, 1 GB, 2560 × 1440 desktop) only
                 // ~340 MB of the card's memory was free: both memory tests gave 10–16 GB/s, the speed of the PCIe bus (the buffers
                 // were probably kept in system memory) while the memory clock read 2 500 MHz (~80 GB/s). Only the 3 timers stay.
                 ctx.ClearState();
@@ -156,9 +156,9 @@ namespace SMDWin.Services
                 if (trash.Count > 3) trash.RemoveRange(3, trash.Count - 3);
                 ctx.Flush();
 
-                // ── 3. memory: the driver's own copy between two buffers on the card (14.11.2026 — the compute-shader copy
+                // ── 3. memory: the driver's own copy between two buffers on the card (the compute-shader copy
                 //    gave 1 GB/s on a GT 755M, far from its ~60 GB/s) ─────────────────────────────────────────────────────
-                //    14.11.2026 (2): the copy gave 15 GB/s on the same GT 755M (GDDR5, ~86 GB/s on paper) — on some cards the
+                //    The copy gave 15 GB/s on the same GT 755M (GDDR5, ~86 GB/s on paper) — on some cards the
                 //    driver sends CopyResource to the copy engine, which is made for the PCIe bus. Now half of the time is the
                 //    copy and half a read test (a compute shader reads the 64 MB buffer in wide, aligned loads); the higher of
                 //    the two is the result, both go to the log.
@@ -370,7 +370,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     if (s == 0x9E3779B9u) Sink.Store((id.x & 1023) * 4, s);
 }";
 
-        // 16.11.2026: the old loop (v = v × const + const, 256 times) gave 7 455 GFLOPS on an Intel UHD (real peak ~420): the
+        // the old loop (v = v × const + const, 256 times) gave 7 455 GFLOPS on an Intel UHD (real peak ~420): the
         // driver's compiler can merge a chain of the same affine step with constants. Now each step multiplies two values that
         // change every step (x = y·x + y; y = x·y + x — two pairs), from values read from memory: nothing can be merged or
         // worked out in advance. Same work per thread as before: 4 multiply-adds × 256 = 2 048 operations.

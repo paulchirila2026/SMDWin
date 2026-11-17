@@ -928,7 +928,7 @@ namespace SMDWin.Views
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                // utilizatorul a refuzat UAC
+                // the user declined UAC
                 ShowToastError(_LS("Drivers", "ExportAdminRequired"));
             }
             catch (Exception ex)

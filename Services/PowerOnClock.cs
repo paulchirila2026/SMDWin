@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// How long the PC has been on since it was last switched on (10.11.2026: right after power-on SMD Win said "60 days").
+    /// How long the PC has been on since it was last switched on (right after power-on SMD Win said "60 days").
     /// Windows' own uptime (GetTickCount64 / LastBootUpTime) only resets on a full restart: with Fast Startup on, "Shut down"
     /// hibernates the kernel, so the counter keeps running across every shut-down — Task Manager shows the same large number.
     /// Every start (cold boot, Fast Startup or resume from hibernation) writes Kernel-Boot event 27 to the System log; the

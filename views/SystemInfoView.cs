@@ -280,7 +280,7 @@ namespace SMDWin.Views
             outerGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             // ── Header: the computer illustration, its name, the tabs and the buttons ───
-            // no line under it: no other page has one (decided 07.11.2026)
+            // no line under it: no other page has one
             var hdr = new Border
             {
                 Padding         = new Thickness(0, 0, 0, 8),

@@ -10,7 +10,7 @@ namespace SMDWin.Views
 {
     /// <summary>
     /// After a theme change, texts that were given a status colour as a fixed brush (UEFI, Licensed, Connected, "no recent
-    /// crashes"…) still had the colour of the old theme: the dark theme's light green (#46C07A) on white, 2.3:1 (16.11.2026
+    /// crashes"…) still had the colour of the old theme: the dark theme's light green (#46C07A) on white, 2.3:1 (
     /// self-test, Dark → Light). The window is walked once and every status colour of either theme, or the old fixed ones, is
     /// tied to the theme resource instead — it follows every later theme change by itself.
     /// </summary>

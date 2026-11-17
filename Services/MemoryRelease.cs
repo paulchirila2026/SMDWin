@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// Gives the large test buffers back to Windows after a test (16.11.2026 self-test: 550 MB before the live tools,
+    /// Gives the large test buffers back to Windows after a test: 550 MB before the live tools,
     /// 1 617 MB after — the memory test works in 128 MB pieces, up to 1 GB, and .NET keeps the space of large freed objects
     /// for later instead of returning it). One compacting collection of the large-object area, in the background.
     /// </summary>

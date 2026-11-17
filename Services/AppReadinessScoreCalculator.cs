@@ -40,7 +40,7 @@ namespace SMDWin.Services
                 ? 100.0 * hwDbKnownCount / hwDbTotalCount
                 : null;
 
-            // 16.11.2026: the score is the app's stability only. The hardware database coverage (how many of this PC's parts
+            // the score is the app's stability only. The hardware database coverage (how many of this PC's parts
             // are in Data/HardwareDB) says nothing about the app working well — it pulled a clean run down to 43/100 on a
             // laptop whose parts were not in the database. It is still returned, and shown next to the score.
             double overall = stabilityPercent;

@@ -33,7 +33,7 @@ namespace SMDWin.Views
 
             try
             {
-                // 11.11.2026: "Build 57" + the build date; the version number (0.4) is no longer shown until the public release
+                // "Build 57" + the build date; the version number (0.4) is no longer shown until the public release
                 var vi = SMDWin.Services.AppVersionInfo.Build;
                 TxtVersion.Text = vi > 0 ? $"{vi}{(SMDWin.Services.AppVersionInfo.DevBuild ? " dev" : "")}" : "dev";
                 TxtBuild.Text = BuildDateText() is { Length: > 0 } built ? built : "—";
@@ -270,7 +270,7 @@ namespace SMDWin.Views
             HeroGlow.OpacityMask = mask;
         }
 
-        private const string GitHubUrl = "https://github.com/paulchirila2026/SMDWin";   // the public repository (17.11.2026)
+        private const string GitHubUrl = "https://github.com/paulchirila2026/SMDWin";   // the public repository
 
         private static void OpenUrl(string url)
         {

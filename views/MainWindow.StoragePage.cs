@@ -91,7 +91,7 @@ namespace SMDWin.Views
             if (FindName("StorageActChart") is not MiniLineChart c) return;
             EnsureStActChartSetup(c);
             c.ShowHistory(_stActHist, StActWindow(), 0, 1);
-            // 16.11.2026 self-test: this chart stayed on "Collecting data…" while the disk card below had 5 minutes of data.
+            // this chart stayed on "Collecting data…" while the disk card below had 5 minutes of data.
             // Not found by reading the code — logged once with what the chart had, to find it from the next log.
             if (!c.HasData && _stActHist.Count > 60 && !_stActEmptyLogged)
             {
@@ -218,7 +218,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>The exact type ("M.2 SATA SSD", "2.5\" HDD · 5400 rpm") and, for USB disks, the link ("USB 3.0"), with a
-        /// warning when a USB 3 device runs at USB 2 speed (11.11.2026).</summary>
+        /// warning when a USB 3 device runs at USB 2 speed.</summary>
         private static string KindLabel(DiskHealthEntry d)
         {
             string usb = d.UsbConnected.Length == 0 ? ""
@@ -242,7 +242,7 @@ namespace SMDWin.Views
             card.Child = root;
 
             var body = new Grid { Margin = new Thickness(0, 0, 0, 14), VerticalAlignment = VAlign.Top };
-            // picture · name · (spacer) · partitions · interface / serial / capacity (14.11.2026: the old footer moved up here)
+            // picture · name · (spacer) · partitions · interface / serial / capacity (the old footer moved up here)
             foreach (var w in new[] { new GridLength(188), new GridLength(1.4, GridUnitType.Star), new GridLength(0), new GridLength(2, GridUnitType.Star), GridLength.Auto })
                 body.ColumnDefinitions.Add(new ColumnDefinition { Width = w });
             body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -261,7 +261,7 @@ namespace SMDWin.Views
             var info = new StackPanel { VerticalAlignment = VAlign.Center, Margin = new Thickness(16, 0, 16, 0) };
             var cap = new TextBlock { Text = KindLabel(d) + (isSys ? " · SYSTEM" : ""), Style = TryFindResource("DashRowCaption") as Style };
             info.Children.Add(cap);
-            // 16.11.2026: the model was cut ("WDC PC SN520 SDAPNUW-…") with room left in the row — a little more width and a
+            // the model was cut ("WDC PC SN520 SDAPNUW-…") with room left in the row — a little more width and a
             // second line when needed, the full name in the tooltip
             string modelText = string.IsNullOrWhiteSpace(d.Model) ? $"Disk {d.DiskIndex}" : d.Model.Trim();
             info.Children.Add(new TextBlock { Text = modelText, Style = TryFindResource("DashRowName") as Style, FontSize = 20, Margin = new Thickness(0, 2, 0, 2),
@@ -318,7 +318,7 @@ namespace SMDWin.Views
             var band = MakeDriveHealthBand(d);
             Grid.SetRow(band, 2); root.Children.Add(band);
 
-            // interface · serial · capacity, top right of the card (14.11.2026: the cards are one under the other, full width;
+            // interface · serial · capacity, top right of the card (the cards are one under the other, full width;
             // the separate footer took ~45 px per disk)
             string iface = (string.IsNullOrEmpty(d.Bus) ? d.MediaType : d.Bus) + (d.RotationRpm > 0 ? $" · {d.RotationRpm} RPM" : "");
             var cells = new List<(string, string)>

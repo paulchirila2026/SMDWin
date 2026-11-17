@@ -753,7 +753,7 @@ namespace SMDWin.Views
 
             if (_scan == null)
             {
-                // before the first scan: say so instead of "—" + "0 items" (read as values that failed, 16.11.2026 self-test)
+                // before the first scan: say so instead of "—" + "0 items" (read as values that failed,
                 _k4Label.Text = S("KpiScanned", "Scanned");
                 _k4.Text = S("NotScanned", "not yet");
                 _k4Sub.Text = d != null ? string.Format(S("UsedOfFmt", "{0} used"), DiskSize(d.TotalBytes - d.FreeBytes)) : "";

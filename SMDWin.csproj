@@ -99,12 +99,12 @@
   <ItemGroup Condition="Exists('Assets\oui_database.csv')">
     <EmbeddedResource Include="Assets\oui_database.csv" />
   </ItemGroup>
-  <!-- BUILD NUMBER (11.11.2026): build-number.txt holds the number of the last published build. Every publish (dotnet publish,
+  <!-- BUILD NUMBER: build-number.txt holds the number of the last published build. Every publish (dotnet publish,
        publish.bat, or Visual Studio's Publish) adds 1 and writes it back; ordinary builds (F5, Build) keep the number and are
        marked "dev". The number and the build time go into the exe (AssemblyMetadata SmdBuild / SmdBuildKind, FileVersion
        0.4.0.N) and are shown as "Build N" in the log, the self-test, About, the splash and the PDF — so a log or a stick copy
        says exactly which build it came from. -->
-  <!-- 14.11.2026: the number is also kept outside the project folder (%LOCALAPPDATA%\SMDWin\dev\build-number.txt) and the
+  <!-- the number is also kept outside the project folder (%LOCALAPPDATA%\SMDWin\dev\build-number.txt) and the
        higher of the two is used — every new zip comes with its own build-number.txt, so the count started again from 1 each
        time ("why build 3 again?"). The temporary WPF markup project (*_wpftmp) only reads the number: it used to add 1 too,
        so one publish counted twice. -->

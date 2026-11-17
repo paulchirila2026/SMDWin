@@ -11,7 +11,7 @@
           <!-- Power (like RAM): at the top the battery (laptop) or the diagram (PC) | the active plan; at the bottom Sleep &amp; wake |
                consumers. The page fills the window: the bottom row takes the rest of the height (MainWindow.PowerPage.cs → FitPowerCards). -->
           <Grid x:Name="PowerPageGrid" Margin="{StaticResource PageMargin}">
-            <!-- 11.11.2026: the page fits one screen — header · top row (idle settings or battery | plan) · Sleep (+ consumers) ·
+            <!-- the page fits one screen — header · top row (idle settings or battery | plan) · Sleep (+ consumers) ·
                  Start-up and shut-down; the last row only takes the rest of the height -->
             <!-- header · tabs (laptop) · UPS (when one is connected) · the cards (built in MainWindow.PowerRedesign.cs, they take the
                  rest of the height) · the older page parts, hidden: the code still fills them and the new cards borrow some of them -->

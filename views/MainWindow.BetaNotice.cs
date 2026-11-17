@@ -6,7 +6,7 @@ using SMDWin.Services;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The notice shown once, on the first start (16.11.2026, before the public release): beta, no warranty, what SMD Win can
+    /// The notice shown once, on the first start (before the public release): beta, no warranty, what SMD Win can
     /// change and how to undo it, the stress tests heat the hardware. After it is closed it is not shown again
     /// (Settings.BetaNoticeShown). The PawnIO offer waits for it, so there is one start-up dialog at a time.
     /// </summary>

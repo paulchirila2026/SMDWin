@@ -143,7 +143,7 @@ namespace SMDWin.Views.Net
             _grid.Columns.Add(riskCol);
 
             _grid.Columns.Add(new DataGridTextColumn { Header = "Process", Binding = new System.Windows.Data.Binding("ProcessName"), Width = new DataGridLength(1, DataGridLengthUnitType.Star), MinWidth = 150, FontWeight = FontWeights.SemiBold });
-            // (10.11.2026) the fixed columns added for ETW left no room for the two star columns: "Process" shrank to nothing at
+            // the fixed columns added for ETW left no room for the two star columns: "Process" shrank to nothing at
             // 1680 px. Process keeps 150 px at least; the "Blocked" column went (the Firewall button shows it); the fixed ones are narrower; if the window is still too narrow, the grid scrolls.
             _grid.Columns.Add(new DataGridTextColumn { Header = "PID", Binding = new System.Windows.Data.Binding("Pid"), Width = new DataGridLength(60) });
 
@@ -156,10 +156,10 @@ namespace SMDWin.Views.Net
             blockedFef.SetBinding(FrameworkElement.ToolTipProperty, new System.Windows.Data.Binding("BlockedDisplay"));
             blockedTpl.VisualTree = blockedFef;
             blockedCol.CellTemplate = blockedTpl;
-            // (10.11.2026) not added any more: the Firewall column's button already says Block / Unblock, and the room is needed
+            // not added any more: the Firewall column's button already says Block / Unblock, and the room is needed
             // for the process name at 1680 px
 
-            // (10.11.2026) 13 columns did not fit: "Now" holds both directions, "Local" is in the Remote tooltip and the detail window,
+            // 13 columns did not fit: "Now" holds both directions, "Local" is in the Remote tooltip and the detail window,
             // State is a short word, the country has no code; Site / service takes the free room; every text column shows its
             // whole value as a tooltip when it is cut
             DataGridTextColumn TextCol(string header, string path, DataGridLength width, double min = 0, string? tipPath = null)

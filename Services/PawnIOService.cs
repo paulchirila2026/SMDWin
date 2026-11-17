@@ -221,7 +221,7 @@ namespace SMDWin.Services
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                // userul a refuzat UAC
+                // the user declined UAC
                 progress?.Report("Installation cancelled.");
                 throw;
             }

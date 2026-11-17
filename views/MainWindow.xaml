@@ -400,7 +400,7 @@
                   </Grid>
                 </Button>
 
-                <!-- Benchmark (14.11.2026): marks 0–10 per component -->
+                <!-- Benchmark: marks 0–10 per component -->
                 <Button x:Name="BtnBenchmark" Click="NavBtn_Click"
                         Style="{DynamicResource NavButtonStyle}" Tag="Benchmark" Margin="0,0"
                         HorizontalContentAlignment="Stretch"

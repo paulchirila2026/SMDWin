@@ -8,7 +8,7 @@ using SMDWin.Models;
 namespace SMDWin.Services
 {
     /// <summary>
-    /// The USB link of a USB disk or stick (11.11.2026): what the device supports and how it is connected right now — read from
+    /// The USB link of a USB disk or stick: what the device supports and how it is connected right now — read from
     /// the USB hub it is plugged into, not guessed from the model or the measured speed (that depends on the disk, not on USB).
     ///
     /// Path: the disk's PnP node (Win32_DiskDrive.PNPDeviceID) → its parents until the USB device itself ("USB\VID_…", not an

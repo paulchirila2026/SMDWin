@@ -610,7 +610,7 @@ namespace SMDWin.Views
             ButtonContrastGuard.Install();
             SMDWin.Services.BootTiming.Mark("MainWindow(): before InitializeComponent");
             InitializeComponent();
-            // texts coloured with a fixed status brush keep the old theme's colour — tied to the theme after every change (16.11.2026)
+            // texts coloured with a fixed status brush keep the old theme's colour — tied to the theme after every change
             SMDWin.Services.ThemeManager.ThemeChanged += () => Dispatcher.BeginInvoke(new Action(RemapStatusColorsAfterTheme), System.Windows.Threading.DispatcherPriority.Background);
             SMDWin.Services.BootTiming.Mark("MainWindow(): InitializeComponent (building the window and the pages)");
             CaptureLiteralSources();   // the XAML texts, before data or translations change them

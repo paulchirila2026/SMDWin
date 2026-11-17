@@ -14,7 +14,7 @@ namespace SMDWin.Services
     /// </summary>
     public class AutoUpdateService : IDisposable
     {
-        public static string GitHubOwner { get; set; } = "paulchirila2026";   // 17.11.2026: the public repository is paulchirila2026/SMDWin
+        public static string GitHubOwner { get; set; } = "paulchirila2026";   // the public repository is paulchirila2026/SMDWin
         public static string GitHubRepo  { get; set; } = "SMDWin";
         // Asset name pattern to match in the release (e.g. "SMDWin-Setup.exe" or "SMDWin.zip")
         public static string AssetPattern { get; set; } = "SMDWin";

@@ -379,7 +379,7 @@ namespace SMDWin.Views
                 sb.AppendLine($"  {r.When,-24} {r.WorkingMB,6} MB {r.PrivateMB,6} MB {r.ManagedMB,6} MB {r.Handles,7} {r.Gdi,5} {r.User,5}");
             if (d.Resources.Count >= 3)
             {
-                // 16.11.2026: "tour 2" is row 2; the last row (after the running tools) was compared before, so +1 190 MB of test
+                // "tour 2" is row 2; the last row (after the running tools) was compared before, so +1 190 MB of test
                 // buffers was written "(stable)". The tools get their own line.
                 var a = d.Resources[1]; var b = d.Resources[2];
                 sb.AppendLine($"  growth between tour 1 and tour 2: private {b.PrivateMB - a.PrivateMB:+0;-0} MB, managed {b.ManagedMB - a.ManagedMB:+0;-0} MB, " +

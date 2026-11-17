@@ -506,7 +506,7 @@ namespace SMDWin.Views
             foreach (var f in p.Facts.Where(f => cores == 0 || !FactValue(f).StartsWith($"{cores} ", StringComparison.Ordinal)).Take(3 - r.Cells.Count))
             {
                 string v = FactValue(f);
-                // 16.11.2026: Windows' "maximum clock" of an i5-10210U is 2.1 GHz, its base is 1.6 GHz — Intel writes the base in the
+                // Windows' "maximum clock" of an i5-10210U is 2.1 GHz, its base is 1.6 GHz — Intel writes the base in the
                 // name ("@ 1.60GHz"), which is the right number to show as the base
                 if (v.EndsWith("GHz", StringComparison.OrdinalIgnoreCase) && !v.Contains('–')
                     && System.Text.RegularExpressions.Regex.Match(s?.Cpu ?? "", @"@\s*(\d+(?:\.\d+)?)\s*GHz", System.Text.RegularExpressions.RegexOptions.IgnoreCase) is { Success: true } baseM
@@ -697,7 +697,7 @@ namespace SMDWin.Views
             mark.Margin = new Thickness(0, 0, 5, 0);
             sp.Children.Add(mark);
             var t = HeroText(name, Ui.FontXS, on ? "TextPrimaryBrush" : "TextSecondaryBrush", semibold: on);
-            // off: the grey border, the ✕ and the colour are enough (14.11.2026: no strikethrough)
+            // off: the grey border, the ✕ and the colour are enough (no strikethrough)
             sp.Children.Add(t);
             var b = new Border
             {

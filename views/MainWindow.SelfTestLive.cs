@@ -12,7 +12,7 @@ using Brushes = System.Windows.Media.Brushes;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// The long self-test (13.11.2026): after the page tour, every tool is started for about 10 seconds and captured while it
+    /// The long self-test: after the page tour, every tool is started for about 10 seconds and captured while it
     /// runs and after it stops — the speed test, ping, traceroute, DNS, ports, LAN, Wi-Fi Live, the surface scan, the basic
     /// RAM test and the CPU + GPU stress with full dials. A tool that runs shows texts and columns that an idle page does not
     /// (that is how the cut columns in Network were found), and the same text checks run on these pictures.
@@ -137,7 +137,7 @@ namespace SMDWin.Views
                 {
                     await NavigateTo("Benchmark");
                     await Task.Delay(800, ct);
-                    // 16.11.2026: the benchmark started 3 s after the stress test, with the processor still busy and hot
+                    // the benchmark started 3 s after the stress test, with the processor still busy and hot
                     // ("busy 93 %"). Wait until the load stays under 15 % for 5 s (at most 45 s), so the marks are comparable.
                     var calm = System.Diagnostics.Stopwatch.StartNew();
                     int quiet = 0;

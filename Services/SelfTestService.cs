@@ -209,7 +209,7 @@ namespace SMDWin.Services
                 else
                 {
                     Ok($"Disks detected: {disks.Count}");
-                    // the exact type and form, and the USB link — what the Storage page and the PDF show (11.11.2026)
+                    // the exact type and form, and the USB link — what the Storage page and the PDF show
                     foreach (var d in disks)
                     {
                         Log($"      - #{d.DiskIndex} {d.Model,-30} {d.TypeText}{(d.UsbLinkText.Length > 0 ? " · " + d.UsbLinkText : "")}" +
@@ -612,7 +612,7 @@ namespace SMDWin.Services
             catch (Exception ex) { Log($"  · DNS check unavailable: {ex.Message}"); }
 
             // ── 4. PROCESSOR CALCULATION CHECK ─────────────────────────────────
-            // 16.11.2026: the old processor benchmark (SHA-256 + Mandelbrot in pixels + FFT, its own "516 · Good" score) is no longer
+            // the old processor benchmark (SHA-256 + Mandelbrot in pixels + FFT, its own "516 · Good" score) is no longer
             // run here: the Benchmark page gives the marks, and two scores for the same processor in one report confused. What
             // stays is the part that finds hardware faults: FFT on all threads with every result checked.
             Section("PROCESSOR CALCULATION CHECK");

@@ -69,7 +69,7 @@
                 </Border.Background>
             </Border>
 
-            <!-- ===== Centre (variant A, decided 11.11.2026): the logo IS the progress bar — its segments light up as the app
+            <!-- ===== Centre (variant A, decided): the logo IS the progress bar — its segments light up as the app
                  loads, then the pulse is drawn and beats once; the name, the tagline and the current step below it ===== -->
             <StackPanel x:Name="CenterBlock" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
                 <StackPanel.RenderTransform>

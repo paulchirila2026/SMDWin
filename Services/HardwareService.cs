@@ -481,7 +481,7 @@ namespace SMDWin.Services
         /// </summary>
         private static void RefineKindFromSmart(DiskHealthEntry d, SmartctlReport r)
         {
-            // the form the disk reports about itself (11.11.2026) — also for a disk in a USB enclosure, read through its adapter
+            // the form the disk reports about itself — also for a disk in a USB enclosure, read through its adapter
             if (r.FormFactor.Length > 0) d.FormFactor = r.FormFactor;
             if (d.Bus == "USB")
             {
@@ -1062,7 +1062,7 @@ namespace SMDWin.Services
                     using var ownedReader = ownsReader ? reader : null;   // closed only if it was opened here
                     var snap = reader.Read();
                     // a reader opened just now often has no values on its first update (LibreHardwareMonitor fills them on the
-                    // second one) — that gave a false "Temperatures unavailable" in the self-test (11.11.2026)
+                    // second one) — that gave a false "Temperatures unavailable" in the self-test
                     for (int retry = 0; retry < 2 && !(snap.CpuTemp > 0) && !(snap.GpuTemp > 0); retry++)
                     {
                         System.Threading.Thread.Sleep(1200);
@@ -1437,7 +1437,7 @@ namespace SMDWin.Services
             static string Size(long mb) => mb >= 1024 ? $"{Math.Round(mb / 1024.0, mb % 1024 == 0 ? 0 : 1)} GB" : $"{mb} MB";
             var groups = capacitiesMB.Where(m => m > 0).GroupBy(m => m).OrderByDescending(g => g.Key).ToList();
             if (groups.Count == 0) return "";
-            // one module: "1 × 8 GB" — a bare "8 GB" repeated the total next to it ("8 GB · DDR4 · 8 GB · 2667 MHz", 16.11.2026)
+            // one module: "1 × 8 GB" — a bare "8 GB" repeated the total next to it ("8 GB · DDR4 · 8 GB · 2667 MHz")
             // and hid that the PC runs on a single module
             if (groups.Count == 1 && groups[0].Count() == 1) return $"1 × {Size(groups[0].Key)}";
             return string.Join(" + ", groups.Select(g => g.Count() > 1 ? $"{g.Count()} × {Size(g.Key)}" : Size(g.Key)));
@@ -1591,7 +1591,7 @@ namespace SMDWin.Services
                 bool hdd = mediaHdd || rpmKnown || (!mediaSsd && !noSpin && nameHdd && !nameSsd);
                 bool ssd = !hdd && (mediaSsd || noSpin || nameSsd || nameNvme);
                 // MSFT_Disk.BusType is already in MediaType as "USB" / "NVMe" (DetectMediaTypeFull); without MSFT_PhysicalDisk (a damaged
-                // Storage Management API, e.g. ThinkPad T540p 10.11.2026) a "… USB Device" name or a stick name still means USB
+                // Storage Management API, e.g. ThinkPad T540p) a "… USB Device" name or a stick name still means USB
                 int bus = p.bus != 0 ? p.bus
                         : d.MediaType == "USB" ? 7 : d.MediaType == "NVMe" ? 17
                         : u.Contains("USB DEVICE") || (nameStick && !nameSsd) ? 7 : 0;

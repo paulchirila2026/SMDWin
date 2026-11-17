@@ -25,7 +25,7 @@ namespace SMDWin.Views
         private bool _sidebarCollapsed = false;
         private const double SidebarExpandedWidth  = 232;
         private const double SidebarCollapsedWidth = 80; // 72 cuts the Dashboard icon, 80 is comfortable
-        // The 36 px button centred on the menu icons' column (10.11.2026: it was centred on the collapsed width, 40 px, while the
+        // The 36 px button centred on the menu icons' column (it was centred on the collapsed width, 40 px, while the
         // icons sit at 36 px — 10 panel margin + 6 button margin + 10 padding + 10 to the icon's centre — so it looked off to one side)
         private const double SidebarIconCenter = 36;
         private const double SidebarToggleLeft = SidebarIconCenter - 36 / 2.0;

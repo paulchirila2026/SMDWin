@@ -521,7 +521,7 @@ namespace SMDWin.Services
 
                 try
                 {
-                    int totalUnits = seqPasses * 2 + 3 + (quickMode ? 0 : 4); // N scrieri + N citiri + iops_read + iops_write + latency [+ 4×QD]
+                    int totalUnits = seqPasses * 2 + 3 + (quickMode ? 0 : 4); // N writes + N reads + iops_read + iops_write + latency [+ 4×QD]
                     double UnitFrac(int unitsCompleted, double withinUnitFrac) =>
                         Math.Clamp((unitsCompleted + Math.Clamp(withinUnitFrac, 0, 1)) / totalUnits, 0.0, 0.99);
 

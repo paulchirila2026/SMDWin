@@ -329,7 +329,7 @@ namespace SMDWin.Views
             return items;
         }
 
-        /// <summary>The "To check" list. Without problems it is not shown at all (11.11.2026: the "Nothing needs attention" banner
+        /// <summary>The "To check" list. Without problems it is not shown at all (the "Nothing needs attention" banner
         /// only took space). <paramref name="withLine"/> = a fine line above.</summary>
         private FrameworkElement BuildAttentionPanel(bool withLine = true)
         {

@@ -42,10 +42,10 @@ namespace SMDWin.Services
     {
         /// <summary>
         /// True for a critical result that means physical danger to the hardware or data — the only ones that tint the Dark
-        /// background red (decided 10.11.2026): RAM errors, a failing disk (SMART health under 50 %) or a hot disk, 2+ blue
+        /// background red: RAM errors, a failing disk (SMART health under 50 %) or a hot disk, 2+ blue
         /// screens in 30 days, a worn-out battery (under 40 %) and thermal throttling right now. Everything else (activation,
         /// updates, antivirus, uptime, drivers…) stays a list item.
-        /// 11.11.2026: CPU/GPU stress-test results no longer count — a test that once reached 95 °C kept the background red
+        /// CPU/GPU stress-test results no longer count — a test that once reached 95 °C kept the background red
         /// after the PC had cooled to 60 °C. A live temperature above the limit still turns it red (UpdateAuroraAlert, "hot"),
         /// and goes back as soon as it cools; the old test stays Critical in the Health check list.
         /// </summary>
@@ -180,7 +180,7 @@ namespace SMDWin.Services
                     return result;
                 }
                 int health = 100 - info.WearPct.Value;
-                result.Severity = health < 40 ? DiagnosticSeverity.Critical      // 10.11.2026: red only when really worn out
+                result.Severity = health < 40 ? DiagnosticSeverity.Critical      // red only when really worn out
                                  : health < 70 ? DiagnosticSeverity.Warning
                                  : DiagnosticSeverity.Ok;
                 result.Success = result.Severity == DiagnosticSeverity.Ok;
@@ -397,7 +397,7 @@ namespace SMDWin.Services
                         return;
                     }
                     result.Severity = DiagnosticSeverity.Warning;   // a reminder, never critical
-                    // 16.11.2026: the message named Fast Startup on a laptop where it is off — that PC hibernates every day. The
+                    // the message named Fast Startup on a laptop where it is off — that PC hibernates every day. The
                     // cause is said only when it is known: Fast Startup on → use Restart; off → sleep / hibernate keep Windows running.
                     bool? fastStartup = null;
                     try { fastStartup = PowerAdvancedService.GetFastStartup(); } catch (Exception ex) { AppLogger.Debug($"Uptime Fast Startup: {ex.Message}"); }
@@ -749,7 +749,7 @@ namespace SMDWin.Services
                 {
                     int worst = disks.Min(d => d.HealthPercent);
                     var worstDisk = disks.First(d => d.HealthPercent == worst);
-                    result.Severity = worst < 50 ? DiagnosticSeverity.Critical      // 10.11.2026: red only for a failing disk
+                    result.Severity = worst < 50 ? DiagnosticSeverity.Critical      // red only for a failing disk
                                      : worst < 90 ? DiagnosticSeverity.Warning
                                      : DiagnosticSeverity.Ok;
                     result.Success = result.Severity == DiagnosticSeverity.Ok;

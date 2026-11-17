@@ -75,7 +75,7 @@ namespace SMDWin.Services
                     result[index] = new Sample(read, write, latency, busy);
                 }
                 // once, and again when the set of disks changes (a USB disk plugged in): which counter instance is which disk.
-                // For the USB chart that only filled at its right end (14.11.2026) — the index must match DiskHealthEntry.Index.
+                // For the USB chart that only filled at its right end — the index must match DiskHealthEntry.Index.
                 string set = string.Join(", ", next.Keys.OrderBy(k => k));
                 if (set != _loggedInstances)
                 {

@@ -624,7 +624,7 @@ namespace SMDWin.Services
                         "NULL-CHECK: cpuTemp=null NullCount={0}/{1} Load={2:F0}% StressActive={3}",
                         _lhmNullCount, StaleNullReinitThreshold, snap.CpuLoadPct.Value, StressActive);
                     // no sensor driver yet (PawnIO not installed): a restart cannot bring the temperature back, and three restarts
-                    // in a row at start-up kept the processor near 100 % (Acer Ryzen 5 3500U, 13.11.2026) — none in that case
+                    // in a row at start-up kept the processor near 100 % (Acer Ryzen 5 3500U) — none in that case
                     if (_lhmNullCount >= StaleNullReinitThreshold && !_lhmEverCpuTemp
                         && (_lhmNullReinits >= MaxNullReinitsWithoutTemp || !SafePawnIoInstalled()))
                     {
@@ -696,7 +696,7 @@ namespace SMDWin.Services
                         bool atIdleFloor = _lhmMinFreqSeen.HasValue && freqNow <= _lhmMinFreqSeen.Value + 1f;   // repaus: frecventa minima normala
                         // at the turbo ceiling: a desktop on a performance plan holds its all-core boost (e.g. i5-10400F 4006 / 4106 MHz)
                         // whatever the load — a steady clock there is normal, not a stuck sensor. Only once the sensor has been seen to move
-                        // in this session (min well below max), so a value stuck from the start is still caught (10.11.2026 self-test).
+                        // in this session (min well below max), so a value stuck from the start is still caught.
                         bool atTurboCeiling = _lhmMaxFreqSeen.HasValue && _lhmMinFreqSeen.HasValue
                             && _lhmMaxFreqSeen.Value - _lhmMinFreqSeen.Value > 300f
                             && freqNow >= _lhmMaxFreqSeen.Value * 0.95f;

@@ -154,7 +154,7 @@ namespace SMDWin.Views
             RefreshSnapshotList();
         }
 
-        // 16.11.2026: the snapshot files are read in the background — the Tools page took 2.7 s to open the first time
+        // the snapshot files are read in the background — the Tools page took 2.7 s to open the first time
         private async void RefreshSnapshotList()
         {
             try

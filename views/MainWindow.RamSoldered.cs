@@ -20,7 +20,7 @@ using Brushes     = System.Windows.Media.Brushes;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// RAM page › Modules for memory soldered on the board (LPDDR4X / LPDDR5 / LPDDR5X, 13.11.2026). There are no slots and no
+    /// RAM page › Modules for memory soldered on the board (LPDDR4X / LPDDR5 / LPDDR5X). There are no slots and no
     /// sticks: Windows reports each memory channel as a "device" ("DIMM 0 #1", "Controller0-ChannelA"), so "4 of 4 slots
     /// populated" and four drawn sticks were wrong. Shown instead: one block with the chips on the board (one per reported
     /// channel, with its size), the total and the speed, plus the "Memory is soldered" block.

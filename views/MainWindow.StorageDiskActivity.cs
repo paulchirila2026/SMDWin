@@ -13,7 +13,7 @@ using HAlign      = System.Windows.HorizontalAlignment;
 namespace SMDWin.Views
 {
     /// <summary>
-    /// Storage › Overview: the activity chart inside each disk card (13.11.2026) — read and write of that disk only, with the
+    /// Storage › Overview: the activity chart inside each disk card — read and write of that disk only, with the
     /// response time, how busy the disk is and the peak, over the same time window as the "All drives" chart above
     /// (60 s / 5 min / 15 min / 1 h). An idle disk keeps its chart with the line at zero: it shows that the disk sits idle.
     /// A disk Windows has no counter for (some USB sticks) keeps the card as before, without an empty chart.
@@ -182,7 +182,7 @@ namespace SMDWin.Views
             ui.PeakRow.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        /// <summary>The disks one under the other, full width (14.11.2026, mockup v2: two per row cut "Healthy", the
+        /// <summary>The disks one under the other, full width (mockup v2: two per row cut "Healthy", the
         /// temperature and the power-on time). The UniformGrid shares the free height: one disk gets a tall chart, several
         /// disks share it (the page scrolls when the cards need more).</summary>
         private void ApplyDriveRowsColumns()
