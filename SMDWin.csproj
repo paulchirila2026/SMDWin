@@ -13,7 +13,7 @@
     <Authors>Paul Chirilă</Authors>
     <Copyright>© Paul Chirilă — GPL-3.0-or-later</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
-    <Version>0.4.0</Version>
+    <Version>0.4.1</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\smdwin.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
@@ -128,6 +128,8 @@
       <_SmdPublish Condition="'$(_SmdPublish)' == ''">false</_SmdPublish>
       <SmdBuild>$([System.Math]::Max($([System.Int32]::Parse($(_SmdBuildRead.Trim()))), $([System.Int32]::Parse($(_SmdBuildReadUser.Trim())))))</SmdBuild>
       <SmdBuild Condition="'$(_SmdPublish)' == 'true'">$([MSBuild]::Add($(SmdBuild), 1))</SmdBuild>
+      <!-- the GitHub build passes its own number (SmdBuildOverride): a release built there is numbered from 100 up -->
+      <SmdBuild Condition="'$(SmdBuildOverride)' != ''">$(SmdBuildOverride)</SmdBuild>
       <FileVersion>$(Version).$(SmdBuild)</FileVersion>
       <InformationalVersion>$(Version) build $(SmdBuild)</InformationalVersion>
     </PropertyGroup>

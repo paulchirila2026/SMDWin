@@ -1,0 +1,78 @@
+# Builds SMDWin.exe on GitHub and publishes it as a release.
+# Started by hand: Actions → "Release" → Run workflow → type the version (for example 0.4.1).
+# The notes come from docs/release-notes-<version>.md when that file exists; the SHA-256 of the exe is added to them.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (for example 0.4.1)"
+        required: true
+      prerelease:
+        description: "Mark as pre-release (the app's update check ignores pre-releases)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Check the version
+        shell: pwsh
+        run: |
+          $v = "${{ inputs.version }}".Trim().TrimStart('v')
+          if ($v -notmatch '^\d+\.\d+\.\d+$') { throw "The version must look like 0.4.1 (got '$v')" }
+          if (git ls-remote --tags origin "refs/tags/v$v") { throw "Tag v$v already exists" }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "BUILD=$(100 + [int]$env:GITHUB_RUN_NUMBER)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Restore
+        run: dotnet restore SMDWin.csproj -r win-x64
+
+      # the same options as publish.bat
+      - name: Publish (single exe, self-contained)
+        run: dotnet publish SMDWin.csproj -c Release -r win-x64 --no-restore -p:SmdPublish=true --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=false -p:SatelliteResourceLanguages=en -p:Version=${{ env.VERSION }} -p:SmdBuildOverride=${{ env.BUILD }} -o publish
+
+      - name: Check the output and write the notes
+        shell: pwsh
+        run: |
+          if (-not (Test-Path publish/SMDWin.exe)) { throw "publish/SMDWin.exe was not produced" }
+          if (Test-Path publish/SMDWin.dll) { throw "The publish is not a single file (SMDWin.dll is present)" }
+          $info = (Get-Item publish/SMDWin.exe).VersionInfo
+          Write-Host "File version: $($info.FileVersion) · product version: $($info.ProductVersion)"
+          $sha = (Get-FileHash publish/SMDWin.exe -Algorithm SHA256).Hash.ToLower()
+          $sizeMb = [math]::Round((Get-Item publish/SMDWin.exe).Length / 1MB, 1)
+          $notesFile = "docs/release-notes-$env:VERSION.md"
+          if (Test-Path $notesFile) {
+            $notes = Get-Content $notesFile -Raw
+            $notes = $notes -replace '(?m)^# .*\r?\n', ''          # the release title is set separately
+            $notes = $notes -replace '\(\.\./CHANGELOG\.md\)', "(https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)"
+          } else {
+            $notes = "See the [changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for what changed."
+          }
+          $notes = $notes -replace '<to be filled in at release>', $sha
+          if ($notes -notmatch [regex]::Escape($sha)) {
+            $notes += "`n`n**SHA-256 (SMDWin.exe):** ``$sha``"
+          }
+          $notes += "`n`nBuilt on GitHub Actions from commit ${{ github.sha }} · build $env:BUILD · $sizeMb MB"
+          Set-Content -Path release-notes.md -Value $notes -Encoding utf8
+          Write-Host "SHA-256: $sha"
+
+      - name: Create the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $extra = @()
+          if ("${{ inputs.prerelease }}" -eq "true") { $extra += "--prerelease" }
+          gh release create "v$env:VERSION" publish/SMDWin.exe --target "${{ github.sha }}" --title "SMD Win $env:VERSION Beta" --notes-file release-notes.md @extra

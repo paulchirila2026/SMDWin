@@ -3,6 +3,24 @@
 All notable changes to SMD Win are listed here, newest first.
 Dates are in day.month.year format.
 
+## [0.4.1 Beta] — November 2026
+
+### Changed
+- Windows Update check counts only the updates Windows would install, not the optional ones.
+- Health check: the "Run missing tests" button fits its card; the "not tested" lines are fully translated; the top-bar button reads "PC health".
+- Dashboard temperature charts: a steady scale in 5 °C steps that follows the readings, with both ends written on the chart; the chart is taller.
+- Dialogs follow the Light theme; every dialog and modal window dims the window behind it.
+- Translated texts left in English on Storage (SMART verdict), Power history and Processes.
+- Firewall rule colours follow a theme change; clearer labels on the speed test in the Light theme.
+- AMD processors show one clock per core (the "effective" and "average" clocks were listed as extra cores).
+- A real graphics card is always shown instead of "Microsoft Basic Display Adapter" when Windows lists both.
+- The battery drawing on System info is centred.
+- Added Ryzen 7 5825U, WD PC SN5000S and Samsung M471A1G44CB0-CWE to the hardware database.
+- Safe sensor start: if the app closes while loading the sensor libraries, the next start opens without them and explains why, with an option to try again.
+- Laptop processors with a digit at the end of the name (i5-1035G1, i7-1165G7) and GeForce MX cards are now found in the hardware database.
+- Disk health reasons and signature tooltips are translated in every language (they were in Romanian).
+- A slow graphics card reading is logged once, then summarised every 10 minutes.
+
 ## [0.4 Beta] — November 2026
 
 ### Added
@@ -33,20 +51,6 @@ Dates are in day.month.year format.
 - Stress tests stop automatically when the processor or graphics card stays more than 10 °C above its limit from Settings.
 
 ### Changed
-- Windows Update check counts only the updates Windows would install, not the optional ones.
-- Health check: the "Run missing tests" button fits its card; the "not tested" lines are fully translated; the top-bar button reads "PC health".
-- Dashboard temperature charts: a steady scale in 5 °C steps that follows the readings, with both ends written on the chart; the chart is taller.
-- Dialogs follow the Light theme; every dialog and modal window dims the window behind it.
-- Translated texts left in English on Storage (SMART verdict), Power history and Processes.
-- Firewall rule colours follow a theme change; clearer labels on the speed test in the Light theme.
-- AMD processors show one clock per core (the "effective" and "average" clocks were listed as extra cores).
-- A real graphics card is always shown instead of "Microsoft Basic Display Adapter" when Windows lists both.
-- The battery drawing on System info is centred.
-- Added Ryzen 7 5825U, WD PC SN5000S and Samsung M471A1G44CB0-CWE to the hardware database.
-- Safe sensor start: if the app closes while loading the sensor libraries, the next start opens without them and explains why, with an option to try again.
-- Laptop processors with a digit at the end of the name (i5-1035G1, i7-1165G7) and GeForce MX cards are now found in the hardware database.
-- Disk health reasons and signature tooltips are translated in every language (they were in Romanian).
-- A slow graphics card reading is logged once, then summarised every 10 minutes.
 - First start: a one-time notice (beta, no warranty, what SMD Win can change and how to undo it, stress tests heat the hardware, logs contain hardware details).
 - Driver search opens a Google search by default (driverpack.io is still available in Settings).
 - README: screenshots, the Benchmark page, a complete list of internet connections, known limitations; the bug report template warns that logs contain serial numbers and network details.
