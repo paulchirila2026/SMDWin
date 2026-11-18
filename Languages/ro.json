@@ -2973,6 +2973,8 @@
     "the_storage_test_could_not_run": "Testul de stocare nu a putut rula.",
     "storage_test_skipped": "Test de stocare sărit",
     "welcome_to_smd_win": "Bun venit în SMD Win",
+    "turbo_on_for_the_next_test": "Turbo pornit la testul următor",
+    "turbo_off": "Turbo oprit",
     "plug_in_the_charger": "Conectarea încărcătorului",
     "charger_connected": "Încărcător conectat",
     "turbo_is_off": "Turbo e oprit",

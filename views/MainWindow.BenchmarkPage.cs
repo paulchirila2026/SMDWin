@@ -228,7 +228,7 @@ namespace SMDWin.Views
                           new[] { PT("3D render"), PT("Compute"), PT("Texture / memory") },
                           new[] { PT("A 3D picture with lighting, 1920 × 1080"), PT("Floating-point operations (FP32)"), PT("Copying data in the card's memory") });
             _benchComps[0].MainTest = 1;   // processor: all cores; the others: their first test
-            for (int i = 0; i < 4; i++) _benchCards.Children.Add(BuildBenchCompCard(_benchComps[i], i));
+            foreach (int i in BenchOrder) _benchCards.Children.Add(BuildBenchCompCard(_benchComps[i], i));
 
             HookBenchKeys();
             RefreshBenchmarkView();
@@ -393,9 +393,12 @@ namespace SMDWin.Views
         /// background, no outline. The Turbo tile is also the switch: a click turns "Turbo for the test" on or off and the
         /// tile turns green ("Turbo on for the test · put back afterwards") or amber again.
         /// </summary>
-        private Border BenchCheckTile(BenchCheck c)
+        private Border BenchCheckTile(BenchCheck c, bool compact = false)
         {
-            var tile = new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(8, 6, 12, 6), Margin = new Thickness(0, 0, 8, 6) };
+            // compact: the same tile as a pill (no icon, no second line) for the banner after the test
+            var tile = compact
+                ? new Border { CornerRadius = new CornerRadius(11), Padding = new Thickness(10, 3, 6, 4), Margin = new Thickness(0, 2, 6, 2), VerticalAlignment = VAlign.Center }
+                : new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(8, 6, 12, 6), Margin = new Thickness(0, 0, 8, 6) };
             var g = new Grid();
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -404,12 +407,14 @@ namespace SMDWin.Views
             var icon = new TextBlock { Text = c.Glyph, FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets, Segoe Fluent Icons"), FontSize = 13,
                                        HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
             iconBox.Child = icon;
-            g.Children.Add(iconBox);
+            if (!compact) g.Children.Add(iconBox);
             var text = new StackPanel { VerticalAlignment = VAlign.Center };
             var title = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold };
             var hint = new TextBlock { FontSize = Ui.FontXS, Margin = new Thickness(0, 1, 0, 0) };
             hint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            text.Children.Add(title); text.Children.Add(hint);
+            text.Children.Add(title);
+            if (!compact) text.Children.Add(hint);
+            else title.FontWeight = FontWeights.SemiBold;
             Grid.SetColumn(text, 1);
             g.Children.Add(text);
             tile.Child = g;
@@ -417,8 +422,8 @@ namespace SMDWin.Views
             Border? track = null; Border? knob = null;
             if (c.IsTurbo)
             {
-                track = new Border { Width = 30, Height = 16, CornerRadius = new CornerRadius(8), Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VAlign.Center, BorderThickness = new Thickness(1) };
-                knob = new Border { Width = 10, Height = 10, CornerRadius = new CornerRadius(5), VerticalAlignment = VAlign.Center, Margin = new Thickness(2, 0, 2, 0) };
+                track = new Border { Width = compact ? 26 : 30, Height = compact ? 14 : 16, CornerRadius = new CornerRadius(compact ? 7 : 8), Margin = new Thickness(compact ? 8 : 12, 0, 0, 0), VerticalAlignment = VAlign.Center, BorderThickness = new Thickness(1) };
+                knob = new Border { Width = compact ? 8 : 10, Height = compact ? 8 : 10, CornerRadius = new CornerRadius(compact ? 4 : 5), VerticalAlignment = VAlign.Center, Margin = new Thickness(2, 0, 2, 0) };
                 track.Child = knob;
                 Grid.SetColumn(track, 2);
                 g.Children.Add(track);
@@ -430,13 +435,13 @@ namespace SMDWin.Views
             {
                 bool ok = c.Ok || (c.IsTurbo && _benchTurboForTest);
                 string key = ok ? "StatusGoodBrush" : "StatusCheckBrush";
-                tile.Background = BenchTint(key, 26);
+                tile.Background = BenchTint(key, compact ? 30 : 26);
                 iconBox.Background = BenchTint(key, 34);
                 icon.SetResourceReference(TextBlock.ForegroundProperty, key);
                 title.SetResourceReference(TextBlock.ForegroundProperty, key);
                 if (c.IsTurbo && _benchTurboForTest)
                 {
-                    title.Text = PT("Turbo on for the test");
+                    title.Text = compact ? PT("Turbo on for the next test") : PT("Turbo on for the test");
                     hint.Text = PT("Put back afterwards");
                 }
                 else { title.Text = c.Title; hint.Text = c.Hint; }
@@ -473,18 +478,23 @@ namespace SMDWin.Views
             foreach (var w in warnings)
             {
                 int cut = w.IndexOf(" — ", StringComparison.Ordinal);
-                string label = cut > 0 ? w[..cut] : w;
-                var b = new Border { CornerRadius = new CornerRadius(11), Padding = new Thickness(9, 3, 11, 4), Margin = new Thickness(0, 2, 6, 2),
-                                     ToolTip = w, Background = BenchTint("StatusCheckBrush", 26), VerticalAlignment = VAlign.Center };
-                var sp = new StackPanel { Orientation = Orientation.Horizontal };
-                var dot = new Border { Width = 6, Height = 6, CornerRadius = new CornerRadius(3), Margin = new Thickness(0, 1, 6, 0), VerticalAlignment = VAlign.Center };
-                dot.SetResourceReference(Border.BackgroundProperty, "StatusCheckBrush");
-                var tb = new TextBlock { Text = label, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 420 };
-                tb.SetResourceReference(TextBlock.ForegroundProperty, "StatusCheckBrush");
-                sp.Children.Add(dot); sp.Children.Add(tb);
-                b.Child = sp;
-                host.Children.Add(b);
+                host.Children.Add(BenchPill(cut > 0 ? w[..cut] : w, "StatusCheckBrush", w));
             }
+        }
+
+        /// <summary>A soft pill: tinted background in the status colour, a dot and the text in that colour, no outline.</summary>
+        private Border BenchPill(string text, string brushKey, string? tip = null)
+        {
+            var b = new Border { CornerRadius = new CornerRadius(11), Padding = new Thickness(9, 3, 11, 4), Margin = new Thickness(0, 2, 6, 2),
+                                 ToolTip = tip, Background = BenchTint(brushKey, 30), VerticalAlignment = VAlign.Center };
+            var sp = new StackPanel { Orientation = Orientation.Horizontal };
+            var dot = new Border { Width = 6, Height = 6, CornerRadius = new CornerRadius(3), Margin = new Thickness(0, 1, 6, 0), VerticalAlignment = VAlign.Center };
+            dot.SetResourceReference(Border.BackgroundProperty, brushKey);
+            var tb = new TextBlock { Text = text.TrimStart('⚠', ' '), FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 420 };
+            tb.SetResourceReference(TextBlock.ForegroundProperty, brushKey);
+            sp.Children.Add(dot); sp.Children.Add(tb);
+            b.Child = sp;
+            return b;
         }
 
         /// <summary>"8 GB DDR4-2667 · 1 module" (the card had no description — the summary was not read yet when
@@ -1013,7 +1023,7 @@ namespace SMDWin.Views
                 var c = _benchComps[i];
                 if (c == null) continue;
                 bool now = _benchRunning && _benchStep == i;
-                bool next = _benchRunning && _benchStep < i;
+                bool next = _benchRunning && _benchStep >= 0 && BenchPos(_benchStep) < BenchPos(i);
                 c.Ring.Mark = c.Mark;
                 c.Ring.Active = now;
                 c.Card.Opacity = next ? 0.6 : 1;
@@ -1025,8 +1035,9 @@ namespace SMDWin.Views
                 c.MainCaption.Text = main != null ? c.Tests[c.MainTest] : now ? PT("running…") : next ? PT("next") : PT("not tested yet");
                 bool weak = i == weakest;
                 c.WeakText.Visibility = weak ? Visibility.Visible : Visibility.Collapsed;
-                if (weak) { c.Card.SetResourceReference(Border.BorderBrushProperty, "StatusCheckBrush"); c.Card.BorderThickness = new Thickness(1.5); }
-                else { c.Card.ClearValue(Border.BorderBrushProperty); c.Card.ClearValue(Border.BorderThicknessProperty); }
+                // the weakest card: a faint amber outline (the "▲ weakest component" line says it; a strong frame shouted)
+                if (weak) c.Card.BorderBrush = BenchTint("StatusCheckBrush", 80);
+                else c.Card.ClearValue(Border.BorderBrushProperty);
                 string? advice = _benchRunning ? null : BenchAdvice(i);
                 c.AdviceText.Text = advice ?? "";
                 c.AdviceText.Visibility = advice != null ? Visibility.Visible : Visibility.Collapsed;
@@ -1090,30 +1101,33 @@ namespace SMDWin.Views
             bool done = _benchDoneText.Length > 0;
             if (done)
             {
-                var wrap = new WrapPanel { VerticalAlignment = VAlign.Center };
-                var title = new TextBlock { Text = "✓  " + _benchDoneText, FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 2, 12, 2), VerticalAlignment = VAlign.Center };
+                // line 1: "✓ Test finished in 1:40" and the highest temperatures as plain text;
+                // line 2: everything else as the same soft pills (status, the conditions of the test, the Turbo switch)
+                var col = new StackPanel { VerticalAlignment = VAlign.Center };
+                var head = new WrapPanel();
+                var title = new TextBlock { Text = "✓  " + _benchDoneText, FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VAlign.Center };
                 title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-                wrap.Children.Add(title);
+                head.Children.Add(title);
+                string facts = string.Join("   ·   ", _benchDoneChips.Where(x => x.Item2 == null).Select(x => x.Item1));
+                if (facts.Length > 0)
+                {
+                    var ft = new TextBlock { Text = facts, FontSize = Ui.FontS, VerticalAlignment = VAlign.Center, Margin = new Thickness(0, 2, 0, 0) };
+                    ft.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                    head.Children.Add(ft);
+                }
+                col.Children.Add(head);
+                var pills = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) };
+                var pre = _benchLastPre ?? new List<string>();
+                string condLine = "⚠ " + PT("Tested in conditions that lower the marks");
                 foreach (var (text, brush) in _benchDoneChips)
-                {
-                    var chip = new Border { CornerRadius = new CornerRadius(11), BorderThickness = new Thickness(1), Padding = new Thickness(10, 2, 10, 3), Margin = new Thickness(0, 2, 6, 2) };
-                    chip.SetResourceReference(Border.BorderBrushProperty, brush ?? "CardBorderBrush");
-                    var ct = new TextBlock { Text = text, FontSize = Ui.FontS };
-                    ct.SetResourceReference(TextBlock.ForegroundProperty, brush ?? "TextSecondaryBrush");
-                    chip.Child = ct;
-                    wrap.Children.Add(chip);
-                }
-                // after a test: the conditions it ran in (not a new reading — the load is still high right after it)
-                AddBenchWarningChips(wrap, _benchLastPre ?? new List<string>());
+                    if (brush != null && !(pre.Count > 0 && text == condLine)) pills.Children.Add(BenchPill(text, brush));
+                // the conditions the test ran in (not a new reading — the load is still high right after it)
+                AddBenchWarningChips(pills, pre);
                 if (BenchTurboOff())
-                {
-                    var turbo = BenchCheckTile(new BenchCheck("\uEC4A", false, PT("Turbo is off"), PT("Marks come out lower"),
-                        PT("Turbo is off in the power plan — the processor stays at its base speed and the marks come out much lower."), IsTurbo: true));
-                    turbo.Margin = new Thickness(4, 2, 0, 2);
-                    turbo.VerticalAlignment = VAlign.Center;
-                    wrap.Children.Add(turbo);
-                }
-                g.Children.Add(wrap);
+                    pills.Children.Add(BenchCheckTile(new BenchCheck("\uEC4A", false, PT("Turbo off"), "",
+                        PT("Turbo is off in the power plan — the processor stays at its base speed and the marks come out much lower."), IsTurbo: true), compact: true));
+                if (pills.Children.Count > 0) col.Children.Add(pills);
+                g.Children.Add(col);
             }
             else
             {
@@ -1223,9 +1237,10 @@ namespace SMDWin.Views
 
             // the 4 steps
             var steps = new UGrid { Rows = 1, Columns = 4 };
-            for (int i = 0; i < 4; i++)
+            for (int pos = 0; pos < 4; pos++)
             {
-                var st = new Border { CornerRadius = new CornerRadius(9), BorderThickness = new Thickness(1), Padding = new Thickness(10, 8, 10, 8), Margin = new Thickness(i == 0 ? 0 : 4, 0, i == 3 ? 0 : 4, 0) };
+                int i = BenchOrder[pos];
+                var st = new Border { CornerRadius = new CornerRadius(9), BorderThickness = new Thickness(1), Padding = new Thickness(10, 8, 10, 8), Margin = new Thickness(pos == 0 ? 0 : 4, 0, pos == 3 ? 0 : 4, 0) };
                 st.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
                 var sp = new StackPanel();
                 var nm = new TextBlock { Text = _benchComps[i].Name, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -1265,9 +1280,11 @@ namespace SMDWin.Views
             double totalExp = BenchExpected.Sum();
             double inStep = _benchClock.Elapsed.TotalSeconds - _benchStepStart;
             double stepFrac = Math.Min(0.97, inStep / BenchExpected[step]);
-            double done = BenchExpected.Take(step).Sum() + BenchExpected[step] * stepFrac;
+            int sp0 = BenchPos(step);
+            double before = BenchOrder.Take(sp0).Sum(k => BenchExpected[k]), after = BenchOrder.Skip(sp0).Sum(k => BenchExpected[k]);
+            double done = before + BenchExpected[step] * stepFrac;
             double pct = Math.Clamp(done / totalExp, 0, 0.99);
-            double left = Math.Max(5, BenchExpected.Skip(step).Sum() - Math.Min(inStep, BenchExpected[step] * 0.97));
+            double left = Math.Max(5, after - Math.Min(inStep, BenchExpected[step] * 0.97));
 
             _benchTxtNow.Text = PT("Now: {0}", _benchComps[step].Name);
             _benchTxtSub!.Text = _benchSub;
@@ -1280,14 +1297,15 @@ namespace SMDWin.Views
             {
                 var (state, on, off, card, fill) = _benchStepUi[i];
                 if (state == null) continue;
-                double f = i < step ? 1 : i == step ? Math.Max(0.02, stepFrac) : 0;
+                bool past = BenchPos(i) < sp0;
+                double f = past ? 1 : i == step ? Math.Max(0.02, stepFrac) : 0;
                 on.Width = new GridLength(Math.Max(0.001, f), GridUnitType.Star);
                 off.Width = new GridLength(Math.Max(0.001, 1 - f), GridUnitType.Star);
-                fill.SetResourceReference(Border.BackgroundProperty, i < step ? "StatusGoodBrush" : "DataBrush");
+                fill.SetResourceReference(Border.BackgroundProperty, past ? "StatusGoodBrush" : "DataBrush");
                 card.SetResourceReference(Border.BorderBrushProperty, i == step ? "DataBrush" : "CardBorderBrush");
-                state.Text = i < step ? (_benchComps[i].Mark is double m ? PT("done · {0}", BNum(m)) : PT("done"))
+                state.Text = past ? (_benchComps[i].Mark is double m ? PT("done · {0}", BNum(m)) : PT("done"))
                            : i == step ? _benchSub : PT("next");
-                state.SetResourceReference(TextBlock.ForegroundProperty, i < step ? "StatusGoodBrush" : "TextSecondaryBrush");
+                state.SetResourceReference(TextBlock.ForegroundProperty, past ? "StatusGoodBrush" : "TextSecondaryBrush");
             }
         }
 
@@ -1334,6 +1352,14 @@ namespace SMDWin.Views
         // ══ the run ════════════════════════════════════════════════════════════════════════════════════════════════════
 
         private static readonly string[] BenchStepNames = { "Processor", "Memory", "Storage", "Graphics" };
+
+        /// <summary>
+        /// The order the components are tested and shown in (cards, steps, the callouts of the drawing): processor, memory,
+        /// graphics, storage — the order of the parts in the drawing from top to bottom. The indexes of _benchComps stay
+        /// 0 processor, 1 memory, 2 storage, 3 graphics.
+        /// </summary>
+        internal static readonly int[] BenchOrder = { 0, 1, 3, 2 };
+        private static int BenchPos(int component) => Array.IndexOf(BenchOrder, component);
 
         private void BenchSetStep(int step, string sub)
         {
@@ -1484,6 +1510,49 @@ namespace SMDWin.Views
                 rec.ComponentMarks["Memory"] = ram.Mark;
                 ct.ThrowIfCancellationRequested();
 
+                // ── graphics: 3 tests × 13 s ──────────────────────────────────────────────────────────────────────
+                var gpu = _benchComps[3];
+                BenchSetStep(3, PT("3D render (1 of 3)"));
+                string[] gpuSteps = { PT("3D render (1 of 3)"), PT("Compute (2 of 3)"), PT("Texture / memory (3 of 3)") };
+                var gp = new Progress<GpuSuiteBenchmark.Progress>(p =>
+                {
+                    _benchSub = gpuSteps[Math.Clamp(p.Test, 0, 2)];
+                    _benchHudLeft = p.Test switch
+                    {
+                        0 => $"{BNum(p.Live, "0")} {PT("frames/s")}",
+                        1 => $"{BNum(p.Live, "#,0")} GFLOPS",
+                        _ => $"{BNum(p.Live, "0")} GB/s",
+                    };
+                });
+                var gr = await new GpuSuiteBenchmark().RunAsync(GpuSecondsPerTest, ct, gp, _benchGpuAdapter);
+                ct.ThrowIfCancellationRequested();
+                if (gr.Succeeded)
+                {
+                    gpu.Values[0] = gr.Fps > 0 ? $"{BNum(gr.Fps, "0")} {PT("frames/s")}" : null;
+                    gpu.Values[1] = gr.GFlops > 0 ? (gr.GFlops >= 1000 ? $"{BNum(gr.GFlops / 1000, "0.0")} TFLOPS" : $"{BNum(gr.GFlops, "0")} GFLOPS") : null;
+                    gpu.Values[2] = gr.MemoryGBs > 0 ? $"{BNum(gr.MemoryGBs, "0")} GB/s" : null;
+                    gpu.Marks[0] = BenchmarkScore.Mark(gr.Fps, BenchmarkScore.GpuRender);
+                    gpu.Marks[1] = BenchmarkScore.Mark(gr.GFlops, BenchmarkScore.GpuCompute);
+                    gpu.Marks[2] = BenchmarkScore.Mark(gr.MemoryGBs, BenchmarkScore.GpuMemory);
+                    _benchGpuRaw = (gr.Fps, gr.GFlops, gr.MemoryGBs);
+                    BenchCheckSuspect();
+                    gpu.Mark = BenchmarkScore.Mean(gpu.Marks);
+                }
+                if (!string.IsNullOrWhiteSpace(gr.AdapterName)) gpu.Device = gr.AdapterName;
+                string[] gNames = { "3D render", "Compute", "Texture / memory" }, gUnits = { "frames/s", "GFLOPS", "GB/s" };
+                var gScales = new[] { BenchmarkScore.GpuRender, BenchmarkScore.GpuCompute, BenchmarkScore.GpuMemory };
+                for (int gi = 0; gi < 3; gi++)
+                {
+                    var st = gr.Stats[gi];
+                    rec.Add("Graphics", gNames[gi], st?.Median ?? 0, gUnits[gi], gpu.Marks[gi], gScales[gi], st == null ? "not run" :
+                        $"min {st.Min:0.#} · max {st.Max:0.#} · first {st.First:0.#} · last {st.Last:0.#} · {st.Samples} batches × {st.PerBatch} · one call {st.OneIssueMs:0.00} ms");
+                }
+                rec.ComponentMarks["Graphics"] = gpu.Mark;
+                if (gr.MemoryNote.Length > 0) rec.Details.Add("Graphics memory: " + gr.MemoryNote);
+                rec.Details.Add($"Graphics: adapter {gr.AdapterName} · {GpuSecondsPerTest} s per test · ok {gr.Succeeded}{(gr.Error.Length > 0 ? " · " + gr.Error : "")}");
+                if (!gr.Succeeded) AppLogger.Warning("Benchmark page: graphics test failed — {0}", gr.Error);
+                ct.ThrowIfCancellationRequested();
+
                 // ── storage (quick disk benchmark of the system drive) ────────────────────────────────────────────
                 var disk = _benchComps[2];
                 BenchSetStep(2, PT("Write (1 of 3)"));
@@ -1528,48 +1597,6 @@ namespace SMDWin.Views
                 if (dr.LatencyP50Us > 0) rec.Details.Add($"Storage: latency p50 {dr.LatencyP50Us:0} µs · p95 {dr.LatencyP95Us:0} · p99 {dr.LatencyP99Us:0} · max {dr.LatencyMaxUs:0}");
                 if (!string.IsNullOrEmpty(dr.CacheWarning)) rec.Details.Add("Storage warning: " + dr.CacheWarning);
                 if (!string.IsNullOrEmpty(dr.WriteWarning)) rec.Details.Add("Storage warning: " + dr.WriteWarning);
-
-                // ── graphics: 3 tests × 13 s ──────────────────────────────────────────────────────────────────────
-                var gpu = _benchComps[3];
-                BenchSetStep(3, PT("3D render (1 of 3)"));
-                string[] gpuSteps = { PT("3D render (1 of 3)"), PT("Compute (2 of 3)"), PT("Texture / memory (3 of 3)") };
-                var gp = new Progress<GpuSuiteBenchmark.Progress>(p =>
-                {
-                    _benchSub = gpuSteps[Math.Clamp(p.Test, 0, 2)];
-                    _benchHudLeft = p.Test switch
-                    {
-                        0 => $"{BNum(p.Live, "0")} {PT("frames/s")}",
-                        1 => $"{BNum(p.Live, "#,0")} GFLOPS",
-                        _ => $"{BNum(p.Live, "0")} GB/s",
-                    };
-                });
-                var gr = await new GpuSuiteBenchmark().RunAsync(GpuSecondsPerTest, ct, gp, _benchGpuAdapter);
-                ct.ThrowIfCancellationRequested();
-                if (gr.Succeeded)
-                {
-                    gpu.Values[0] = gr.Fps > 0 ? $"{BNum(gr.Fps, "0")} {PT("frames/s")}" : null;
-                    gpu.Values[1] = gr.GFlops > 0 ? (gr.GFlops >= 1000 ? $"{BNum(gr.GFlops / 1000, "0.0")} TFLOPS" : $"{BNum(gr.GFlops, "0")} GFLOPS") : null;
-                    gpu.Values[2] = gr.MemoryGBs > 0 ? $"{BNum(gr.MemoryGBs, "0")} GB/s" : null;
-                    gpu.Marks[0] = BenchmarkScore.Mark(gr.Fps, BenchmarkScore.GpuRender);
-                    gpu.Marks[1] = BenchmarkScore.Mark(gr.GFlops, BenchmarkScore.GpuCompute);
-                    gpu.Marks[2] = BenchmarkScore.Mark(gr.MemoryGBs, BenchmarkScore.GpuMemory);
-                    _benchGpuRaw = (gr.Fps, gr.GFlops, gr.MemoryGBs);
-                    BenchCheckSuspect();
-                    gpu.Mark = BenchmarkScore.Mean(gpu.Marks);
-                }
-                if (!string.IsNullOrWhiteSpace(gr.AdapterName)) gpu.Device = gr.AdapterName;
-                string[] gNames = { "3D render", "Compute", "Texture / memory" }, gUnits = { "frames/s", "GFLOPS", "GB/s" };
-                var gScales = new[] { BenchmarkScore.GpuRender, BenchmarkScore.GpuCompute, BenchmarkScore.GpuMemory };
-                for (int gi = 0; gi < 3; gi++)
-                {
-                    var st = gr.Stats[gi];
-                    rec.Add("Graphics", gNames[gi], st?.Median ?? 0, gUnits[gi], gpu.Marks[gi], gScales[gi], st == null ? "not run" :
-                        $"min {st.Min:0.#} · max {st.Max:0.#} · first {st.First:0.#} · last {st.Last:0.#} · {st.Samples} batches × {st.PerBatch} · one call {st.OneIssueMs:0.00} ms");
-                }
-                rec.ComponentMarks["Graphics"] = gpu.Mark;
-                if (gr.MemoryNote.Length > 0) rec.Details.Add("Graphics memory: " + gr.MemoryNote);
-                rec.Details.Add($"Graphics: adapter {gr.AdapterName} · {GpuSecondsPerTest} s per test · ok {gr.Succeeded}{(gr.Error.Length > 0 ? " · " + gr.Error : "")}");
-                if (!gr.Succeeded) AppLogger.Warning("Benchmark page: graphics test failed — {0}", gr.Error);
             }
             catch (OperationCanceledException) { cancelled = true; }
             catch (Exception ex) { AppLogger.Warning(ex, "Benchmark page run"); }

@@ -96,24 +96,32 @@ namespace SMDWin.Views
         public bool Active { get => _active; set { if (_active != value) { _active = value; UpdateTimer(); InvalidateVisual(); } } }
         public Func<double, string> Format { get; set; } = v => v.ToString("0.0", CultureInfo.InvariantCulture);
 
-        private readonly DispatcherTimer _timer = new(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
+        private bool _hooked;   // drawing on every screen refresh while the component is tested
         private readonly System.Diagnostics.Stopwatch _clock = System.Diagnostics.Stopwatch.StartNew();
 
         public MarkRing()
         {
-            _timer.Tick += (_, _) => InvalidateVisual();
             IsVisibleChanged += (_, _) => UpdateTimer();
             Loaded += (_, _) => { ThemeManager.ThemeChanged += OnTheme; UpdateTimer(); };
-            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; _timer.Stop(); };
+            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; Unhook(); };
         }
         private void OnTheme() => Dispatcher.BeginInvoke(new Action(InvalidateVisual));
 
         private void UpdateTimer()
         {
             bool animate = _active && IsVisible && IsLoaded && SettingsService.Current?.EnableAnimations != false;
-            if (animate && !_timer.IsEnabled) _timer.Start();
-            else if (!animate && _timer.IsEnabled) _timer.Stop();
+            if (animate && !_hooked) { CompositionTarget.Rendering += OnFrame; _hooked = true; }
+            else if (!animate) Unhook();
         }
+
+        private void Unhook()
+        {
+            if (!_hooked) return;
+            CompositionTarget.Rendering -= OnFrame;
+            _hooked = false;
+        }
+
+        private void OnFrame(object? sender, EventArgs e) => InvalidateVisual();
 
         protected override void OnRender(DrawingContext dc)
         {
@@ -128,7 +136,7 @@ namespace SMDWin.Views
             if (_active)
             {
                 var hot = new SolidColorBrush(Color.FromRgb(0xFF, 0x8A, 0x3D)); hot.Freeze();
-                double a0 = (_timer.IsEnabled ? _clock.Elapsed.TotalSeconds * 300 : 0) % 360 - 90;
+                double a0 = (_hooked ? _clock.Elapsed.TotalSeconds * 300 : 0) % 360 - 90;
                 dc.DrawGeometry(null, new Pen(hot, th) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, Arc(c, r, a0, a0 + 100));
                 return;
             }

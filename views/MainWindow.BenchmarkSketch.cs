@@ -71,7 +71,7 @@ namespace SMDWin.Views
                 if (c == null) continue;
                 var co = sk.Parts[i];
                 bool now = _benchRunning && _benchStep == i;
-                bool next = _benchRunning && _benchStep < i;
+                bool next = _benchRunning && _benchStep >= 0 && BenchPos(_benchStep) < BenchPos(i);
                 co.Mark = c.Mark;
                 co.State = now ? DeviceSketch.PartState.Active
                          : next ? DeviceSketch.PartState.Next

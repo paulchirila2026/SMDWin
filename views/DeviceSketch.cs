@@ -26,7 +26,7 @@ namespace SMDWin.Views
     ///   after the test: each part in the colour of its mark, the mark inside its ring.
     /// Without a dedicated graphics card, the graphics callout points at the processor (the test runs on its graphics).
     /// The drawing is a fixed 760 × 420 scene scaled to the control; the animation runs only while visible and when the
-    /// animations are on (Settings), at 30 frames per second during a test and 15 otherwise.
+    /// animations are on (Settings), with the screen refresh (a third of it while the graphics card is tested).
     /// </summary>
     public sealed class DeviceSketch : FrameworkElement
     {
@@ -69,7 +69,8 @@ namespace SMDWin.Views
         // the four rows centred on the middle of the scene, where every drawing is centred too
         private static readonly double[] RowY = { 84, 164, 244, 324 };
 
-        private readonly DispatcherTimer _timer = new(DispatcherPriority.Render);
+        private bool _hooked;      // drawing on every screen refresh (CompositionTarget.Rendering)
+        private int _frame;
         private readonly Stopwatch _clock = Stopwatch.StartNew();
         private double _last;
         // smoothed fan loads (index = fan source) and their accumulated phases
@@ -79,10 +80,9 @@ namespace SMDWin.Views
 
         public DeviceSketch()
         {
-            _timer.Tick += (_, _) => InvalidateVisual();
             IsVisibleChanged += (_, _) => UpdateTimer();
             Loaded += (_, _) => { ThemeManager.ThemeChanged += OnTheme; UpdateTimer(); };
-            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; _timer.Stop(); };
+            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; Unhook(); };
         }
 
         private void OnTheme() => Dispatcher.BeginInvoke(new Action(InvalidateVisual));
@@ -96,14 +96,28 @@ namespace SMDWin.Views
 
         private static bool Animations => SettingsService.Current?.EnableAnimations != false;
 
+        /// <summary>
+        /// The animation follows the screen refresh (a timer at 15–30 frames per second made the fans jerk). While the
+        /// graphics card is tested only every third refresh is drawn, so the drawing takes almost nothing from the test.
+        /// </summary>
         private void UpdateTimer()
         {
             bool animate = IsVisible && IsLoaded && Animations;
-            bool busy = Array.Exists(Parts, p => p.State == PartState.Active);
-            var interval = TimeSpan.FromMilliseconds(busy ? 33 : 66);
-            if (_timer.Interval != interval) _timer.Interval = interval;
-            if (animate && !_timer.IsEnabled) { _last = _clock.Elapsed.TotalSeconds; _timer.Start(); }
-            else if (!animate && _timer.IsEnabled) _timer.Stop();
+            if (animate && !_hooked) { _last = _clock.Elapsed.TotalSeconds; CompositionTarget.Rendering += OnFrame; _hooked = true; }
+            else if (!animate) Unhook();
+        }
+
+        private void Unhook()
+        {
+            if (!_hooked) return;
+            CompositionTarget.Rendering -= OnFrame;
+            _hooked = false;
+        }
+
+        private void OnFrame(object? sender, EventArgs e)
+        {
+            if (Parts[3].State == PartState.Active && (++_frame % 3) != 0) return;
+            InvalidateVisual();
         }
 
         protected override Size MeasureOverride(Size available)
@@ -347,7 +361,7 @@ namespace SMDWin.Views
             if (W < 60 || H < 40) return;
 
             double now = _clock.Elapsed.TotalSeconds;
-            bool anim = Animations && _timer.IsEnabled;
+            bool anim = Animations && _hooked;
             double dt = anim ? Math.Clamp(now - _last, 0, 0.2) : 0;
             _last = now;
             double t = anim ? now : 0;
