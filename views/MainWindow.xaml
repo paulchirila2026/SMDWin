@@ -3310,8 +3310,8 @@
                       <DataGridTemplateColumn Header="On" Width="66" MinWidth="66" SortMemberPath="IsEnabled">
                         <DataGridTemplateColumn.CellTemplate>
                           <DataTemplate>
-                            <CheckBox Style="{StaticResource ToggleSwitchSmallStyle}" IsChecked="{Binding IsEnabled, Mode=OneWay}" Tag="{Binding}"
-                                      Click="StartupToggle_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Start with Windows"/>
+                            <CheckBox Style="{StaticResource ToggleSwitchSmallStyle}" IsChecked="{Binding IsEnabled, Mode=OneWay}" Tag="{Binding}" IsEnabled="{Binding CanToggle}" ToolTip="{Binding ToggleTip}" ToolTipService.ShowOnDisabled="True"
+                                      Click="StartupToggle_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
                           </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                       </DataGridTemplateColumn>

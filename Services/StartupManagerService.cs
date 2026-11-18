@@ -373,7 +373,7 @@ namespace SMDWin.Services
                             entries.Add(new StartupEntry
                             {
                                 Name = valName, Command = val, Location = location,
-                                IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath,
+                                IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath, IsExtraLocation = true,
                             });
                         }
                         continue;
@@ -398,7 +398,7 @@ namespace SMDWin.Services
                                 entries.Add(new StartupEntry
                                 {
                                     Name = displayName, Command = stub, Location = location,
-                                    IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath + "\\" + subName,
+                                    IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath + "\\" + subName, IsExtraLocation = true,
                                 });
                             }
                             catch (Exception ex) { AppLogger.Warning(ex, "StartupManagerService.unknown"); }
@@ -417,7 +417,7 @@ namespace SMDWin.Services
                         entries.Add(new StartupEntry
                         {
                             Name = name, Command = cmd, Location = location,
-                            IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath,
+                            IsEnabled = true, RegistryHive = hive, RegistryKey = keyPath, IsExtraLocation = true,
                         });
                     }
                 }
@@ -482,6 +482,9 @@ namespace SMDWin.Services
 
         public bool SetEnabled(StartupEntry entry, bool enable)
         {
+            // Active Setup, Winlogon, shell extensions…: Windows does not read StartupApproved for them — writing there changed
+            // nothing and the switch jumped back (an Edge entry reported on Reddit). They are not switched at all.
+            if (entry.IsExtraLocation) return false;
             if (entry.RegistryHive == "Folder")
             {
                 try

@@ -946,6 +946,15 @@ namespace SMDWin.Models
         public string TargetPath { get; set; } = "";
         /// <summary>The started file no longer exists (program uninstalled / moved) — invalid entry.</summary>
         public bool   IsBroken   { get; set; }
+        /// <summary>
+        /// An entry from the other places Windows starts things from (Active Setup, Winlogon, shell extensions…): it cannot be
+        /// turned off the way Task Manager does it (StartupApproved), so it has no switch — only "Remove" (with a back-up).
+        /// </summary>
+        public bool   IsExtraLocation { get; set; }
+        public bool   CanToggle => !IsExtraLocation;
+        public string ToggleTip => SMDWin.Services.LiteralTexts.Translate(IsExtraLocation
+            ? (Location.Contains("Active Setup") ? "Runs once for each new user, not at every start — it cannot be turned off here" : "Windows starts this from a special place — it cannot be turned off with a switch")
+            : (IsEnabled ? "On — click to turn off at the next start" : "Off — click to turn on again"));
         /// <summary>The extra start time Windows measured for this program (Diagnostics-Performance 101/103), ms; 0 = none.</summary>
         public int    MeasuredDelayMs { get; set; }
         public string MeasuredDelayText => MeasuredDelayMs >= 500 ? $"+{MeasuredDelayMs / 1000.0:0.#} s" : "—";

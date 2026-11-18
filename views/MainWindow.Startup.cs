@@ -233,7 +233,10 @@ namespace SMDWin.Views
 
             var q = TxtStartupSearch?.Text.Trim() ?? "";
             var all = _allStartupEntries;
+            // Active Setup entries run once for each new user, not at every start: listed only with "Show services" (advanced)
+            bool advanced = ChkStartupShowAllServices?.IsChecked == true;
             var view = all
+                .Where(e => advanced || !e.Location.Contains("Active Setup"))
                 .Where(e => q.Length == 0 || e.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
                             e.Publisher.Contains(q, StringComparison.OrdinalIgnoreCase) ||
                             e.Command.Contains(q, StringComparison.OrdinalIgnoreCase))
@@ -376,7 +379,7 @@ namespace SMDWin.Views
             }
         }
 
-        private void StartupToggle_Click(object sender, RoutedEventArgs e)
+        private async void StartupToggle_Click(object sender, RoutedEventArgs e)
         {
             if (sender is System.Windows.Controls.CheckBox cb && cb.Tag is StartupEntry entry)
             {
@@ -386,11 +389,22 @@ namespace SMDWin.Views
                 {
                     AppDialog.Show(_LS("Services", "ModifyFailed"), "SMD Win");
                     cb.IsChecked = !enable; // revert
+                    return;
                 }
-                else
+                ToolActivityLog.Add("Startup", $"{(enable ? "Enable" : "Disable")} {entry.Name}", "info");
+                entry.IsEnabled = enable;
+                await LoadStartupAsync();
+                // read again: a program that puts its entry back by itself (Edge with "Startup boost") is explained, not just
+                // shown switched on again
+                var again = _allStartupEntries?.FirstOrDefault(x => x.Name == entry.Name && x.Command == entry.Command);
+                if (again != null && again.IsEnabled != enable)
                 {
-                    entry.IsEnabled = enable;
-                    _ = LoadStartupAsync();
+                    string msg = PT("{0} turned its start with Windows back on by itself.", entry.Name);
+                    if (entry.Name.Contains("Edge", StringComparison.OrdinalIgnoreCase) || entry.Command.Contains("msedge", StringComparison.OrdinalIgnoreCase))
+                        msg += "\n\n" + PT("In Edge: Settings → System and performance → turn off \"Startup boost\" and \"Continue running background extensions\".");
+                    else
+                        msg += "\n\n" + PT("Look in the program's own settings for an option like \"Start with Windows\".");
+                    AppDialog.Show(msg, PT("Startup"));
                 }
             }
         }
