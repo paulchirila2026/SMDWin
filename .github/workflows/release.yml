@@ -1,5 +1,5 @@
 # Builds SMDWin.exe on GitHub and publishes it as a release.
-# Started by hand: Actions → "Release" → Run workflow → type the version (for example 0.4.1).
+# Started by hand: Actions → "Release" → Run workflow → type the version (for example 0.4.2).
 # The notes come from docs/release-notes-<version>.md when that file exists; the SHA-256 of the exe is added to them.
 name: Release
 
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (for example 0.4.1)"
+        description: "Version to release (for example 0.4.2)"
         required: true
       prerelease:
         description: "Mark as pre-release (the app's update check ignores pre-releases)"

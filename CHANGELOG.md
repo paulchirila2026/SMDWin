@@ -3,29 +3,35 @@
 All notable changes to SMD Win are listed here, newest first.
 Dates are in day.month.year format.
 
-## [0.4.1 Beta] — November 2026
+## [0.4.2 Beta] — November 2026
 
 ### Changed
 - Settings, reorganized: eight tabs at the top (General, Appearance, Alerts, Widget & tray, Sensors, Data & reports, Advanced, About) with a search box next to them; one category is shown at a time. Every row has an icon; an option that differs from its default shows a small dot and a "Default" link that puts it back; a few options are marked "Recommended". Advanced starts with a short note, and About has the version, the update check and the links.
 - Tests start from a large card: while there are no results, the empty area of Disk benchmark, Surface scan, Internet speed test and Ping monitor shows what the test does, how long it takes, what it needs and a big Start button (the small button at the top stays). When the test starts, the live view takes the same place.
-- Startup Manager: entries from places Windows does not let a switch control (Active Setup, Winlogon, shell extensions) no longer have a switch that jumped back on (reported with Edge); Active Setup entries, which run once per new user and not at every start, are listed only in the advanced view. When a program turns its start back on by itself, SMD Win now says so — for Edge with the setting to change.
 - Applications: an "Updates" filter (the programs with a newer version, found with winget — update one from the right-click menu or all with one button; hidden when winget is not on the PC), an "Unused" filter (not started for more than 90 days, as recorded by Windows), and after an uninstall SMD Win looks for the folders and registry keys left behind and offers to remove them (folders to the Recycle Bin, keys saved first).
 - Tools, grouped by what has to be done: SFC, DISM and the new "Old Windows components" clean-up run inside the page, with progress, time left and the result in plain words. New: Reset Windows Update, Reset print queue, a restore point in one click (with the date of the last one), driver back-up to a folder, BitLocker state and recovery key, Windows memory test and battery report. "Recent activity" became the History: everything run from Tools plus the service changes, each with Undo.
 - Applications, Services, Startup: while nothing is selected, the card on the right shows a summary instead of one sentence — the largest, recently installed and possibly unwanted programs; the services that crashed or did not start in the last 7 days, the changes made from SMD Win (each with Undo) and the services of other makers; what Windows measured as slowing the start, suggestions (with a one-click clean-up of broken entries) and the entries added recently. A click on a row selects it in the list.
 - Services: a new "Non-Microsoft" view (the services installed by other programs, with their maker), and every start-type change made from SMD Win is remembered so it can be undone.
 - Startup Manager: a "Measured delay" column (how much later the start ended because of a program, measured by Windows) and a "New" badge on entries whose program appeared in the last 14 days.
-- Startup Manager: the boot time no longer counts the time the sign-in screen waited for the password (a PC left at the sign-in screen showed boots of several minutes); the wait is shown in the tooltip.
 - Applications, Services, Startup, Process Monitor: in a small window the less important columns step out instead of every column being cut ("Stoppe", "4.2 (", "Installe"), the details card gets narrower, and the program name no longer draws its badges over the next columns. The Startup switches are no longer squeezed, the quick-switch titles of Services wrap instead of being cut, and Tools shows 2 cards per row on a narrow page.
 - Ctrl+F now also jumps to the search box on Services and Startup Manager.
-- Process Monitor: the first reading no longer shows 0.0 % and 0.0 GB at the top while the list has values, and a process without a signature reading shows its description instead of a dash.
 - Benchmark: "Copy results" confirms on the button itself ("✓ Copied" for a moment).
 - Benchmark drawing: it now follows the real readings — the fans turn with the processor and graphics load, the processor and graphics glow with their temperature (reddish when very hot), the disk LED blinks with the disk activity. A part that finishes turns from orange into the colour of its mark, a dot runs along its line and its ring fills while the number counts up; at the end every part pulses in turn and the general mark counts up. The mouse over a card lights up its part in the drawing, and the mouse over a part lights up its card.
 - Benchmark: the graphics card is now tested before the storage, the same order as the drawing, the cards and the steps. The weakest card has a faint outline instead of a strong frame. The banner after a test shows the temperatures as text and everything else as the same soft pills, with a small Turbo switch. The drawing and the card rings animate with the screen refresh (the fans no longer jerk).
 - Benchmark: before the test, a short check as tiles (power, Turbo, power plan, free space, processor load), each green when fine or amber with what to do. The Turbo tile is also its switch: a click turns Turbo on for the test and the tile turns green. After the test, the conditions it ran in are soft pills.
-- Benchmark: Start no longer ends in an error window after ticking "Turn on Turbo for the test".
 - Benchmark: a line drawing of this computer (desktop, laptop, all-in-one or mini PC) replaces the four big dials. Each component has a callout with its mark ring, hardware and value; the part being tested lights up while it runs (fans speed up, memory and disk activity blink), and after the test each part takes the colour of its mark. The general mark and the performance class sit next to the drawing; the component cards keep their values and tests, with a small mark ring in the header. Before the first run the page shows the same layout with Start in the top bar. The drawing grows with the window, each test shows what it measures under its bar, and the large cards no longer light up under the mouse. The warnings before a test are small chips on one row (the full advice in the tooltip), and the drawing shrinks to fit so the whole page fits on a laptop screen.
+
+### Fixed
+- Startup Manager: entries from places Windows does not let a switch control (Active Setup, Winlogon, shell extensions) no longer have a switch that jumped back on (reported with Edge); Active Setup entries, which run once per new user and not at every start, are listed only in the advanced view. When a program turns its start back on by itself, SMD Win now says so — for Edge with the setting to change.
+- Startup Manager: the boot time no longer counts the time the sign-in screen waited for the password (a PC left at the sign-in screen showed boots of several minutes); the wait is shown in the tooltip.
+- Process Monitor: the first reading no longer shows 0.0 % and 0.0 GB at the top while the list has values, and a process without a signature reading shows its description instead of a dash.
+- Benchmark: Start no longer ends in an error window after ticking "Turn on Turbo for the test".
 - About: "Check for updates" asks GitHub whether a newer version exists and opens its download page (it only opened the project page before).
 - Command Timeout (SMART 188): on drives that pack three counters into the value (Seagate), the count read through Windows is decoded correctly; it turns yellow only above 5 timeouts.
+
+## [0.4.1 Beta] — November 2026
+
+### Changed
 - Windows Update check counts only the updates Windows would install, not the optional ones.
 - Health check: the "Run missing tests" button fits its card; the "not tested" lines are fully translated; the top-bar button reads "PC health".
 - Dashboard temperature charts: a steady scale in 5 °C steps that follows the readings, with both ends written on the chart; the chart is taller.
