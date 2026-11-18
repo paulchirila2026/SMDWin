@@ -882,6 +882,7 @@ namespace SMDWin.Views
         {
             if (_benchBanner == null) return;
             // before the first run the same page, with the drawing and the cards still empty, and Start in the banner
+            if (_benchBanner.Child != null) PinStylesBeforeDetach(_benchBanner.Child);
             _benchBanner.Child = _benchRunning ? BuildBenchRunningBanner() : BuildBenchIdleBanner();
             UpdateBenchCards();
         }
@@ -950,6 +951,23 @@ namespace SMDWin.Views
             }
             UpdateBenchClass();
             UpdateBenchSketch();
+        }
+
+        /// <summary>
+        /// Gives every element of a subtree that is about to be removed its current style as a local value. Removed from the
+        /// window, an element looks its style up again and, not finding it, loses its template; a template animation that is
+        /// held (the Turbo check box after it was ticked) then throws ArgumentNullException('defaultDestinationValue') and
+        /// the click on Start ended in the error window. With the style pinned nothing is looked up again.
+        /// </summary>
+        private static void PinStylesBeforeDetach(DependencyObject root)
+        {
+            try
+            {
+                if (root is FrameworkElement fe && fe.Style is { } st) fe.Style = st;
+                int n = VisualTreeHelper.GetChildrenCount(root);
+                for (int i = 0; i < n; i++) PinStylesBeforeDetach(VisualTreeHelper.GetChild(root, i));
+            }
+            catch (Exception ex) { AppLogger.Debug($"PinStylesBeforeDetach: {ex.Message}"); }
         }
 
         // ── banners ─────────────────────────────────────────────────────────────────────────────────────────────────────
