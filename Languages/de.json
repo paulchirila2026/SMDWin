@@ -3165,6 +3165,8 @@
     "the_storage_test_could_not_run": "Der Speichertest konnte nicht laufen.",
     "storage_test_skipped": "Speichertest übersprungen",
     "welcome_to_smd_win": "Willkommen bei SMD Win",
+    "copied": "Kopiert",
+    "could_not_copy": "Kopieren fehlgeschlagen",
     "turbo_on_for_the_next_test": "Turbo an für den nächsten Test",
     "turbo_off": "Turbo aus",
     "plug_in_the_charger": "Ladegerät anschließen",

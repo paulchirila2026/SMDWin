@@ -1177,8 +1177,16 @@ namespace SMDWin.Views
                 copy.SetResourceReference(StyleProperty, "SecondaryButtonStyle");
                 copy.Click += (_, _) =>
                 {
-                    try { System.Windows.Clipboard.SetText(BenchSummaryText()); ShowToast(PT("Results copied")); }
-                    catch (Exception ex) { AppLogger.Debug($"Benchmark copy: {ex.Message}"); }
+                    try
+                    {
+                        System.Windows.Clipboard.SetText(BenchSummaryText());
+                        // the confirmation on the button itself: "✓ Copied" for a moment, then the label again
+                        copy.Content = "✓  " + PT("Copied");
+                        var back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1.6) };
+                        back.Tick += (_, _) => { back.Stop(); copy.Content = "⧉  " + PT("Copy results"); };
+                        back.Start();
+                    }
+                    catch (Exception ex) { AppLogger.Debug($"Benchmark copy: {ex.Message}"); ShowToast(PT("Could not copy")); }
                 };
                 btns.Children.Add(copy);
             }

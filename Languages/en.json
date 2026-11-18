@@ -2973,6 +2973,8 @@
     "the_storage_test_could_not_run": "The storage test could not run.",
     "storage_test_skipped": "Storage test skipped",
     "welcome_to_smd_win": "Welcome to SMD Win",
+    "copied": "Copied",
+    "could_not_copy": "Could not copy",
     "turbo_on_for_the_next_test": "Turbo on for the next test",
     "turbo_off": "Turbo off",
     "plug_in_the_charger": "Plug in the charger",
