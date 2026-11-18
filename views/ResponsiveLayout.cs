@@ -47,27 +47,34 @@ namespace SMDWin.Views
         private bool? _toolsNarrow;
 
         /// <summary>
-        /// The 6 cards of Tools (repair, clean-up, package, timer, snapshots, activity): 3 per row, or 2 per row when narrow.
-        /// The snapshots card keeps its span when the activity card is hidden (RefreshToolActivity).
+        /// The cards of Tools. With the Tests card (MainWindow.ToolsPlus): repair, clean-up, before-reinstall, tests, timer,
+        /// snapshots, then the history across the full width. 3 per row, or 2 per row when narrow. Before EnsureToolsPlus ran
+        /// (6 cards), the old layout: two rows of three.
         /// </summary>
         private void LayoutToolsCards(Grid grid, bool narrow)
         {
-            if (_toolsNarrow == narrow) return;
-            _toolsNarrow = narrow;
             var cells = new System.Collections.Generic.List<UIElement>();
             foreach (UIElement c in grid.Children) cells.Add(c);
             if (cells.Count < 6) return;
+            int per = narrow ? 2 : 3;
+            int cards = 6;                                   // with 7 cells the 7th (history) spans the whole row
+            bool hasHistory = cells.Count >= 7;
+            int rows = (cards + per - 1) / per + (hasHistory ? 1 : 0);
+            while (grid.RowDefinitions.Count < rows * 2 - 1) grid.RowDefinitions.Add(new RowDefinition());
+            for (int r = 0; r < grid.RowDefinitions.Count; r++)
+                grid.RowDefinitions[r].Height = r % 2 == 1 ? new GridLength(r < rows * 2 - 1 ? 12 : 0) : GridLength.Auto;
             grid.ColumnDefinitions[3].Width = new GridLength(narrow ? 0 : 12);
             grid.ColumnDefinitions[4].Width = narrow ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-            grid.RowDefinitions[3].Height = new GridLength(narrow ? 12 : 0);
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < cells.Count; i++)
             {
-                int row = narrow ? (i / 2) * 2 : (i / 3) * 2;
-                int col = narrow ? (i % 2) * 2 : (i % 3) * 2;
+                bool history = hasHistory && i == cells.Count - 1;
+                int row = history ? (rows - 1) * 2 : (i / per) * 2;
+                int col = history ? 0 : (i % per) * 2;
                 Grid.SetRow(cells[i], row);
                 Grid.SetColumn(cells[i], col);
+                Grid.SetColumnSpan(cells[i], history ? (narrow ? 3 : 5) : 1);
             }
-            RefreshToolActivity();
+            if (!hasHistory) RefreshToolActivity();
         }
 
         /// <summary>Applications, Services, Process Monitor and Startup in a small window (see ResponsiveLayout).</summary>
@@ -88,7 +95,13 @@ namespace SMDWin.Views
                 ResponsiveLayout.SidePanel(PanelStartup, ColStartupSide);
                 // Tools: 3 cards per row, 2 on a narrow page (the cards were squeezed: "Status: Ena", "12 tweaks, each se")
                 if (FindName("PanelShutdown") is FrameworkElement tools && FindName("ToolsCardsGrid") is Grid tg)
-                    tools.SizeChanged += (_, _) => LayoutToolsCards(tg, tools.ActualWidth < 1180);
+                    tools.SizeChanged += (_, _) =>
+                    {
+                        bool narrow = tools.ActualWidth < 1180;
+                        if (_toolsNarrow == narrow) return;
+                        _toolsNarrow = narrow;
+                        LayoutToolsCards(tg, narrow);
+                    };
             }
             catch (System.Exception ex) { SMDWin.Services.AppLogger.Debug($"SetupResponsiveSoftwarePages: {ex.Message}"); }
         }

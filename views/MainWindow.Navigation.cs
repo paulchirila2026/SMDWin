@@ -287,7 +287,7 @@ namespace SMDWin.Views
                                 }
                             });
                             break;
-                        case "Tools":      InitShutdownPanel(); RefreshHibernateStatus(); RefreshSnapshotList(); RefreshToolActivity(); break;
+                        case "Tools":      InitShutdownPanel(); EnsureToolsPlus(); RefreshHibernateStatus(); RefreshSnapshotList(); RefreshToolActivity(); break;
                         case "PowerShell": LoadPsCommands(); break;
                     }
                 }

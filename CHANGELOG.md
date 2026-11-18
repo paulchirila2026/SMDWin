@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.1 Beta] — November 2026
 
 ### Changed
+- Tools, grouped by what has to be done: SFC, DISM and the new "Old Windows components" clean-up run inside the page, with progress, time left and the result in plain words. New: Reset Windows Update, Reset print queue, a restore point in one click (with the date of the last one), driver back-up to a folder, BitLocker state and recovery key, Windows memory test and battery report. "Recent activity" became the History: everything run from Tools plus the service changes, each with Undo.
 - Applications, Services, Startup: while nothing is selected, the card on the right shows a summary instead of one sentence — the largest, recently installed and possibly unwanted programs; the services that crashed or did not start in the last 7 days, the changes made from SMD Win (each with Undo) and the services of other makers; what Windows measured as slowing the start, suggestions (with a one-click clean-up of broken entries) and the entries added recently. A click on a row selects it in the list.
 - Services: a new "Non-Microsoft" view (the services installed by other programs, with their maker), and every start-type change made from SMD Win is remembered so it can be undone.
 - Startup Manager: a "Measured delay" column (how much later the start ended because of a program, measured by Windows) and a "New" badge on entries whose program appeared in the last 14 days.

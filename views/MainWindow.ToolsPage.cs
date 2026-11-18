@@ -45,21 +45,53 @@ namespace SMDWin.Views
             }
 
             var all = SMDWin.Services.ToolActivityLog.List();
+            var svc = SMDWin.Services.ServiceChangeLog.List();
             ToolActivityList.Children.Clear();
-            foreach (var en in all.Take(8))
-                ToolActivityList.Children.Add(BuildToolActivityRow(en));
-            TxtToolActivityNone.Visibility = all.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            // with nothing run, the "Recent activity" card (a single sentence in a large card) is hidden and "Snapshots" takes its
-            // place too; it appears by itself after the first action run from the page
-            if (FindName("ToolsActivityCell") is FrameworkElement actCell && FindName("ToolsSnapshotsCell") is FrameworkElement snapCell)
+            // the history: the service changes (each with Undo) and what was run from Tools, newest first
+            var merged = all.Select(en => (when: en.When, row: (UIElement)BuildToolActivityRow(en)))
+                            .Concat(svc.Select(c => (when: c.When, row: (UIElement)BuildServiceChangeRow(c))))
+                            .OrderByDescending(x => x.when).Take(10).ToList();
+            foreach (var m in merged) ToolActivityList.Children.Add(m.row);
+            bool empty = merged.Count == 0;
+            TxtToolActivityNone.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+            // before the Tests card exists (old layout): with nothing run, the activity card is hidden and Snapshots takes its place
+            if (!_toolsPlusDone && FindName("ToolsActivityCell") is FrameworkElement actCell && FindName("ToolsSnapshotsCell") is FrameworkElement snapCell)
             {
-                bool empty = all.Count == 0;
                 actCell.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
                 System.Windows.Controls.Grid.SetColumnSpan(snapCell, empty ? 3 : 1);
             }
+            else if (FindName("ToolsActivityCell") is FrameworkElement act2) act2.Visibility = Visibility.Visible;
 
             var lastExport = all.FirstOrDefault(x => x.Tool == "Diagnostic package" && x.Kind == "ok");
             TxtDiagLastExport.Text = lastExport == null ? PT("never") : SMDWin.Services.DateFormatHelper.FormatDateTime(lastExport.When);
+        }
+
+        /// <summary>A service change in the history: what changed, when, and Undo (back to the state from before SMD Win).</summary>
+        private Border BuildServiceChangeRow(SMDWin.Services.ServiceChangeLog.Entry c)
+        {
+            var g = new Grid();
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var left = new StackPanel { VerticalAlignment = System.Windows.VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+            var name = new TextBlock { Text = $"{PT("Service")} {(c.DisplayName.Length > 0 ? c.DisplayName : c.Name)}: {PT(c.From)} → {PT(c.To)}", FontWeight = FontWeights.SemiBold, FontSize = Ui.FontM, TextTrimming = TextTrimming.CharacterEllipsis };
+            name.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+            var when = new TextBlock { Text = PT("Services") + " · " + SMDWin.Services.DateFormatHelper.FormatDateTime(c.When), FontSize = Ui.FontXS };
+            when.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+            left.Children.Add(name); left.Children.Add(when);
+            g.Children.Add(left);
+            var undo = new Wpf.Ui.Controls.Button { Content = PT("Undo"), Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary, Padding = new Thickness(10, 3, 10, 3), VerticalAlignment = System.Windows.VerticalAlignment.Center };
+            undo.Click += async (_, _) =>
+            {
+                undo.IsEnabled = false;
+                bool ok = await SMDWin.Services.ServiceChangeLog.UndoAsync(c, _svcService);
+                if (ok) { ShowToast(PT("Put back: {0}", c.DisplayName)); RefreshServiceToggleLabels(); }
+                else { ShowToastWarning(PT("Could not change the service — SMD Win needs to run as administrator")); undo.IsEnabled = true; }
+            };
+            Grid.SetColumn(undo, 1);
+            g.Children.Add(undo);
+            var b = new Border { BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(0, 8, 0, 8), Child = g };
+            b.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
+            return b;
         }
 
         private static Border BuildToolActivityRow(SMDWin.Services.ToolActivityEntry en)
