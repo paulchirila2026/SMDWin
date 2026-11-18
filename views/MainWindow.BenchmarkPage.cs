@@ -435,7 +435,7 @@ namespace SMDWin.Views
             {
                 bool ok = c.Ok || (c.IsTurbo && _benchTurboForTest);
                 string key = ok ? "StatusGoodBrush" : "StatusCheckBrush";
-                tile.Background = BenchTint(key, compact ? 30 : 26);
+                tile.Background = BenchTint(key, (byte)(compact ? 30 : 26));
                 iconBox.Background = BenchTint(key, 34);
                 icon.SetResourceReference(TextBlock.ForegroundProperty, key);
                 title.SetResourceReference(TextBlock.ForegroundProperty, key);
