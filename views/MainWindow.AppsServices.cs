@@ -117,7 +117,7 @@ namespace SMDWin.Views
         private void AppFilter_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.Tag is string tag) _appFilter = tag;
-            foreach (var b in new[] { BtnAppFilterAll, BtnAppFilterLarge, BtnAppFilterRecent, BtnAppFilterBloat })
+            foreach (var b in new[] { BtnAppFilterAll, BtnAppFilterLarge, BtnAppFilterRecent, BtnAppFilterBloat, BtnAppFilterUnused, BtnAppFilterUpdates })
                 if (b != null) SetTabButtonActive(b, (b.Tag as string) == _appFilter);
             ApplyAppsView();
         }
@@ -135,9 +135,11 @@ namespace SMDWin.Views
                 "Large"  => v.Where(a => a.IsLarge),
                 "Recent" => v.Where(a => a.IsRecent).OrderByDescending(a => a.InstallDateRaw),
                 "Bloat"  => v.Where(a => a.IsBloat),
+                "Unused" => v.Where(a => a.IsUnused).OrderBy(a => a.LastRun ?? a.InstallDateRaw ?? DateTime.MinValue),
+                "Updates" => v.Where(a => a.UpdateVersion != null),
                 _        => v,
             };
-            var list = _appFilter == "Recent" ? v.ToList() : v.OrderByDescending(a => a.SizeBytes).ToList();
+            var list = _appFilter is "Recent" or "Unused" ? v.ToList() : v.OrderByDescending(a => a.SizeBytes).ToList();
 
             long maxBytes = list.Count > 0 ? Math.Max(1, list.Max(a => a.SizeBytes)) : 1;
             foreach (var a in list) a.SizeBarW = a.SizeBytes <= 0 ? 0 : Math.Max(2, 60.0 * a.SizeBytes / maxBytes);
@@ -155,7 +157,9 @@ namespace SMDWin.Views
             double gb = list.Sum(a => (double)a.SizeBytes) / 1_073_741_824.0;
             if (TxtAppsTableSub != null) TxtAppsTableSub.Text = $"{list.Count} programs · {gb:F1} GB";
             if (TxtAppsCount != null)
-                TxtAppsCount.Text = _appFilter == "Recent" ? "Newest first" : "Sorted by size";
+                TxtAppsCount.Text = _appFilter == "Recent" ? "Newest first" : _appFilter == "Unused" ? PT("Longest unused first") : "Sorted by size";
+            if (FindName("BtnAppUpdateAll") is FrameworkElement upAll)
+                upAll.Visibility = _appFilter == "Updates" && list.Count > 0 && !_wingetBusy ? Visibility.Visible : Visibility.Collapsed;
             if (BtnUninstall != null) BtnUninstall.IsEnabled = AppsGrid.SelectedItem is InstalledApp;
             RefreshAppsSummary();
         }
@@ -292,7 +296,7 @@ namespace SMDWin.Views
             if (AppDialog.ConfirmDanger(string.Format(_LS("Apps", "ConfirmUninstall"), app.Name), _LS("Common", "Confirm"),
                                         _LS("Apps", "UninstallButton"), _LS("Common", "Cancel")))
             {
-                try { _appsService.Uninstall(app); }
+                try { _appsService.Uninstall(app); _ = WatchUninstallAsync(app); }
                 catch (Exception ex) { AppDialog.Show(string.Format(_LS("Common", "ErrorFmt"), ex.Message)); }
             }
         }

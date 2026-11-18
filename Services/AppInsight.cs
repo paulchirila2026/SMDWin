@@ -51,6 +51,9 @@ namespace SMDWin.Services
         private const uint ProcessQueryLimitedInformation = 0x1000;
 
         /// <summary>Folders that do not belong to a single program (a program installed "in" them has no folder of its own).</summary>
+        /// <summary>The shared folders (Program Files, Windows, user folders…), for the leftovers search.</summary>
+        public static string[] SharedFoldersPublic() => SharedFolders();
+
         private static string[] SharedFolders()
         {
             var kinds = new[]
@@ -113,6 +116,32 @@ namespace SMDWin.Services
                 RunningNames = runningNames, RunningCount = runningCount,
                 SignStatus = signStatus, SignPublisher = signPublisher,
             };
+        }
+
+        /// <summary>
+        /// Only the last start (no folder size, processes or signature) — fast enough for every program of the list ("Unused"
+        /// filter). Known = the program has a main program to look for and Windows keeps prefetch files on this PC.
+        /// </summary>
+        public static (bool Known, DateTime? LastRun) LastRunOnly(InstalledApp app)
+        {
+            try
+            {
+                string prefetch = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch");
+                if (!Directory.Exists(prefetch) || !Directory.EnumerateFiles(prefetch, "*.pf").Any()) return (false, null);
+                string folder = (app.InstallLocation ?? "").Trim().Trim('"');
+                var topExes = new List<string>();
+                if (AppCommands.IsOwnFolder(folder, SharedFolders()) && Directory.Exists(folder))
+                    topExes = Directory.EnumerateFiles(folder, "*.exe", SearchOption.TopDirectoryOnly).Take(40).ToList();
+                string mainExe = AppCommands.IconFilePath(app.IconSource);
+                if (!mainExe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || !File.Exists(mainExe) || AppCommands.IsGenericExeName(mainExe))
+                {
+                    string picked = AppCommands.PickMainExe(app.Name, topExes.Select(Path.GetFileName).Where(n => n != null)!);
+                    mainExe = picked.Length > 0 ? Path.Combine(folder, picked) : "";
+                }
+                if (mainExe.Length == 0 && topExes.Count == 0) return (false, null);
+                return (true, LastRun(mainExe, topExes));
+            }
+            catch (Exception ex) { AppLogger.Debug($"AppInsight.LastRunOnly {app.Name}: {ex.Message}"); return (false, null); }
         }
 
         /// <summary>Sum of the file sizes in the folder (without links to other folders), with a time limit.</summary>

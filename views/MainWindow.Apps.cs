@@ -52,7 +52,9 @@ namespace SMDWin.Views
                 var fresh = await _appsService.GetInstalledAppsAsync();
                 if (fresh.Count > 0) _allApps = fresh;
                 MarkAppsWithNotes();
+                ApplyAppExtras();
                 ApplyAppsView();
+                _ = EnrichAppsAsync();
             }
             finally { HideLoading(); }
         }

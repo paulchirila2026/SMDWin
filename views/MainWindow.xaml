@@ -2387,7 +2387,12 @@
               <ui:Button x:Name="BtnAppFilterRecent" Content="Recent" Appearance="Secondary" Tag="Recent" Click="AppFilter_Click" Padding="10,4" Margin="0,0,2,0"
                          ToolTip="Installed in the last 30 days"/>
               <ui:Button x:Name="BtnAppFilterBloat" Content="Possibly unwanted" Appearance="Secondary" Tag="Bloat" Click="AppFilter_Click" Padding="10,4"
-                         ToolTip="Common preinstalled trials, vendor utilities and promo apps — a hint for the technician, not a rule"/></StackPanel></Border>
+                         ToolTip="Common preinstalled trials, vendor utilities and promo apps — a hint for the technician, not a rule"/>
+              <ui:Button x:Name="BtnAppFilterUnused" Content="Unused" Appearance="Secondary" Tag="Unused" Click="AppFilter_Click" Padding="10,4" Margin="2,0,0,0"
+                         ToolTip="Not started for more than 90 days, as recorded by Windows"/>
+              <ui:Button x:Name="BtnAppFilterUpdates" Content="Updates" Appearance="Secondary" Tag="Updates" Click="AppFilter_Click" Padding="10,4" Margin="2,0,0,0" Visibility="Collapsed"
+                         ToolTip="Programs with a newer version, found by winget (the Windows package tool)"/></StackPanel></Border>
+              <ui:Button x:Name="BtnAppUpdateAll" Content="Update all" Appearance="Primary" Click="AppUpdateAll_Click" Padding="12,4" Margin="10,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
             </StackPanel>
             <TextBlock x:Name="TxtAppsCount" DockPanel.Dock="Right" VerticalAlignment="Center" Style="{StaticResource CompSub}"/>
           </DockPanel>
@@ -2422,6 +2427,7 @@
                       <MenuItem Header="Open in Registry Editor" Click="AppOpenRegistry_Click"/>
                       <MenuItem Header="Search online" Click="AppSearchOnline_Click"/>
                       <MenuItem Header="Check for a newer version" Click="AppCheckUpdate_Click"/>
+                      <MenuItem Header="Update with winget" Click="AppUpdateOne_Click"/>
                       <Separator/>
                       <MenuItem Header="Programs &amp; Features" Click="OpenAddRemovePrograms_Click"/>
                     </ContextMenu>
@@ -2503,13 +2509,13 @@
                         </Style>
                       </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="130">
+                    <DataGridTextColumn Header="Version" Binding="{Binding VersionDisplay}" Width="130">
                       <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                           <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
                           <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                           <Setter Property="VerticalAlignment" Value="Center"/>
-                          <Setter Property="ToolTip" Value="{Binding Version}"/>
+                          <Setter Property="ToolTip" Value="{Binding VersionDisplay}"/>
                         </Style>
                       </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>

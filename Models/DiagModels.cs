@@ -558,6 +558,17 @@ namespace SMDWin.Models
         private bool _hasNote;
         /// <summary>The program folder (InstallLocation from the registry; may be missing).</summary>
         public string InstallLocation { get; set; } = "";
+        /// <summary>A newer version found by winget (null = none / not checked) and the winget package id.</summary>
+        public string? UpdateVersion { get; set; }
+        public string? WingetId { get; set; }
+        public string VersionDisplay => UpdateVersion != null ? $"{Version} → {UpdateVersion}" : Version;
+        /// <summary>Last start recorded by Windows (prefetch); LastRunKnown = the program could be looked up at all.</summary>
+        public DateTime? LastRun { get; set; }
+        public bool LastRunKnown { get; set; }
+        /// <summary>Not started for 90 days (or no start recorded and installed more than 90 days ago).</summary>
+        public bool IsUnused => LastRunKnown && (LastRun is DateTime l
+            ? (DateTime.Now - l).TotalDays > 90
+            : InstallDateRaw is DateTime d && (DateTime.Now - d).TotalDays > 90);
         /// <summary>Where the program is registered: HKLM (all users) or HKCU (current account only).</summary>
         public string Hive { get; set; } = "HKLM";
         /// <summary>Width of the size bar in the table (0–60 px), relative to the largest program in the list.</summary>
