@@ -36,7 +36,8 @@ namespace SMDWin.Services
             string ReleaseNotes,
             string DownloadUrl,
             string HtmlUrl,
-            string AssetName);
+            string AssetName,
+            string? Error = null);   // set when GitHub could not be reached: "up to date" would be wrong then
 
         private readonly HttpClient _http;
 
@@ -105,9 +106,10 @@ namespace SMDWin.Services
             {
                 return new UpdateInfo(false, current, current, "", "", "", "");
             }
-            catch
+            catch (Exception ex)
             {
-                return new UpdateInfo(false, current, current, "", "", "", "");
+                AppLogger.Info($"AutoUpdateService: the check failed — {ex.Message}");
+                return new UpdateInfo(false, current, current, "", "", "", "", ex.Message);
             }
         }
 

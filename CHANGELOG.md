@@ -6,6 +6,8 @@ Dates are in day.month.year format.
 ## [0.4.1 Beta] — November 2026
 
 ### Changed
+- About: "Check for updates" asks GitHub whether a newer version exists and opens its download page (it only opened the project page before).
+- Command Timeout (SMART 188): on drives that pack three counters into the value (Seagate), the count read through Windows is decoded correctly; it turns yellow only above 5 timeouts.
 - Windows Update check counts only the updates Windows would install, not the optional ones.
 - Health check: the "Run missing tests" button fits its card; the "not tested" lines are fully translated; the top-bar button reads "PC health".
 - Dashboard temperature charts: a steady scale in 5 °C steps that follows the readings, with both ends written on the chart; the chart is taller.

@@ -1200,6 +1200,9 @@
     "TypeGeneric": "USB-Geräte"
   },
   "Update": {
+    "NewVersionShortFmt": "Version {0} ist verfügbar (diese ist {1}).\n\nDownload-Seite öffnen?",
+    "LatestFmt": "Sie verwenden die neueste Version ({0}).",
+    "UpToDateTitle": "Aktuell",
     "RunningLatest": "Sie verwenden die neueste Version.",
     "NewVersionAvailableFmt": "Version {0} ist verfügbar.\n\n{1}\n\nVeröffentlichungsseite öffnen?",
     "AvailableTitle": "Update verfügbar",
@@ -3399,6 +3402,8 @@
     "StressDoneErrFmt": "Belastungstest nach {0} Min. beendet — ⚠ {1} Rechenfehler gefunden."
   },
   "About": {
+    "CheckUpdates": "Nach Updates suchen",
+    "CheckUpdatesTip": "Fragt GitHub, ob es eine neuere Version gibt — es wird nichts automatisch heruntergeladen",
     "BuiltOn": "Erstellt am",
     "Version": "Version",
     "Build": "Build",

@@ -1200,6 +1200,9 @@
     "TypeGeneric": "Périphériques USB"
   },
   "Update": {
+    "NewVersionShortFmt": "La version {0} est disponible (celle-ci est {1}).\n\nOuvrir la page de téléchargement ?",
+    "LatestFmt": "Vous utilisez la dernière version ({0}).",
+    "UpToDateTitle": "À jour",
     "RunningLatest": "Vous utilisez la dernière version.",
     "NewVersionAvailableFmt": "La version {0} est disponible.\n\n{1}\n\nOuvrir la page de version ?",
     "AvailableTitle": "Mise à jour disponible",
@@ -3399,6 +3402,8 @@
     "StressDoneErrFmt": "Test de stress terminé après {0} min — ⚠ {1} erreur(s) de calcul trouvée(s)."
   },
   "About": {
+    "CheckUpdates": "Rechercher des mises à jour",
+    "CheckUpdatesTip": "Demande à GitHub si une version plus récente existe — rien n'est téléchargé automatiquement",
     "BuiltOn": "Compilé le",
     "Version": "Version",
     "Build": "Build",

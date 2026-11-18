@@ -12,6 +12,8 @@ Fixes from the first reports after the 0.4 release. Thank you to everyone who se
 - **Dialogs** follow the Light theme and dim the window behind them.
 - **Windows Update check** no longer counts optional updates (it reported pending updates on an up-to-date PC).
 - **Hardware database:** laptop processors such as i5-1035G1 / i7-1165G7 and GeForce MX cards are now recognised; new parts added.
+- **Command Timeout (SMART 188):** on Seagate drives the value holds three counters and was read as one huge number when the data came through Windows; it is decoded now, and turns yellow only above 5 timeouts (thanks for the report).
+- **About → Check for updates** now really checks GitHub for a newer version and opens its download page.
 - **Translations:** texts that appeared in English or Romanian in the wrong language (disk health, SMART verdict, Power history, Health check).
 
 Full list: [CHANGELOG](../CHANGELOG.md)

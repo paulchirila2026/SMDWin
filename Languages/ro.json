@@ -1008,6 +1008,9 @@
     "TypeGeneric": "Dispozitive USB"
   },
   "Update": {
+    "NewVersionShortFmt": "Versiunea {0} este disponibilă (aceasta e {1}).\n\nSe deschide pagina de descărcare?",
+    "LatestFmt": "Este folosită cea mai nouă versiune ({0}).",
+    "UpToDateTitle": "La zi",
     "RunningLatest": "Rulați cea mai recentă versiune.",
     "NewVersionAvailableFmt": "Versiunea {0} este disponibilă.\n\n{1}\n\nDeschide pagina de lansare?",
     "AvailableTitle": "Actualizare disponibilă",
@@ -3214,6 +3217,8 @@
     "StressDoneErrFmt": "Testul de stres s-a terminat după {0} min — ⚠ {1} erori de calcul găsite."
   },
   "About": {
+    "CheckUpdates": "Verifică actualizări",
+    "CheckUpdatesTip": "Întreabă GitHub dacă există o versiune nouă — nu se descarcă nimic automat",
     "BuiltOn": "Compilat la",
     "Version": "Versiune",
     "Build": "Build",

@@ -280,8 +280,45 @@ namespace SMDWin.Views
 
         private void BtnGitHub_Click(object sender, RoutedEventArgs e) => OpenUrl(GitHubUrl);
 
-        /// <summary>The new versions are published on GitHub (the project page, Releases).</summary>
-        private void BtnUpdates_Click(object sender, RoutedEventArgs e) => OpenUrl(GitHubUrl);
+        /// <summary>
+        /// Asks GitHub for the latest release (one request, only when this link is clicked) and says whether a newer version
+        /// exists; "Yes" opens its release page, where the exe is downloaded. Nothing is downloaded or installed by itself.
+        /// </summary>
+        private async void BtnUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            static string S(string key, string en) => SMDWin.Services.LanguageService.S("Update", key, en);
+            string label = TxtLinkUpdates.Text;
+            try
+            {
+                BtnUpdates.IsEnabled = false;
+                TxtLinkUpdates.Text = SMDWin.Services.LanguageService.S("Common", "Checking", "Checking…");
+                var info = await new SMDWin.Services.AutoUpdateService().CheckForUpdateAsync();
+                if (!string.IsNullOrEmpty(info.Error))
+                {
+                    AppDialog.Show(string.Format(S("CheckFailedFmt", "Update check failed: {0}"), info.Error),
+                        S("AvailableTitle", "Update Available"), AppDialog.Kind.Warning, this);
+                }
+                else if (info.Available)
+                {
+                    bool open = AppDialog.Confirm(
+                        string.Format(S("NewVersionShortFmt", "Version {0} is available (this one is {1}).\n\nOpen the download page?"),
+                            info.LatestVersion, info.CurrentVersion),
+                        S("AvailableTitle", "Update Available"), this);
+                    if (open) OpenUrl(string.IsNullOrEmpty(info.HtmlUrl) ? GitHubUrl + "/releases" : info.HtmlUrl);
+                }
+                else
+                {
+                    AppDialog.Show(string.Format(S("LatestFmt", "You're running the latest version ({0})."), info.CurrentVersion),
+                        S("UpToDateTitle", "Up to date"), AppDialog.Kind.Info, this);
+                }
+            }
+            catch (Exception ex) { SMDWin.Services.AppLogger.Warning(ex, "AboutWindow.CheckUpdates"); }
+            finally
+            {
+                TxtLinkUpdates.Text = label;
+                BtnUpdates.IsEnabled = true;
+            }
+        }
 
         private void BtnLicenses_Click(object sender, RoutedEventArgs e)
         {
@@ -301,9 +338,9 @@ namespace SMDWin.Views
             TxtLabelLicense.Text = S("License", "License");
             TxtLicenseValue.ToolTip = S("LicenseTip", "Free and open source");
             TxtLinkViewLicenses.Text = S("Licenses", "Licenses");
-            TxtLinkUpdates.Text = S("Updates", "Updates");
+            TxtLinkUpdates.Text = S("CheckUpdates", "Check for updates");
             BtnGitHub.ToolTip = GitHubUrl;
-            BtnUpdates.ToolTip = S("UpdatesTip", "New versions are published on GitHub");
+            BtnUpdates.ToolTip = S("CheckUpdatesTip", "Asks GitHub whether a newer version exists — nothing is downloaded by itself");
         }
 
         private int _debugClickCount = 0;

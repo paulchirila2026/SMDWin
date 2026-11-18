@@ -466,6 +466,19 @@ namespace SMDWin.Services
 
         private static byte ToByte(int v) => (byte)Math.Clamp(v, 0, 255);
 
+        /// <summary>
+        /// Some makers pack several counters into the 6-byte raw value. Seagate's Command Timeout (0xBC) holds three 16-bit
+        /// counters ("4 4 4" = 0x400040004 — the total, over 5 s, over 7.5 s) and its Power-On Hours (0x09) keeps the hours in the
+        /// low 4 bytes. Read as one number they gave billions of timeouts. smartctl already decodes them (SmartctlService); this
+        /// does the same when the data comes from Windows.
+        /// </summary>
+        internal static long UnpackRaw(byte attrId, long raw) => attrId switch
+        {
+            0xBC when raw > 0xFFFF     => raw & 0xFFFF,
+            0x09 when raw > 0xFFFFFFFF => raw & 0xFFFFFFFF,
+            _ => raw,
+        };
+
         /// <summary>Overlays the smartctl data on the WMI data, then computes the health scores.</summary>
         private static void FinalizeSmartData(List<DiskHealthEntry> disks)
         {
@@ -692,6 +705,7 @@ namespace SMDWin.Services
                         long rawVal  = 0;
                         for (int bx = 0; bx < 6; bx++)
                             rawVal |= ((long)rawData[offset + 5 + bx]) << (bx * 8);
+                        rawVal = UnpackRaw(attrId, rawVal);
                         bool critical = IsCriticalSmartAttr(attrId);
                         target.SmartAttributes.Add(new SMDWin.Models.SmartAttributeEntry
                         {

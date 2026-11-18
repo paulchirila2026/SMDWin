@@ -54,7 +54,7 @@ namespace SMDWin.Views
                     var info = await _autoUpdate.CheckForUpdateAsync();
                     btn.Content = orig;
                     btn.IsEnabled = true;
-                    if (info == null)
+                    if (!info.Available)
                     {
                         ShowToastInfo(_LS("Update", "RunningLatest"));
                     }

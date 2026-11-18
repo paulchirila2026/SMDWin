@@ -86,7 +86,7 @@ SMD Win has no accounts, no telemetry and no ads. It connects to the internet on
 | Cloudflare, OVH, testfile.org, httpbin.org | Running the speed test | Download and upload test |
 | google.com, 8.8.8.8, 1.1.1.1 | Network diagnosis, ping monitor, DNS test | Checking that the internet and name resolution work |
 | feodotracker.abuse.ch | Only when network alerts are turned on (off by default) | List of known dangerous addresses, compared with this PC's connections |
-| api.github.com | Checking for updates | Latest version number (nothing is downloaded or installed by SMD Win itself) |
+| api.github.com | Only when **Check for updates** is clicked in About | Latest version number (nothing is downloaded or installed by SMD Win itself) |
 | github.com (PawnIO) | Installing PawnIO, only if the bundled installer is missing | Driver installer |
 | A search page in the browser | Pressing "search" next to a driver, an event or an error | Opens the browser; SMD Win sends nothing itself |
 

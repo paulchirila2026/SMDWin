@@ -187,8 +187,10 @@ namespace SMDWin.Models
                 if (Id is 0x05 or 0xC5 or 0xC6 or 0xBB)
                     return RawValue > 0 ? "#EF4444" : "#22C55E";
 
+                // Command timeouts: a few over the years are normal (a loose cable, a sudden power cut); yellow only above 5, or
+                // when the drive itself lowers the value (CrystalDiskInfo shows these as fine too)
                 if (Id is 0xBC)
-                    return RawValue > 0 ? "#F59E0B" : "#22C55E";
+                    return RawValue > 5 || (CurrentValue is > 0 and < 100) ? "#F59E0B" : "#22C55E";
 
                 // Temperatura
                 if (Id is 0xC2 or 0xBE)
