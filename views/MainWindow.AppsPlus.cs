@@ -110,6 +110,12 @@ namespace SMDWin.Views
         {
             var (exit, output) = RunWinget("upgrade --accept-source-agreements --disable-interactivity", 120);
             if (exit == -2) return null;
+            return ParseWingetTable(output);
+        }
+
+        /// <summary>The upgrade table of winget's output (see ReadWingetUpdates), by id.</summary>
+        internal static Dictionary<string, (string Id, string Installed, string Available, string Name)> ParseWingetTable(string output)
+        {
             var result = new Dictionary<string, (string, string, string, string)>(StringComparer.OrdinalIgnoreCase);
             var lines = output.Replace("\b", "").Split('\n').Select(l => { int r = l.TrimEnd('\r').LastIndexOf('\r'); return (r >= 0 ? l[(r + 1)..] : l).TrimEnd('\r'); }).ToList();
             int sep = lines.FindIndex(l => Regex.IsMatch(l.Trim(), "^-{10,}$"));
