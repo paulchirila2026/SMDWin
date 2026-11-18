@@ -36,8 +36,9 @@ namespace SMDWin.Tests
 
             var counts = SelfTestSignalCounter.Count(report);
 
-            // 3 lines with ⚠ that start with the symbol (Stress, Zero-size elements, HW db)
-            Assert.Equal(3, counts.WarnCount);
+            // 2 lines with ⚠ (Stress, Zero-size elements); "not in hardware database" is left out on purpose — the summary shows
+            // it separately, as the hardware database coverage
+            Assert.Equal(2, counts.WarnCount);
             // 2 lines with ✘ (LHM, CPU throttle)
             Assert.Equal(2, counts.FailCount);
         }

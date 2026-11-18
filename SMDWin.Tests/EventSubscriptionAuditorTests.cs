@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using SMDWin.Services;
 using Xunit;
@@ -65,7 +66,12 @@ namespace SMDWin.Tests
     {
         // Windows that live as long as the app — they do not need to unsubscribe from a static event, because they never close
         // before it.
-        private static readonly string[] _exemptFiles = { "MainWindow.cs" };
+        // MainWindow.*.cs are parts of the same window (partial class) and ButtonContrastGuard is installed once for the app.
+        private static readonly string[] _exemptFiles = { "MainWindow.cs", "ButtonContrastGuard.cs" };
+        private static bool IsExempt(string fileName) =>
+            System.Array.IndexOf(_exemptFiles, fileName) >= 0 || fileName.StartsWith("MainWindow.", System.StringComparison.Ordinal);
+        // a subscription meant to last as long as the app is marked on its line and not counted
+        private const string AppLifetimeMarker = "[app-lifetime]";
 
         private static string GetViewsFolder([CallerFilePath] string thisTestFilePath = "")
         {
@@ -86,9 +92,9 @@ namespace SMDWin.Tests
             foreach (var file in Directory.GetFiles(viewsFolder, "*.cs", SearchOption.AllDirectories))
             {
                 string fileName = Path.GetFileName(file);
-                if (System.Array.IndexOf(_exemptFiles, fileName) >= 0) continue;
+                if (IsExempt(fileName)) continue;
 
-                string content = File.ReadAllText(file);
+                string content = string.Join("\n", File.ReadAllLines(file).Where(l => !l.Contains(AppLifetimeMarker)));
                 var counts = EventSubscriptionAuditor.CountSubscriptions(content, "ThemeManager.ThemeChanged");
 
                 // Files that do not touch ThemeChanged at all (most of them) are automatically balanced (0 == 0) — only those that DO

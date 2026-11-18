@@ -64,7 +64,7 @@ namespace SMDWin.Views.Net
                 try { RefreshPathStrokes(p); } catch (Exception ex) { AppLogger.Debug($"NetToolPage strokes: {ex.Message}"); }
             };
             // the page stays alive while the app runs: it subscribes only once
-            ThemeManager.ThemeChanged += () =>
+            ThemeManager.ThemeChanged += () =>   // [app-lifetime]
             {
                 try { p.Dispatcher.InvokeAsync(() => { p.Foreground = Res("TextPrimaryBrush"); RefreshPathStrokes(p); }); }
                 catch (Exception ex) { AppLogger.Debug($"NetToolPage theme: {ex.Message}"); }
