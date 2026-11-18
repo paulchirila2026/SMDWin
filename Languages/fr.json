@@ -3165,6 +3165,8 @@
     "the_storage_test_could_not_run": "Le test de stockage n'a pas pu s'exécuter.",
     "storage_test_skipped": "Test de stockage ignoré",
     "welcome_to_smd_win": "Bienvenue dans SMD Win",
+    "0_in_test": "{0} · en test",
+    "not_tested_yet": "pas encore testé",
     "pc_health": "État du PC",
     "run_a_cpu_stress_test_in_temp_stress": "lancer un test de stress du processeur dans Temp & Stress",
     "run_a_gpu_stress_test_in_temp_stress": "lancer un test de stress de la carte graphique dans Temp & Stress",

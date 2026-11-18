@@ -3165,6 +3165,8 @@
     "the_storage_test_could_not_run": "Der Speichertest konnte nicht laufen.",
     "storage_test_skipped": "Speichertest übersprungen",
     "welcome_to_smd_win": "Willkommen bei SMD Win",
+    "0_in_test": "{0} · wird getestet",
+    "not_tested_yet": "noch nicht getestet",
     "pc_health": "PC-Zustand",
     "run_a_cpu_stress_test_in_temp_stress": "einen CPU-Stresstest in Temp & Stress ausführen",
     "run_a_gpu_stress_test_in_temp_stress": "einen GPU-Stresstest in Temp & Stress ausführen",

@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.1 Beta] — November 2026
 
 ### Changed
+- Benchmark: a line drawing of this computer (desktop, laptop, all-in-one or mini PC) replaces the four big dials. Each component has a callout with its mark ring, hardware and value; the part being tested lights up while it runs (fans speed up, memory and disk activity blink), and after the test each part takes the colour of its mark. The general mark and the performance class sit next to the drawing; the component cards keep their values and tests, with a small mark ring in the header. Before the first run the page shows the same layout with Start in the top bar.
 - About: "Check for updates" asks GitHub whether a newer version exists and opens its download page (it only opened the project page before).
 - Command Timeout (SMART 188): on drives that pack three counters into the value (Seagate), the count read through Windows is decoded correctly; it turns yellow only above 5 timeouts.
 - Windows Update check counts only the updates Windows would install, not the optional ones.

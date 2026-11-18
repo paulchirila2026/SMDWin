@@ -35,14 +35,16 @@ namespace SMDWin.Views
     /// The Benchmark page (under Temp &amp; Stress): marks from 0 to 10 for the processor, the memory, the storage and the
     /// graphics, like the Windows 7 experience index; the general mark is their mean (BenchmarkScore). Made for a PC with
     /// problems, not for comparisons over time: the page keeps nothing between runs (the log and Data\Benchmark do).
-    /// Layout (mockup v4) — the page fills the window height:
-    ///   banner (follows the theme): before the run an intro with Start; while running the animation of the real part
-    ///     (BenchStage) with the total progress and the 4 steps; after the run the time, the highest temperatures, whether the
-    ///     processor slowed down from heat, "Copy results" and "Run again";
-    ///   the general dial + "Performance class": the class name, what it suits, a continuous red → green bar 0–10 with ticks
-    ///     and a pin at the mark;
-    ///   one card per component: the dial (mark inside, grows with the window), the weakest component outlined, each test with
-    ///     its value, its own mark and an ⓘ tooltip; the storage card chooses the drive.
+    /// Layout (mockup "bench-pc") — the page fills the window height:
+    ///   banner: before the run what is tested, the warnings and Start; while running the step, the total progress and the
+    ///     4 steps; after the run the time, the highest temperatures, whether the processor slowed down from heat,
+    ///     "Copy results" and "Run again";
+    ///   the hero card: this computer drawn in lines (DeviceSketch — desktop, laptop, all-in-one or mini PC) with a callout per
+    ///     component (mark ring, hardware, value; the part being tested in orange, the parts coloured by their mark after),
+    ///     and on the right the general dial + "Performance class" (the class name, what it suits, a continuous red → green
+    ///     bar 0–10 with ticks and a pin at the mark);
+    ///   one card per component: a small mark ring in the header, the main value, the weakest component outlined, each test
+    ///     with its value, its own mark and an ⓘ tooltip; the storage card chooses the drive.
     /// Tests: processor Mandelbrot + FFT on one thread and on all threads · memory read speed + latency · storage: the quick
     /// disk benchmark of the chosen drive (256 MB temporary file, deleted at the end) · graphics: 3 tests × 13 s.
     /// </summary>
@@ -54,14 +56,13 @@ namespace SMDWin.Views
         private TextBlock? _benchClassName, _benchClassDesc;
         private Canvas? _benchPin, _benchTicks, _benchNames;
         private UGrid? _benchCards;
-        private FrameworkElement? _benchTop;
         // graphics adapter chosen for the test (laptops with two); -1 = Windows' default
         private List<GpuSuiteBenchmark.AdapterInfo>? _benchGpuAdapters;
         private int _benchGpuAdapter = -1;
         /// <summary>How much of its speed the processor kept at the end of the processor step (last seconds / first 2 s).</summary>
         private double? _benchSustained;
         private bool _benchKeysHooked;
-        private Border? _benchWelcome;   // before the first run: one card with what is tested and Start
+        private DeviceSketch? _benchSketch;   // the computer drawn in lines, with a callout per component
         private readonly BenchComp[] _benchComps = new BenchComp[4];
         private CancellationTokenSource? _benchCts;
         private bool _benchRunning;
@@ -81,8 +82,7 @@ namespace SMDWin.Views
         /// <summary>The file of the last run (Data\Benchmark), for the self-test.</summary>
         internal string? LastBenchmarkFile { get; private set; }
         // the running banner, rebuilt each run
-        private BenchStage? _benchStage;
-        private TextBlock? _benchTxtNow, _benchTxtSub, _benchTxtPct, _benchTxtLeft, _benchTxtHudL, _benchTxtHudR;
+        private TextBlock? _benchTxtNow, _benchTxtSub, _benchTxtPct, _benchTxtLeft;
         private ColumnDefinition? _benchBarOn, _benchBarOff;
         private readonly (TextBlock state, ColumnDefinition on, ColumnDefinition off, Border card, Border fill)[] _benchStepUi = new (TextBlock, ColumnDefinition, ColumnDefinition, Border, Border)[4];
 
@@ -103,7 +103,7 @@ namespace SMDWin.Views
             public string?[] Values = Array.Empty<string?>();
             public double?[] Marks = Array.Empty<double?>();
             public double? Mark;
-            public ScoreDial Dial = null!;
+            public MarkRing Ring = null!;
             public TextBlock DeviceText = null!, WeakText = null!, MainValue = null!, MainCaption = null!;
             public int MainTest;   // the test whose value is shown under the dial
             public TextBlock AdviceText = null!, ExtraText = null!;
@@ -133,8 +133,6 @@ namespace SMDWin.Views
         };
         private static string BNum(double v, string fmt = "0.0") => v.ToString(fmt, BenchCulture);
 
-        private bool BenchLight => TryFindResource("BgCardBrush") is SolidColorBrush b && (b.Color.R * 0.3 + b.Color.G * 0.59 + b.Color.B * 0.11) > 140;
-
         /// <summary>Builds the page the first time it is opened (later visits keep it, with the last results).</summary>
         private void EnsureBenchmarkPage()
         {
@@ -158,26 +156,29 @@ namespace SMDWin.Views
 
             _benchBanner = new Border { Margin = new Thickness(0, 0, 0, 14) };
             root.Children.Add(_benchBanner);
-            _benchWelcome = new Border();
-            Grid.SetRow(_benchWelcome, 1); Grid.SetRowSpan(_benchWelcome, 2);
-            root.Children.Add(_benchWelcome);
-
-            // general dial + performance class
-            var top = new Grid { Margin = new Thickness(0, 0, 0, 14) };
+            // the hero card: the computer with its callouts on the left, the general mark and the performance class on the right
+            var top = BenchCard();
+            top.Margin = new Thickness(0, 0, 0, 14);
+            top.Padding = new Thickness(12, 10, 20, 10);
             Grid.SetRow(top, 1);
-            top.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(250) });
-            top.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            var allCard = BenchCard();
-            allCard.Margin = new Thickness(0, 0, 14, 0);
-            var allSp = new StackPanel { HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
+            var hero = new Grid();
+            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
+            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 330 });
+            _benchSketch = new DeviceSketch { MaxHeight = 400, Format = v => BNum(v), VerticalAlignment = VAlign.Center };
+            hero.Children.Add(_benchSketch);
+            var right = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(20, 6, 0, 6), Margin = new Thickness(8, 0, 0, 0) };
+            right.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
+            Grid.SetColumn(right, 1);
+            var allSp = new StackPanel { VerticalAlignment = VAlign.Center };
             allSp.Children.Add(BenchCaption(PT("General mark"), HAlign.Center));
-            _benchAllDial = new ScoreDial { Width = 196, Height = 172, Segments = 20, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 0) };
+            _benchAllDial = new ScoreDial { Width = 176, Height = 156, Segments = 20, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
             allSp.Children.Add(_benchAllDial);
-            allCard.Child = allSp;
-            top.Children.Add(allCard);
-            top.Children.Add(BuildBenchClassCard());
+            allSp.Children.Add(BuildBenchClassPanel());
+            right.Child = allSp;
+            hero.Children.Add(right);
+            top.Child = hero;
             root.Children.Add(top);
-            _benchTop = top;
+            _ = DetectBenchDeviceKindAsync();
 
             // the component cards: 4 per row, 2 on a narrow window; they stretch to the bottom of the page
             _benchCards = new UGrid { Columns = 4 };
@@ -381,7 +382,6 @@ namespace SMDWin.Views
             return _ramModules.Where(m => !m.IsEmpty).ToList();
         }
         private bool _benchRamLoading;
-        private readonly TextBlock?[] _benchWelcomeDev = new TextBlock?[4];   // the start card's component names, updated when they arrive
 
         /// <summary>One memory module in a slot (not soldered): it runs in single channel — the most useful advice on such PCs.</summary>
         private bool BenchSingleModule()
@@ -588,19 +588,15 @@ namespace SMDWin.Views
         }
 
         // ── performance class: name, what it suits, the continuous bar with ticks, names and the pin ───────────────────
-        private Border BuildBenchClassCard()
+        private FrameworkElement BuildBenchClassPanel()
         {
-            var card = BenchCard();
-            Grid.SetColumn(card, 1);
-            var sp = new StackPanel { VerticalAlignment = VAlign.Center };
-            sp.Children.Add(BenchCaption(PT("Performance class"), HAlign.Left));
-            var head = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
-            _benchClassName = new TextBlock { FontSize = Ui.FontXXL, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 12, 0) };
+            var sp = new StackPanel();
+            sp.Children.Add(BenchCaption(PT("Performance class"), HAlign.Center));
+            _benchClassName = new TextBlock { FontSize = Ui.FontXXL, FontWeight = FontWeights.Bold, HorizontalAlignment = HAlign.Center, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
             _benchClassName.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            _benchClassDesc = new TextBlock { FontSize = Ui.FontS, VerticalAlignment = VAlign.Bottom, Margin = new Thickness(0, 0, 0, 3) };
+            _benchClassDesc = new TextBlock { FontSize = Ui.FontS, HorizontalAlignment = HAlign.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 0) };
             _benchClassDesc.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            head.Children.Add(_benchClassName); head.Children.Add(_benchClassDesc);
-            sp.Children.Add(head);
+            sp.Children.Add(_benchClassName); sp.Children.Add(_benchClassDesc);
 
             var scale = new Grid { Margin = new Thickness(0, 10, 0, 0) };
             scale.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });   // pin
@@ -623,8 +619,7 @@ namespace SMDWin.Views
             scale.Children.Add(_benchTicks); scale.Children.Add(_benchNames); scale.Children.Add(_benchPin);
             scale.SizeChanged += (_, _) => UpdateBenchClass();
             sp.Children.Add(scale);
-            card.Child = sp;
-            return card;
+            return sp;
         }
 
         private void UpdateBenchClass()
@@ -696,12 +691,17 @@ namespace SMDWin.Views
             card.Margin = new Thickness(index % 4 == 0 ? 0 : 7, 0, index % 4 == 3 ? 0 : 7, 0);
             var g = new Grid();
             g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             g.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             card.Child = g;
 
             var head = new DockPanel();
+            // the mark ring (the same as the callout of the drawing) at the right of the header
+            c.Ring = new MarkRing { Width = 46, Height = 46, Format = v => BNum(v), VerticalAlignment = VAlign.Top, Margin = new Thickness(8, -2, 0, 0) };
+            DockPanel.SetDock(c.Ring, Dock.Right);
+            head.Children.Add(c.Ring);
             if (index == 2)
             {
                 // the storage card chooses the drive (fixed, ready drives; the system drive first)
@@ -749,27 +749,18 @@ namespace SMDWin.Views
             head.Children.Add(titles);
             g.Children.Add(head);
 
-            // the dial grows with the card (110–205 px), the main value of the component under it
-            var mid = new Grid { Margin = new Thickness(0, 8, 0, 8) };
-            mid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            mid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            var dialHost = new Viewbox { Stretch = Stretch.Uniform, MaxHeight = 205, MinHeight = 64, VerticalAlignment = VAlign.Bottom };
-            c.Dial = new ScoreDial { Width = 160, Height = 140, Segments = 14, Format = v => BNum(v) };
-            dialHost.Child = c.Dial;
-            mid.Children.Add(dialHost);
-            var mainSp = new StackPanel { HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Top, Margin = new Thickness(0, 4, 0, 0) };
-            c.MainValue = new TextBlock { FontSize = Ui.FontSectionTitle, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HAlign.Center };
+            // the main value of the component ("11.912 pts  all cores"); "—  not tested" before the test
+            var mainSp = new WrapPanel { Margin = new Thickness(0, 10, 0, 8) };
+            c.MainValue = new TextBlock { FontSize = Ui.FontTitle, FontWeight = FontWeights.SemiBold, VerticalAlignment = VAlign.Bottom, Margin = new Thickness(0, 0, 8, 0) };
             c.MainValue.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
             c.MainValue.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            c.MainCaption = new TextBlock { FontSize = Ui.FontXS, HorizontalAlignment = HAlign.Center, Text = c.Tests.Length > c.MainTest ? c.Tests[c.MainTest] : "" };
+            c.MainCaption = new TextBlock { FontSize = Ui.FontS, VerticalAlignment = VAlign.Bottom, Margin = new Thickness(0, 0, 0, 3), Text = c.Tests.Length > c.MainTest ? c.Tests[c.MainTest] : "" };
             c.MainCaption.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
             mainSp.Children.Add(c.MainValue); mainSp.Children.Add(c.MainCaption);
             Grid.SetRow(mainSp, 1);
-            mid.Children.Add(mainSp);
-            Grid.SetRow(mid, 1);
-            g.Children.Add(mid);
+            g.Children.Add(mainSp);
 
-            // under the dial: "weakest component", the advice for this component (if any) and, for the processor, how much of
+            // under the value: "weakest component", the advice for this component (if any) and, for the processor, how much of
             // its speed it kept under load
             var notes = new StackPanel { Margin = new Thickness(0, 0, 0, 6) };
             c.WeakText = new TextBlock { Text = "▲ " + PT("weakest component"), FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 0, 0, 2) };
@@ -841,18 +832,8 @@ namespace SMDWin.Views
         private void RefreshBenchmarkView()
         {
             if (_benchBanner == null) return;
-            // no result yet (first visit, or a run stopped before any mark): only the start card
-            bool empty = !_benchRunning && _benchComps.All(c => c?.Mark == null);
-            if (_benchWelcome != null)
-            {
-                _benchWelcome.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
-                if (empty) _benchWelcome.Child = BuildBenchWelcome();
-                else _benchWelcome.Child = null;
-            }
-            _benchBanner.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
-            if (_benchTop != null) _benchTop.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
-            if (_benchCards != null) _benchCards.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
-            _benchBanner.Child = empty ? null : _benchRunning ? BuildBenchRunningBanner() : BuildBenchIdleBanner();
+            // before the first run the same page, with the drawing and the cards still empty, and Start in the banner
+            _benchBanner.Child = _benchRunning ? BuildBenchRunningBanner() : BuildBenchIdleBanner();
             UpdateBenchCards();
         }
 
@@ -861,7 +842,7 @@ namespace SMDWin.Views
             if (_benchAllDial == null) return;
             double? all = _benchRunning ? null : BenchmarkScore.Mean(_benchComps.Select(c => c?.Mark));
             _benchAllDial.Score = all;
-            _benchAllDial.Caption = all != null ? PT("of 10") : _benchRunning ? PT("running…") : "";
+            _benchAllDial.Caption = all != null ? PT("of 10") : _benchRunning ? PT("running…") : PT("not tested yet");
             int weakest = -1;
             if (!_benchRunning && _benchComps.Count(c => c?.Mark != null) >= 2)
             {
@@ -874,16 +855,15 @@ namespace SMDWin.Views
                 if (c == null) continue;
                 bool now = _benchRunning && _benchStep == i;
                 bool next = _benchRunning && _benchStep < i;
-                c.Dial.Score = c.Mark;
-                c.Dial.Caption = c.Mark != null ? PT("of 10") : now ? PT("running…") : next ? PT("next") : "";
+                c.Ring.Mark = c.Mark;
+                c.Ring.Active = now;
                 c.Card.Opacity = next ? 0.6 : 1;
                 if (i == 1 && (string.IsNullOrEmpty(c.Device) || !c.Device.Contains('·'))) { var rd = BenchRamDevice(); if (rd.Length > 0) c.Device = rd; }
-                if (_benchWelcomeDev[i] is TextBlock wd && !string.IsNullOrWhiteSpace(c.Device)) { wd.Text = c.Device; wd.ToolTip = c.Device; }
                 c.DeviceText.Text = c.Device;
                 c.DeviceText.ToolTip = string.IsNullOrEmpty(c.Device) ? null : c.Device;
                 string? main = c.Values.Length > c.MainTest ? c.Values[c.MainTest] : null;
-                c.MainValue.Text = main ?? "";
-                c.MainValue.Visibility = c.MainCaption.Visibility = main != null ? Visibility.Visible : Visibility.Hidden;
+                c.MainValue.Text = main ?? "—";
+                c.MainCaption.Text = main != null ? c.Tests[c.MainTest] : now ? PT("running…") : next ? PT("next") : PT("not tested yet");
                 bool weak = i == weakest;
                 c.WeakText.Visibility = weak ? Visibility.Visible : Visibility.Collapsed;
                 if (weak) { c.Card.SetResourceReference(Border.BorderBrushProperty, "StatusCheckBrush"); c.Card.BorderThickness = new Thickness(1.5); }
@@ -920,6 +900,7 @@ namespace SMDWin.Views
                 }
             }
             UpdateBenchClass();
+            UpdateBenchSketch();
         }
 
         // ── banners ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -963,6 +944,9 @@ namespace SMDWin.Views
                 var sub = new TextBlock { Text = PT("Close other programs during the test. The storage test writes a 256 MB temporary file and deletes it at the end."), FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 0, 0) };
                 sub.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 sp.Children.Add(sub);
+                var warn = BenchPreChecks();
+                if (warn.Count > 0) sp.Children.Add(BenchWarnings(warn, false));
+                if (BenchTurboChoice(false) is { } turbo) sp.Children.Add(turbo);
                 g.Children.Add(sp);
             }
             var btns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VAlign.Center, Margin = new Thickness(16, 0, 0, 0) };
@@ -987,126 +971,6 @@ namespace SMDWin.Views
             return card;
         }
 
-        /// <summary>
-        /// The page before the first run: instead of four empty dials, one card in the middle — what the test
-        /// gives, the four components with the names read from this PC and their tests, how long it takes, and Start.
-        /// </summary>
-        private UIElement BuildBenchWelcome()
-        {
-            // not a card — the start page was one big card over the whole page, and on hover the card style made it
-            // opaque (darker, no Mica / blur behind it). The four component tiles are the cards.
-            var card = new Border { Background = Brushes.Transparent, Padding = new Thickness(28, 26, 28, 26) };
-            var sp = new StackPanel { MaxWidth = 900, HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
-            card.Child = sp;
-            var icon = FluentIcons.Box("gauge", 40, "DataBrush");
-            icon.HorizontalAlignment = HAlign.Center;
-            icon.Margin = new Thickness(0, 0, 0, 10);
-            sp.Children.Add(icon);
-            var title = new TextBlock { Text = PT("Benchmark"), FontSize = Ui.FontTitleLg, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HAlign.Center };
-            title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            sp.Children.Add(title);
-            var lead = new TextBlock { Text = PT("Marks from 0 to 10 for the processor, memory, storage and graphics card · about 2.5 minutes"),
-                                       FontSize = Ui.FontM, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 6, 0, 22) };
-            lead.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            sp.Children.Add(lead);
-
-            var tiles = new UGrid { Columns = ActualWidth < 1100 ? 2 : 4 };
-            string[] icons = { "developer_board", "memory", "hard_drive", "gpu" };
-            for (int i = 0; i < 4; i++)
-            {
-                var c = _benchComps[i];
-                var tile = new Border { CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Padding = new Thickness(14, 12, 14, 12), Margin = new Thickness(5) };
-                tile.SetResourceReference(Border.BackgroundProperty, "CardSurfaceBrush");
-                tile.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
-                var ts = new StackPanel();
-                var head = new StackPanel { Orientation = Orientation.Horizontal };
-                var ic = FluentIcons.Box(icons[i], 18, "DataBrush");
-                ic.Margin = new Thickness(0, 0, 8, 0);
-                head.Children.Add(ic);
-                var n = new TextBlock { Text = c.Name, FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold, VerticalAlignment = VAlign.Center };
-                n.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-                head.Children.Add(n);
-                ts.Children.Add(head);
-                var dev = _benchWelcomeDev[i] = new TextBlock { Text = string.IsNullOrWhiteSpace(c.Device) ? "—" : c.Device, FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap,
-                                          MaxHeight = 34, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 6, 0, 6), ToolTip = c.Device };
-                dev.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-                ts.Children.Add(dev);
-                var tl = new TextBlock { Text = string.Join(" · ", c.Tests), FontSize = Ui.FontXS, TextWrapping = TextWrapping.Wrap };
-                tl.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                ts.Children.Add(tl);
-                tile.Child = ts;
-                tiles.Children.Add(tile);
-            }
-            sp.Children.Add(tiles);
-
-            if (i2Drives() is { } drives) { drives.Margin = new Thickness(5, 10, 5, 0); sp.Children.Add(drives); }
-            if (gpuChoice() is { } gpus) { gpus.Margin = new Thickness(5, 8, 5, 0); sp.Children.Add(gpus); }
-            var warn = BenchPreChecks();
-            if (warn.Count > 0) { var wv = BenchWarnings(warn, true); ((FrameworkElement)wv).Margin = new Thickness(5, 14, 5, 0); sp.Children.Add(wv); }
-            if (BenchTurboChoice(true) is { } turbo) sp.Children.Add(turbo);
-
-            var note = new TextBlock { Text = PT("Close other programs during the test. The storage test writes a 256 MB temporary file and deletes it at the end."),
-                                       FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 18, 0, 16) };
-            note.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            sp.Children.Add(note);
-            var btn = new Button { Content = "▶  " + PT("Start"), Padding = new Thickness(34, 10, 34, 10), FontSize = Ui.FontL, HorizontalAlignment = HAlign.Center };
-            btn.SetResourceReference(StyleProperty, "PrimaryButtonStyle");
-            btn.Click += async (_, _) => await RunBenchmarkAsync();
-            sp.Children.Add(btn);
-            return card;
-
-            // two graphics adapters (laptop): choose here which one is tested (the same choice as on the graphics card)
-            FrameworkElement? gpuChoice()
-            {
-                if (_benchGpuAdapters is not { Count: > 1 } adapters) return null;
-                var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HAlign.Center };
-                var k = new TextBlock { Text = PT("Graphics card to test"), FontSize = Ui.FontS, VerticalAlignment = VAlign.Center, Margin = new Thickness(0, 0, 8, 0) };
-                k.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                row.Children.Add(k);
-                var cb = new ComboBox { MinWidth = 180 };
-                foreach (var a in adapters) cb.Items.Add(new ComboBoxItem { Content = a.Name, Tag = a.Index });
-                cb.SelectedIndex = Math.Max(0, adapters.FindIndex(a => a.Index == _benchGpuAdapter));
-                cb.SelectionChanged += (_, _) =>
-                {
-                    if (cb.SelectedItem is not ComboBoxItem it || it.Tag is not int ai) return;
-                    _benchGpuAdapter = ai;
-                    _benchComps[3].Device = BenchGpuName();
-                    if (_benchCards?.Children[3] is Border gc && gc.Child is Grid gg && gg.Children[0] is DockPanel gdp && gdp.Children[0] is ComboBox other)
-                        other.SelectedIndex = cb.SelectedIndex;
-                    RefreshBenchmarkView();
-                };
-                row.Children.Add(cb);
-                return row;
-            }
-
-            // more than one fixed drive: choose here which one the storage test uses (the same choice as on the storage card)
-            FrameworkElement? i2Drives()
-            {
-                List<string> list;
-                try { list = DriveInfo.GetDrives().Where(d => d.IsReady && d.DriveType == DriveType.Fixed).Select(d => d.Name.TrimEnd('\\')).OrderBy(x => x).ToList(); }
-                catch { return null; }
-                if (list.Count < 2) return null;
-                var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HAlign.Center };
-                var k = new TextBlock { Text = PT("Drive to test"), FontSize = Ui.FontS, VerticalAlignment = VAlign.Center, Margin = new Thickness(0, 0, 8, 0) };
-                k.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                row.Children.Add(k);
-                var cb = new ComboBox { MinWidth = 64 };
-                foreach (var l in list) cb.Items.Add(l);
-                if (!cb.Items.Contains(_benchDrive)) cb.Items.Insert(0, _benchDrive);
-                cb.SelectedItem = _benchDrive;
-                cb.SelectionChanged += (_, _) =>
-                {
-                    if (cb.SelectedItem is not string l) return;
-                    _benchDrive = l;
-                    _benchComps[2].Device = BenchDiskDevice(l);
-                    if (_benchCards?.Children[2] is Border sc && sc.Child is Grid sg && sg.Children[0] is DockPanel dp && dp.Children[0] is ComboBox other) other.SelectedItem = l;
-                    RefreshBenchmarkView();
-                };
-                row.Children.Add(cb);
-                return row;
-            }
-        }
-
         /// <summary>The results as plain text (Copy results): the PC, the general mark and class, every component and test.</summary>
         private string BenchSummaryText()
         {
@@ -1127,57 +991,12 @@ namespace SMDWin.Views
             return sb.ToString();
         }
 
-        private static Brush BenchStageBrush(bool light)
-        {
-            // the stage: a soft gradient with a faint 24 px grid, light or dark with the theme
-            var dg = new DrawingGroup();
-            dg.Children.Add(new GeometryDrawing(new SolidColorBrush(light ? Color.FromRgb(0xEC, 0xF1, 0xF7) : Color.FromRgb(0x0D, 0x15, 0x24)), null, new RectangleGeometry(new Rect(0, 0, 24, 24))));
-            var linePen = new Pen(new SolidColorBrush(light ? Color.FromArgb(0x14, 0x0F, 0x17, 0x2A) : Color.FromArgb(0x10, 0xFF, 0xFF, 0xFF)), 1); linePen.Freeze();
-            dg.Children.Add(new GeometryDrawing(null, linePen, new LineGeometry(new Point(0, 23.5), new Point(24, 23.5))));
-            dg.Children.Add(new GeometryDrawing(null, linePen, new LineGeometry(new Point(23.5, 0), new Point(23.5, 24))));
-            var b = new DrawingBrush(dg) { TileMode = TileMode.Tile, Viewport = new Rect(0, 0, 24, 24), ViewportUnits = BrushMappingMode.Absolute };
-            b.Freeze();
-            return b;
-        }
-
         private UIElement BuildBenchRunningBanner()
         {
+            // the part being tested is shown by the drawing below (DeviceSketch); the banner has the step, the progress and the steps
             var outer = BenchCard();
-            var g = new Grid();
-            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(320) });
-            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            outer.Child = g;
-
-            bool light = BenchLight;
-            var stageBox = new Border { Height = 200, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), ClipToBounds = true, Background = BenchStageBrush(light) };
-            stageBox.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
-            var stageGrid = new Grid();
-            _benchStage = new BenchStage
-            {
-                Running = true, Scene = BenchSceneFor(_benchStep), Margin = new Thickness(0, 16, 0, 16),
-                CpuName = _summary?.Cpu ?? "", DiskKind = BenchDiskKind(_benchDrive), GpuIntegrated = GpuPackage.IsIntegrated(BenchGpuName() is { Length: > 0 } chosen ? chosen : _summary?.GpuName),
-            };
-            stageGrid.Children.Add(_benchStage);
-            var tag = new TextBlock { Text = "", FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(10, 8, 10, 0), VerticalAlignment = VAlign.Top, TextTrimming = TextTrimming.CharacterEllipsis };
-            tag.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            stageGrid.Children.Add(tag);
-            _benchStageTag = tag;
-            var hud = new DockPanel { VerticalAlignment = VAlign.Bottom, Margin = new Thickness(10, 0, 10, 7) };
-            _benchTxtHudR = new TextBlock { FontSize = Ui.FontXS, FontWeight = FontWeights.Bold };
-            _benchTxtHudR.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
-            _benchTxtHudR.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            DockPanel.SetDock(_benchTxtHudR, Dock.Right);
-            _benchTxtHudL = new TextBlock { FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 0, 8, 0) };
-            _benchTxtHudL.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
-            _benchTxtHudL.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            hud.Children.Add(_benchTxtHudR); hud.Children.Add(_benchTxtHudL);
-            stageGrid.Children.Add(hud);
-            stageBox.Child = stageGrid;
-            g.Children.Add(stageBox);
-
-            var info = new StackPanel { Margin = new Thickness(22, 0, 0, 0), VerticalAlignment = VAlign.Center };
-            Grid.SetColumn(info, 1);
-            g.Children.Add(info);
+            var info = new StackPanel();
+            outer.Child = info;
 
             var head = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
             var stop = new Button { Content = "■  " + PT("Stop"), Padding = new Thickness(14, 6, 14, 6) };
@@ -1257,15 +1076,6 @@ namespace SMDWin.Views
             return outer;
         }
 
-        private TextBlock? _benchStageTag;
-
-        private static BenchStage.SceneKind BenchSceneFor(int step) => step switch
-        {
-            1 => BenchStage.SceneKind.Ram,
-            2 => BenchStage.SceneKind.Disk,
-            3 => BenchStage.SceneKind.Gpu,
-            _ => BenchStage.SceneKind.Cpu,
-        };
 
         /// <summary>The live part of the running banner (every 250 ms): titles, total progress, steps, live values.</summary>
         private void UpdateBenchRunning()
@@ -1285,17 +1095,7 @@ namespace SMDWin.Views
             _benchTxtLeft!.Text = PT("~{0} s left", Math.Round(left).ToString("0"));
             _benchBarOn!.Width = new GridLength(Math.Max(0.001, pct), GridUnitType.Star);
             _benchBarOff!.Width = new GridLength(Math.Max(0.001, 1 - pct), GridUnitType.Star);
-            if (_benchStage != null) _benchStage.Scene = BenchSceneFor(step);
-            if (_benchStageTag != null)
-                _benchStageTag.Text = (step switch
-                {
-                    0 => _summary?.Cpu ?? PT("Processor"),
-                    1 => $"{PT("Memory")} · {_summary?.RamType}",
-                    2 => _benchComps[2].Device,
-                    _ => _summary?.GpuName ?? PT("Graphics card"),
-                }).Trim(' ', '·').ToUpper(BenchCulture);
-            _benchTxtHudL!.Text = _benchHudLeft;
-            _benchTxtHudR!.Text = _benchHudRight;
+            UpdateBenchSketch();
             for (int i = 0; i < 4; i++)
             {
                 var (state, on, off, card, fill) = _benchStepUi[i];

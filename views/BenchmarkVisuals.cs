@@ -83,4 +83,85 @@ namespace SMDWin.Views
             var b = new SolidColorBrush(Color.FromRgb(r, g, bl)); b.Freeze(); return b;
         }
     }
+
+    /// <summary>
+    /// The small mark ring in the header of a component card (the same ring as the callouts of DeviceSketch):
+    /// a dash before the test, an orange arc turning while the component is tested, the mark inside a coloured ring after.
+    /// </summary>
+    public sealed class MarkRing : FrameworkElement
+    {
+        private double? _mark;
+        public double? Mark { get => _mark; set { _mark = value; InvalidateVisual(); } }
+        private bool _active;
+        public bool Active { get => _active; set { if (_active != value) { _active = value; UpdateTimer(); InvalidateVisual(); } } }
+        public Func<double, string> Format { get; set; } = v => v.ToString("0.0", CultureInfo.InvariantCulture);
+
+        private readonly DispatcherTimer _timer = new(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
+        private readonly System.Diagnostics.Stopwatch _clock = System.Diagnostics.Stopwatch.StartNew();
+
+        public MarkRing()
+        {
+            _timer.Tick += (_, _) => InvalidateVisual();
+            IsVisibleChanged += (_, _) => UpdateTimer();
+            Loaded += (_, _) => { ThemeManager.ThemeChanged += OnTheme; UpdateTimer(); };
+            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; _timer.Stop(); };
+        }
+        private void OnTheme() => Dispatcher.BeginInvoke(new Action(InvalidateVisual));
+
+        private void UpdateTimer()
+        {
+            bool animate = _active && IsVisible && IsLoaded && SettingsService.Current?.EnableAnimations != false;
+            if (animate && !_timer.IsEnabled) _timer.Start();
+            else if (!animate && _timer.IsEnabled) _timer.Stop();
+        }
+
+        protected override void OnRender(DrawingContext dc)
+        {
+            double W = ActualWidth, H = ActualHeight;
+            dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, W, H));
+            double th = Math.Max(3, Math.Min(W, H) * 0.11);
+            double r = Math.Min(W, H) / 2 - th / 2 - 1;
+            if (r < 6) return;
+            var c = new Point(W / 2, H / 2);
+            var track = TryFindResource("BorderBrush2") as Brush ?? Brushes.Gray;
+            dc.DrawEllipse(null, new Pen(track, th), c, r, r);
+            if (_active)
+            {
+                var hot = new SolidColorBrush(Color.FromRgb(0xFF, 0x8A, 0x3D)); hot.Freeze();
+                double a0 = (_timer.IsEnabled ? _clock.Elapsed.TotalSeconds * 300 : 0) % 360 - 90;
+                dc.DrawGeometry(null, new Pen(hot, th) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, Arc(c, r, a0, a0 + 100));
+                return;
+            }
+            var ink = TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.Black;
+            var ink2 = TryFindResource("TextSecondaryBrush") as Brush ?? Brushes.Gray;
+            double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            if (_mark is double m)
+            {
+                double sweep = Math.Clamp(m, 0, 10) / 10 * 360;
+                if (sweep > 0.5)
+                    dc.DrawGeometry(null, new Pen(ScoreDial.TierBrush(m), th) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, Arc(c, r, -90, -90 + Math.Min(359.5, sweep)));
+                var num = new Typeface(GaugeArc.NumFont(this), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+                var ft = new FormattedText(Format(m), CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, num, Math.Max(9, r * 0.72), ink, dpi);
+                dc.DrawText(ft, new Point(c.X - ft.Width / 2, c.Y - ft.Height / 2));
+                return;
+            }
+            var dash = new Pen(ink2, 1.5) { };
+            dc.PushOpacity(0.6);
+            dc.DrawLine(dash, new Point(c.X - r * 0.3, c.Y), new Point(c.X + r * 0.3, c.Y));
+            dc.Pop();
+        }
+
+        private static Geometry Arc(Point c, double r, double fromDeg, double toDeg)
+        {
+            double a0 = fromDeg * Math.PI / 180, a1 = toDeg * Math.PI / 180;
+            var sg = new StreamGeometry();
+            using (var ctx = sg.Open())
+            {
+                ctx.BeginFigure(new Point(c.X + r * Math.Cos(a0), c.Y + r * Math.Sin(a0)), false, false);
+                ctx.ArcTo(new Point(c.X + r * Math.Cos(a1), c.Y + r * Math.Sin(a1)), new Size(r, r), 0, toDeg - fromDeg > 180, SweepDirection.Clockwise, true, true);
+            }
+            sg.Freeze();
+            return sg;
+        }
+    }
 }

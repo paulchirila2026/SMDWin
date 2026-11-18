@@ -2973,6 +2973,8 @@
     "the_storage_test_could_not_run": "Testul de stocare nu a putut rula.",
     "storage_test_skipped": "Test de stocare sărit",
     "welcome_to_smd_win": "Bun venit în SMD Win",
+    "0_in_test": "{0} · în test",
+    "not_tested_yet": "încă netestat",
     "pc_health": "Stare PC",
     "run_a_cpu_stress_test_in_temp_stress": "se rulează un test de stres al procesorului în Temp & Stress",
     "run_a_gpu_stress_test_in_temp_stress": "se rulează un test de stres al plăcii video în Temp & Stress",

@@ -2973,6 +2973,8 @@
     "the_storage_test_could_not_run": "The storage test could not run.",
     "storage_test_skipped": "Storage test skipped",
     "welcome_to_smd_win": "Welcome to SMD Win",
+    "0_in_test": "{0} · in test",
+    "not_tested_yet": "not tested yet",
     "pc_health": "PC health",
     "run_a_cpu_stress_test_in_temp_stress": "run a CPU stress test in Temp & Stress",
     "run_a_gpu_stress_test_in_temp_stress": "run a GPU stress test in Temp & Stress",
