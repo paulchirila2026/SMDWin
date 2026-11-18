@@ -137,7 +137,7 @@ namespace SMDWin.Views
             return row;
         }
 
-        private static string Ago(DateTime when)
+        private static string SummaryAgo(DateTime when)
         {
             var d = DateTime.Now - when;
             if (d.TotalHours < 1) return PTs("just now");
@@ -172,7 +172,7 @@ namespace SMDWin.Views
                 {
                     SummaryCaption(host, PT("Installed recently"));
                     foreach (var a in recent)
-                        SummaryRow(host, a.Name, Ago(a.InstallDateRaw!.Value), () => Select(a), pill: (PT("New"), "AccentBrush"), tile: a.TileBrush, initial: a.Initial);
+                        SummaryRow(host, a.Name, SummaryAgo(a.InstallDateRaw!.Value), () => Select(a), pill: (PT("New"), "AccentBrush"), tile: a.TileBrush, initial: a.Initial);
                 }
 
                 var bloat = apps.Where(a => a.IsBloat).OrderByDescending(a => a.SizeBytes).ToList();
@@ -234,7 +234,7 @@ namespace SMDWin.Views
                 foreach (var p in problems.Take(4))
                 {
                     string sub = (p.Crashed ? PT("stopped unexpectedly") : PT("did not start")) + " · "
-                               + (p.Count > 1 ? PT("{0} times", p.Count) + " · " : "") + Ago(p.Last);
+                               + (p.Count > 1 ? PT("{0} times", p.Count) + " · " : "") + SummaryAgo(p.Last);
                     SummaryRow(host, p.Service, sub, () => SelectServiceByDisplayName(p.Service),
                                pill: p.Crashed ? (PT("Crashed"), "StatusErrorBrush") : (PT("Did not start"), "StatusWarningBrush"));
                 }
@@ -306,7 +306,7 @@ namespace SMDWin.Views
                     {
                         var match = all.FirstOrDefault(e => string.Equals(System.IO.Path.GetFileName(e.ExeName ?? ""), d.File, StringComparison.OrdinalIgnoreCase));
                         string kind = d.Kind == 103 ? PT("service") : d.Kind == 102 ? PT("driver") : PT("program");
-                        SummaryRow(host, d.Friendly, $"{kind} · {PT("measured by Windows")} · {Ago(d.Last)}",
+                        SummaryRow(host, d.Friendly, $"{kind} · {PT("measured by Windows")} · {SummaryAgo(d.Last)}",
                                    match != null ? () => Select(match) : null, value: $"+{d.DelayMs / 1000.0:0.#} s");
                     }
                 }
