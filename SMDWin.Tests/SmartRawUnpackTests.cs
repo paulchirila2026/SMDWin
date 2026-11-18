@@ -8,6 +8,9 @@ namespace SMDWin.Tests
     {
         [Theory]
         [InlineData(0xBC, 0x400040004L, 4L)]        // Seagate Command Timeout "4 4 4"
+        [InlineData(0xBC, 0x000400040005L, 5L)]     // Seagate drives from a Reddit report (CrystalDiskInfo: 5, 3, 1)
+        [InlineData(0xBC, 0x000200020003L, 3L)]
+        [InlineData(0xBC, 0x000100010001L, 1L)]
         [InlineData(0xBC, 3L, 3L)]                   // a plain count stays as it is
         [InlineData(0x09, 0x00E9AC00FC12L, 0xAC00FC12L & 0xFFFFFFFFL)]   // hours in the low 4 bytes
         [InlineData(0x09, 12345L, 12345L)]
