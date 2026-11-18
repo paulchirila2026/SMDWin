@@ -55,6 +55,8 @@ namespace SMDWin.Views
                     "Events"    => TxtSearch         as System.Windows.Controls.TextBox,
                     "Processes" => TxtProcSearch     as System.Windows.Controls.TextBox,
                     "Apps"      => TxtAppSearch      as System.Windows.Controls.TextBox,
+                    "Services"  => TxtSvcSearch      as System.Windows.Controls.TextBox,
+                    "Startup"   => TxtStartupSearch  as System.Windows.Controls.TextBox,
                     _           => null
                 };
                 if (box != null) { box.Focus(); box.SelectAll(); e.Handled = true; return; }
