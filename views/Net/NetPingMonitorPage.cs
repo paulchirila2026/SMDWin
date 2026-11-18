@@ -37,6 +37,7 @@ namespace SMDWin.Views.Net
         private readonly SMDWin.Views.MainWindow _owner;
 
         private TextBox   _txtHost   = null!;
+        private Border?   _startCard;
         private TextBlock _txtLive   = null!;
         private TextBlock _txtUptime = null!;
         private Button    _btnStart  = null!;
@@ -242,6 +243,17 @@ namespace SMDWin.Views.Net
             withHead.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             withHead.Children.Add(NetWindowHelper.CardHead(SMDWin.Views.MainWindow.PT("Latency"), SMDWin.Views.MainWindow.PT("Round-trip time of every ping"), "M3 12h4l3-8 4 16 3-8h4"));
             Grid.SetRow(chartGrid, 1); withHead.Children.Add(chartGrid);
+            // before the first start: the start card sits on the empty chart
+            _startCard = StartCard.Build(SMDWin.Views.MainWindow.StartIconPing,
+                SMDWin.Views.MainWindow.PT("Ping monitor"),
+                SMDWin.Views.MainWindow.PT("Pings an address every second and draws the delay — shows drops and lag spikes."),
+                new[] { SMDWin.Views.MainWindow.PT("runs until stopped"), SMDWin.Views.MainWindow.PT("almost no data used") },
+                SMDWin.Views.MainWindow.PT("Start"),
+                () => PingStart_Click(this, new RoutedEventArgs()),
+                compact: true);
+            _startCard.Margin = new Thickness(4);
+            _startCard.Visibility = _owner.PingIsRunning ? Visibility.Collapsed : Visibility.Visible;
+            Grid.SetRow(_startCard, 0); Grid.SetRowSpan(_startCard, 2); withHead.Children.Add(_startCard);
             chartBorder.Child = withHead;
             Grid.SetRow(chartBorder, 3); root.Children.Add(chartBorder);
 
@@ -301,6 +313,7 @@ namespace SMDWin.Views.Net
                 RefreshRunningState();
                 return;
             }
+            if (_startCard != null) _startCard.Visibility = Visibility.Collapsed;
             _owner.StartAutoPingExternal(host);
             _baselineHistIdx = _owner.PingHistIdxSnapshot;
             _windowOpenedAt = DateTime.Now;

@@ -39,6 +39,7 @@ namespace SMDWin.Views.Net
         private Button      _btnRun    = null!;
         private Button      _btnStop   = null!;
         private TextBlock   _txtPhase  = null!;
+        private Border?     _startCard;
         private TextBlock   _txtPing   = null!;
         private TextBlock   _txtJitter = null!;
         private TextBlock   _txtServer = null!;
@@ -214,6 +215,16 @@ namespace SMDWin.Views.Net
             chartBody.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             chartBody.Children.Add(legend);
             Grid.SetRow(chartHost, 1); chartBody.Children.Add(chartHost);
+            // before the first test: the start card sits on the empty chart (big Start, what the test does)
+            _startCard = StartCard.Build(SMDWin.Views.MainWindow.StartIconGauge,
+                SMDWin.Views.MainWindow.PT("Internet speed test"),
+                SMDWin.Views.MainWindow.PT("Measures download and upload speed, ping and jitter against a nearby server."),
+                new[] { SMDWin.Views.MainWindow.PT("about 1 minute"), SMDWin.Views.MainWindow.PT("data use grows with the speed") },
+                SMDWin.Views.MainWindow.PT("Start test"),
+                () => { if (_btnRun.IsEnabled) RunTest_Click(this, new RoutedEventArgs()); },
+                compact: true);
+            _startCard.Margin = new Thickness(4);
+            Grid.SetRow(_startCard, 0); Grid.SetRowSpan(_startCard, 3); chartBody.Children.Add(_startCard);
             Grid.SetRow(figures, 2); chartBody.Children.Add(figures);
             var chartCard = NetWindowHelper.CardWithHead(SMDWin.Views.MainWindow.PT("Speed over time"), SMDWin.Views.MainWindow.PT("Live while the test runs"), chartBody, "M3 12h4l3-8 4 16 3-8h4");
             Grid.SetColumn(chartCard, 0); lower.Children.Add(chartCard);
@@ -290,6 +301,7 @@ namespace SMDWin.Views.Net
             _animTimer?.Stop();
             _btnRun.IsEnabled  = false;
             _btnStop.IsEnabled = true;
+            if (_startCard != null) _startCard.Visibility = Visibility.Collapsed;
             _samples.Clear(); _testClock.Restart(); _phaseNow = 1;
             _peakDl.Text = _avgDl.Text = _peakUl.Text = _avgUl.Text = _dataUsed.Text = "—";
             DrawSpeedChart();

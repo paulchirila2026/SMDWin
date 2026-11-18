@@ -45,8 +45,11 @@ namespace SMDWin.Views
         private void UpdateBenchEmptyState()
         {
             if (FindName("BenchEmptyState") is Border empty)
-                empty.Visibility = (BenchResultsPanel?.Children.Count ?? 0) > 0
-                    ? Visibility.Collapsed : Visibility.Visible;
+            {
+                bool none = (BenchResultsPanel?.Children.Count ?? 0) == 0;
+                empty.Visibility = none ? Visibility.Visible : Visibility.Collapsed;
+                if (none) FillBenchStartCard(empty);
+            }
         }
     }
 }

@@ -228,8 +228,11 @@ namespace SMDWin.Views
         {
             if (_histVals == null) UpdateSurfaceHistogram(new long[6], false);
             if (FindName("SurfaceEmptyState") is Border empty)
-                empty.Visibility = _sectorMapSeverity.Length > 0
-                    ? Visibility.Collapsed : Visibility.Visible;
+            {
+                bool none = _sectorMapSeverity.Length == 0;
+                empty.Visibility = none ? Visibility.Visible : Visibility.Collapsed;
+                if (none && empty.Child is not Border) FillSurfaceStartCard(empty);
+            }
         }
 
         internal void BtnStorageDevMgr_Click(object sender, RoutedEventArgs e)
