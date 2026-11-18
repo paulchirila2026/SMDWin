@@ -2670,6 +2670,10 @@
                   <Border x:Name="SegServicesKey" CornerRadius="4" Padding="10,4" Cursor="Hand" Tag="Key" MouseLeftButtonUp="ServicesViewToggle_Click">
                     <TextBlock x:Name="TxtKeyServicesLabel" Text="Key services" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
                   </Border>
+                  <Border x:Name="SegServicesThird" CornerRadius="4" Padding="10,4" Cursor="Hand" Tag="Third" MouseLeftButtonUp="ServicesViewToggle_Click"
+                          ToolTip="Services installed by other programs (not part of Windows) — the first place to look when a PC behaves oddly">
+                    <TextBlock x:Name="TxtThirdServicesLabel" Text="Non-Microsoft" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
+                  </Border>
                   <Border x:Name="SegServicesAll" CornerRadius="4" Padding="10,4" Cursor="Hand" Tag="All" MouseLeftButtonUp="ServicesViewToggle_Click">
                     <TextBlock x:Name="TxtAllServicesLabel" Text="All services" VerticalAlignment="Center" FontSize="{StaticResource FontSizeS}"/>
                   </Border>
@@ -2796,7 +2800,7 @@
                         <DataTemplate>
                           <StackPanel VerticalAlignment="Center" Margin="4,0" ToolTip="{Binding Description}">
                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding SubLine}" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
                           </StackPanel>
                         </DataTemplate>
                       </DataGridTemplateColumn.CellTemplate>
@@ -3309,7 +3313,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                           <DataTemplate>
                             <Grid VerticalAlignment="Center" Margin="4,0">
-                              <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                              <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                               <StackPanel MaxWidth="340">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Command}"/>
                                 <TextBlock Text="{Binding PublisherLine}" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
@@ -3320,6 +3324,14 @@
                                 </Style></Grid.Style>
                                 <Border CornerRadius="6" Background="{DynamicResource StatusErrorBrush}" Opacity="0.14"/>
                                 <TextBlock Text="File not found" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource StatusErrorBrush}"/>
+                              </Grid>
+                              <Grid Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" ToolTip="The program's file appeared in the last 14 days">
+                                <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+                                  <Style.Triggers><DataTrigger Binding="{Binding AddedRecently}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                  <DataTrigger Binding="{Binding IsBroken}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+                                </Style></Grid.Style>
+                                <Border CornerRadius="6" Background="{DynamicResource AccentBrush}" Opacity="0.14"/>
+                                <TextBlock Text="New" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
                               </Grid>
                             </Grid>
                           </DataTemplate>
@@ -3338,6 +3350,20 @@
                           </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                       </DataGridTemplateColumn>
+                      <!-- what Windows itself measured as slowing the start (Diagnostics-Performance), not an estimate -->
+                      <DataGridTextColumn Header="Measured delay" Binding="{Binding MeasuredDelayText}" SortMemberPath="MeasuredDelayMs" Width="120">
+                        <DataGridTextColumn.ElementStyle>
+                          <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Foreground" Value="{DynamicResource StatusWarningBrush}"/>
+                            <Setter Property="ToolTip" Value="Measured by Windows in the last 30 days: how much later the start ended because of this program"/>
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding MeasuredDelayMs}" Value="0"><Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/><Setter Property="FontWeight" Value="Normal"/></DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </DataGridTextColumn.ElementStyle>
+                      </DataGridTextColumn>
                       <DataGridTextColumn Header="Where" Binding="{Binding WhereLabel}" SortMemberPath="Category" Width="170">
                         <DataGridTextColumn.ElementStyle>
                           <Style TargetType="TextBlock">

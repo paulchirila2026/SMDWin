@@ -6,6 +6,9 @@ Dates are in day.month.year format.
 ## [0.4.1 Beta] — November 2026
 
 ### Changed
+- Applications, Services, Startup: while nothing is selected, the card on the right shows a summary instead of one sentence — the largest, recently installed and possibly unwanted programs; the services that crashed or did not start in the last 7 days, the changes made from SMD Win (each with Undo) and the services of other makers; what Windows measured as slowing the start, suggestions (with a one-click clean-up of broken entries) and the entries added recently. A click on a row selects it in the list.
+- Services: a new "Non-Microsoft" view (the services installed by other programs, with their maker), and every start-type change made from SMD Win is remembered so it can be undone.
+- Startup Manager: a "Measured delay" column (how much later the start ended because of a program, measured by Windows) and a "New" badge on entries whose program appeared in the last 14 days.
 - Startup Manager: the boot time no longer counts the time the sign-in screen waited for the password (a PC left at the sign-in screen showed boots of several minutes); the wait is shown in the tooltip.
 - Applications, Services, Startup, Process Monitor: in a small window the less important columns step out instead of every column being cut ("Stoppe", "4.2 (", "Installe"), the details card gets narrower, and the program name no longer draws its badges over the next columns. The Startup switches are no longer squeezed, the quick-switch titles of Services wrap instead of being cut, and Tools shows 2 cards per row on a narrow page.
 - Ctrl+F now also jumps to the search box on Services and Startup Manager.

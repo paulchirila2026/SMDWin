@@ -601,6 +601,8 @@ namespace SMDWin.Models
         public string Description { get; set; } = "";
         public string ImagePath  { get; set; } = "";
         public string Publisher  { get; set; } = "";
+        /// <summary>The line under the name: the service name, and the maker for services that are not part of Windows.</summary>
+        public string SubLine => IsThirdParty && !string.IsNullOrWhiteSpace(Publisher) ? $"{Name} · {Publisher}" : Name;
         public string StatusColor => Status == "Running" ? "#22C55E" : Status == "Stopped" ? "#94A3B8" : "#F59E0B";
         public string StartColor => StartType == "Disabled" ? "#EF4444" : StartType == "Automatic" ? "#3B82F6" : "#94A3B8";
         public string StartBg => "#20" + StartColor.TrimStart('#');
@@ -933,6 +935,11 @@ namespace SMDWin.Models
         public string TargetPath { get; set; } = "";
         /// <summary>The started file no longer exists (program uninstalled / moved) — invalid entry.</summary>
         public bool   IsBroken   { get; set; }
+        /// <summary>The extra start time Windows measured for this program (Diagnostics-Performance 101/103), ms; 0 = none.</summary>
+        public int    MeasuredDelayMs { get; set; }
+        public string MeasuredDelayText => MeasuredDelayMs >= 500 ? $"+{MeasuredDelayMs / 1000.0:0.#} s" : "—";
+        /// <summary>The program's file appeared in the last 14 days (a new entry at start is often the cause of a new problem).</summary>
+        public bool   AddedRecently { get; set; }
         /// <summary>Computed impact (null = the older rule by source).</summary>
         public string? ImpactOverride { get; set; }
 

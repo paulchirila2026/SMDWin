@@ -190,6 +190,7 @@ namespace SMDWin.Services
             {
                 try
                 {
+                    string before = GetStartType(serviceName);
                     var sc = new ServiceController(serviceName);
                     var type = startType switch
                     {
@@ -211,10 +212,18 @@ namespace SMDWin.Services
                     }
                     catch (Exception ex) { AppLogger.Debug("SetServiceStartTypeAsync DelayedAutostart: " + ex.Message); }
 
+                    // every change made from SMD Win is remembered, so it can be shown and undone later (Services → nothing selected)
+                    if (!string.Equals(before, startType, StringComparison.OrdinalIgnoreCase))
+                        ServiceChangeLog.Record(serviceName, SafeDisplayName(sc), before, startType);
                     return true;
                 }
                 catch { return false; }
             });
+        }
+
+        private static string SafeDisplayName(ServiceController sc)
+        {
+            try { return sc.DisplayName; } catch { return sc.ServiceName; }
         }
 
         public async Task<bool> StartServiceAsync(string serviceName)

@@ -157,6 +157,7 @@ namespace SMDWin.Views
             if (TxtAppsCount != null)
                 TxtAppsCount.Text = _appFilter == "Recent" ? "Newest first" : "Sorted by size";
             if (BtnUninstall != null) BtnUninstall.IsEnabled = AppsGrid.SelectedItem is InstalledApp;
+            RefreshAppsSummary();
         }
 
         private void AppSearch_TextChanged(object sender, TextChangedEventArgs e) => ApplyAppsView();
@@ -304,12 +305,12 @@ namespace SMDWin.Views
         // ── SERVICES ──────────────────────────────────────────────────────────
 
         private List<WinServiceEntry> _servicesList = new();
-        private bool _servicesAllView;
+        private bool _servicesAllView, _servicesThirdView;
 
         private async Task LoadKeyServicesAsync()
         {
             SetServicesTabActive(keyActive: true);
-            _servicesAllView = false;
+            _servicesAllView = false; _servicesThirdView = false;
             ShowLoading(_LS("Services", "LoadingServices"));
             try { SetServicesList(await _svcService.GetServicesAsync(onlyKnown: true)); }
             finally { HideLoading(); }
@@ -318,7 +319,7 @@ namespace SMDWin.Views
         private async Task LoadAllServicesAsync()
         {
             SetServicesTabActive(keyActive: false);
-            _servicesAllView = true;
+            _servicesAllView = true; _servicesThirdView = false;
             ShowLoading(_LS("Services", "LoadingAll"));
             try
             {
@@ -329,11 +330,30 @@ namespace SMDWin.Views
             finally { HideLoading(); }
         }
 
-        /// <summary>Reloads the current view (Key / All) and keeps the chosen service.</summary>
+        /// <summary>
+        /// "Non-Microsoft": the services installed by other programs (not under System32 / not signed by Microsoft) — what
+        /// msconfig's "Hide all Microsoft services" leaves, the first place to look when a PC behaves oddly.
+        /// </summary>
+        private async Task LoadThirdPartyServicesAsync()
+        {
+            SetServicesTabActive(keyActive: false, third: true);
+            _servicesAllView = false; _servicesThirdView = true;
+            ShowLoading(_LS("Services", "LoadingAll"));
+            try
+            {
+                var services = (await _svcService.GetServicesAsync(onlyKnown: false)).Where(x => x.IsThirdParty).ToList();
+                EnrichServiceDescriptions(services);
+                SetServicesList(services);
+            }
+            finally { HideLoading(); }
+        }
+
+        /// <summary>Reloads the current view (Key / Non-Microsoft / All) and keeps the chosen service.</summary>
         private async Task ReloadServicesAsync()
         {
             string? keep = SelectedService?.Name;
-            if (_servicesAllView) await LoadAllServicesAsync(); else await LoadKeyServicesAsync();
+            if (_servicesThirdView) await LoadThirdPartyServicesAsync();
+            else if (_servicesAllView) await LoadAllServicesAsync(); else await LoadKeyServicesAsync();
             if (keep != null)
                 ServicesGrid.SelectedItem = (ServicesGrid.ItemsSource as IEnumerable<WinServiceEntry>)?
                     .FirstOrDefault(x => string.Equals(x.Name, keep, StringComparison.OrdinalIgnoreCase));
@@ -341,8 +361,10 @@ namespace SMDWin.Views
 
         private async void ServicesViewToggle_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            bool allActive = (sender as FrameworkElement)?.Tag as string == "All";
-            if (allActive) await LoadAllServicesAsync(); else await LoadKeyServicesAsync();
+            string tag = (sender as FrameworkElement)?.Tag as string ?? "";
+            if (tag == "All") await LoadAllServicesAsync();
+            else if (tag == "Third") await LoadThirdPartyServicesAsync();
+            else await LoadKeyServicesAsync();
         }
 
         private void SetServicesList(IEnumerable<WinServiceEntry> list)
@@ -362,13 +384,15 @@ namespace SMDWin.Views
                                              x.Description.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
             ServicesGrid.ItemsSource = v;
             int running = _servicesList.Count(x => x.Status == "Running");
-            if (TxtSvcTableCaption != null) TxtSvcTableCaption.Text = _servicesAllView ? PT("All services") : PT("Key services");
+            if (TxtSvcTableCaption != null) TxtSvcTableCaption.Text = _servicesThirdView ? PT("Non-Microsoft services") : _servicesAllView ? PT("All services") : PT("Key services");
             if (TxtSvcTableSub != null)
-                TxtSvcTableSub.Text = (_servicesAllView ? $"{_servicesList.Count} services" : $"{_servicesList.Count} services worth knowing")
+                TxtSvcTableSub.Text = (_servicesThirdView ? PT("{0} from other makers", _servicesList.Count)
+                                     : _servicesAllView ? $"{_servicesList.Count} services" : $"{_servicesList.Count} services worth knowing")
                                     + $" · {running} running" + (q.Length > 0 ? $" · {v.Count} match" : "");
+            RefreshServicesSummary();
         }
 
-        private void SetServicesTabActive(bool keyActive)
+        private void SetServicesTabActive(bool keyActive, bool third = false)
         {
             try
             {
@@ -377,6 +401,20 @@ namespace SMDWin.Views
                     TxtKeyServicesLabel != null && TxtAllServicesLabel != null)
                     SetSegmentedActive(SegServicesKey, SegServicesAll,
                         TxtKeyServicesLabel, TxtAllServicesLabel, keyActive);
+                // the middle segment (Non-Microsoft): on only in its view, and then "All" is off
+                if (FindName("SegServicesThird") is Border mid && FindName("TxtThirdServicesLabel") is TextBlock midLabel && SegServicesAll != null && TxtAllServicesLabel != null)
+                {
+                    void Look(Border seg, TextBlock label, bool on)
+                    {
+                        if (on) { seg.SetResourceReference(Border.BackgroundProperty, "SegOnBrush"); seg.SetResourceReference(Border.BorderBrushProperty, "SelBorderBrush"); }
+                        else { seg.Background = System.Windows.Media.Brushes.Transparent; seg.BorderBrush = System.Windows.Media.Brushes.Transparent; }
+                        seg.BorderThickness = new Thickness(1);
+                        label.SetResourceReference(TextBlock.ForegroundProperty, on ? "TextPrimaryBrush" : "TextSecondaryBrush");
+                        label.FontWeight = on ? FontWeights.SemiBold : FontWeights.Normal;
+                    }
+                    Look(mid, midLabel, third);
+                    if (third) Look(SegServicesAll, TxtAllServicesLabel, false);
+                }
             }
             catch (Exception ex) { AppLogger.Debug(ex.Message); }
         }

@@ -79,8 +79,8 @@ namespace SMDWin.Views
                 ResponsiveLayout.HideColumns(AppsGrid, (3, 640), (2, 540));
                 // Services: service · status · starts · risk
                 ResponsiveLayout.HideColumns(ServicesGrid, (2, 560));
-                // Startup: on · program · impact · where
-                ResponsiveLayout.HideColumns(StartupGrid, (3, 600));
+                // Startup: on · program · impact · measured delay · where
+                ResponsiveLayout.HideColumns(StartupGrid, (4, 640), (3, 520));
                 // Processes: process · CPU · memory · I/O · network · PID
                 ResponsiveLayout.HideColumns(ProcessesGrid, (5, 760), (4, 660), (3, 580));
                 ResponsiveLayout.SidePanel(PanelApps, ColAppsSide);

@@ -71,6 +71,9 @@ namespace SMDWin.Views
                 var entries = await Task.Run(() => _startupSvc.GetStartupEntriesAsync(showAll, includeTasks: false).GetAwaiter().GetResult());
                 // The target of each entry: a missing file (invalid entry) + impact by the program size
                 await Task.Run(() => { foreach (var en in entries) { try { en.AnalyzeTarget(); } catch (Exception ex) { AppLogger.Debug($"AnalyzeTarget {en.Name}: {ex.Message}"); } } });
+                // what Windows measured as slowing the start (by file name), and which programs appeared recently
+                _startupDelays = await Task.Run(() => StartupDelayService.Recent());
+                await Task.Run(() => MarkStartupDelays(entries, _startupDelays));
                 _allStartupEntries = entries;
                 _startupEntriesLoadedUtc = DateTime.UtcNow;
                 _startupEntriesShowAll = showAll;
@@ -257,6 +260,7 @@ namespace SMDWin.Views
 
             StartupEmptyState.Visibility = view.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             if (StartupGrid.SelectedItem == null) ShowStartupDetail(null);
+            RefreshStartupSummary();
         }
 
         private void StartupSearch_TextChanged(object sender, TextChangedEventArgs e) => ApplyStartupView();
@@ -430,6 +434,26 @@ namespace SMDWin.Views
         {
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("msconfig.exe") { UseShellExecute = true }); }
             catch (Exception ex) { AppLogger.Warning(ex, "OpenMsconfig_Click"); }
+        }
+
+        private List<StartupDelayService.Delay> _startupDelays = new();
+
+        /// <summary>Puts the measured delay on each entry (by its file name) and marks the entries whose file is new.</summary>
+        private static void MarkStartupDelays(IEnumerable<StartupEntry> entries, List<StartupDelayService.Delay> delays)
+        {
+            var byFile = delays.ToDictionary(d => d.File, d => d, StringComparer.OrdinalIgnoreCase);
+            foreach (var en in entries)
+            {
+                try
+                {
+                    string exe = en.ExeName ?? "";
+                    if (exe.Length > 0 && byFile.TryGetValue(System.IO.Path.GetFileName(exe), out var d)) en.MeasuredDelayMs = d.DelayMs;
+                    string path = en.TargetPath ?? "";
+                    en.AddedRecently = path.Length > 0 && System.IO.File.Exists(path)
+                                       && (DateTime.Now - System.IO.File.GetCreationTime(path)).TotalDays <= 14;
+                }
+                catch (Exception ex) { AppLogger.Debug($"MarkStartupDelays {en.Name}: {ex.Message}"); }
+            }
         }
     }
 }
