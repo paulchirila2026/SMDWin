@@ -145,11 +145,11 @@ namespace SMDWin.Views
             }
 
             var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
-            // the page fills the window: the cards row takes the free height (MinHeight = the visible height)
+            // the page fills the window: the drawing row takes the free height (MinHeight = the visible height), the cards their own
             var root = new Grid { Margin = new Thickness(0, 0, 4, 4) };
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 300 });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 330 });
             scroll.Content = root;
             scroll.SizeChanged += (_, _) => root.MinHeight = Math.Max(0, scroll.ViewportHeight - 6);
             host.Children.Add(scroll);
@@ -164,7 +164,7 @@ namespace SMDWin.Views
             var hero = new Grid();
             hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
             hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 330 });
-            _benchSketch = new DeviceSketch { MaxHeight = 400, Format = v => BNum(v), VerticalAlignment = VAlign.Center };
+            _benchSketch = new DeviceSketch { MaxHeight = 500, Format = v => BNum(v), VerticalAlignment = VAlign.Center };
             hero.Children.Add(_benchSketch);
             var right = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(20, 6, 0, 6), Margin = new Thickness(8, 0, 0, 0) };
             right.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
@@ -562,6 +562,8 @@ namespace SMDWin.Views
         {
             var b = new Border { Padding = new Thickness(16, 14, 16, 14) };
             b.SetResourceReference(StyleProperty, "CardStyle");
+            // the large cards of this page do not light up under the mouse (a local background wins over the style's hover)
+            b.SetResourceReference(Border.BackgroundProperty, "CardSurfaceBrush");
             return b;
         }
 
@@ -784,22 +786,26 @@ namespace SMDWin.Views
             c.Bars = new UGrid[c.Tests.Length];
             for (int i = 0; i < c.Tests.Length; i++)
             {
-                var row = new Grid { Margin = new Thickness(0, 0, 0, 8) };
+                var row = new Grid { Margin = new Thickness(0, 0, 0, 12) };
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(34) });
                 row.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 row.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                var keyLine = new StackPanel { Orientation = Orientation.Horizontal, ToolTip = c.Tips.Length > i ? c.Tips[i] : null, Background = Brushes.Transparent };
+                row.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                var keyLine = new StackPanel { Orientation = Orientation.Horizontal, Background = Brushes.Transparent };
                 var k = new TextBlock { Text = c.Tests[i], FontSize = Ui.FontS, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VAlign.Center };
                 k.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 keyLine.Children.Add(k);
-                var info = new Border { Width = 14, Height = 14, CornerRadius = new CornerRadius(7), BorderThickness = new Thickness(1), Margin = new Thickness(5, 0, 0, 0),
-                                        Child = new TextBlock { Text = "i", FontSize = 9, FontWeight = FontWeights.Bold, HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center } };
-                info.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
-                ((TextBlock)info.Child).SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                keyLine.Children.Add(info);
                 row.Children.Add(keyLine);
+                // what the test measures, written under its bar (it was a tooltip; the cards have the room for it)
+                if (c.Tips.Length > i && c.Tips[i].Length > 0)
+                {
+                    var tip = new TextBlock { Text = c.Tips[i], FontSize = Ui.FontXS, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 5, 0, 0), Opacity = 0.8 };
+                    tip.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                    Grid.SetRow(tip, 2); Grid.SetColumnSpan(tip, 3);
+                    row.Children.Add(tip);
+                }
                 var v = new TextBlock { Text = "—", FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VAlign.Center };
                 v.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
                 v.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");

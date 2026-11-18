@@ -66,7 +66,8 @@ namespace SMDWin.Views
         private const double RingX = 474, TextX = 504, LeadEndX = 450;
         // the callout rows from the top, in the order of the parts in the drawing: processor, memory, graphics, storage
         private static readonly int[] RowOrder = { 0, 1, 3, 2 };
-        private static readonly double[] RowY = { 52, 132, 212, 292 };
+        // the four rows centred on the middle of the scene, where every drawing is centred too
+        private static readonly double[] RowY = { 84, 164, 244, 324 };
 
         private readonly DispatcherTimer _timer = new(DispatcherPriority.Render);
         private readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -224,7 +225,7 @@ namespace SMDWin.Views
         private static Model BuildLaptop()
         {
             var b = new Builder();
-            var m = b.M; m.S = 0.85; m.Dx = -40; m.Dy = 40; m.CanDGpu = true;
+            var m = b.M; m.S = 0.85; m.Dx = -40; m.Dy = 39; m.CanDGpu = true;
             b.Shadow(300, 372, 225, 8);
             b.Rect(90, 46, 420, 16, 6, Sty.Ln2);
             b.Rect(90, 62, 420, 292, 16, Sty.Ln, -1, 2.2); b.Rect(98, 70, 404, 276, 11, Sty.Ln2);
@@ -390,7 +391,9 @@ namespace SMDWin.Views
             var hotFill = B(Hot, 0.13);
 
             double k = Math.Min(W / SceneW, H / SceneH);
-            dc.PushTransform(new TranslateTransform((W - SceneW * k) / 2, (H - SceneH * k) / 2));
+            // left-aligned: a wider control gives the callout texts more room instead of empty margins
+            dc.PushTransform(new TranslateTransform(0, (H - SceneH * k) / 2));
+            _textRight = W / k - 6;
             dc.PushTransform(new ScaleTransform(k, k));
 
             // ── the device ──
@@ -599,12 +602,14 @@ namespace SMDWin.Views
             return sg;
         }
 
-        private static void Text(DrawingContext dc, string s, double x, double baseline, double size, Brush brush, FontWeight weight, double dpi)
+        private double _textRight = SceneW - 4;
+
+        private void Text(DrawingContext dc, string s, double x, double baseline, double size, Brush brush, FontWeight weight, double dpi)
         {
             if (string.IsNullOrEmpty(s)) return;
             var tf = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, weight, FontStretches.Normal);
             var ft = new FormattedText(s, CultureInfo.CurrentUICulture, System.Windows.FlowDirection.LeftToRight, tf, size, brush, dpi)
-            { MaxTextWidth = SceneW - x - 4, MaxLineCount = 1, Trimming = TextTrimming.CharacterEllipsis };
+            { MaxTextWidth = Math.Max(40, _textRight - x), MaxLineCount = 1, Trimming = TextTrimming.CharacterEllipsis };
             dc.DrawText(ft, new Point(x, baseline - ft.Baseline));
         }
     }
