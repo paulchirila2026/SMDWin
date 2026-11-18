@@ -9,6 +9,57 @@ namespace SMDWin.Views
     public partial class DebugInfoWindow
     {
         /// <summary>
+        /// The Benchmark drawing (DeviceSketch) for each kind of computer, in four moments: before the test, processor in test,
+        /// graphics in test, after the test with sample marks; desktop and laptop also without a dedicated graphics card.
+        /// The pictures animate like on the page.
+        /// </summary>
+        private static void AddBenchmarkSketchGallery(System.Windows.Controls.StackPanel panel,
+            Func<string, double, System.Windows.Controls.TextBlock> heading,
+            Func<FrameworkElement, string, double, double, System.Windows.Controls.Border> tile)
+        {
+            panel.Children.Add(heading("Benchmark drawing · each kind of computer", 20));
+            var rows = new (DeviceSketch.Kind Kind, bool DGpu, string Label, string Cpu, string Ram, string Gpu, string Disk)[]
+            {
+                (DeviceSketch.Kind.Desktop,  true,  "Desktop",                   "Intel Core i5-12400F · 12 threads", "16 GB DDR4-3200 · 2 modules", "NVIDIA GeForce RTX 3060", "C: · Samsung SSD 980 1TB"),
+                (DeviceSketch.Kind.Desktop,  false, "Desktop · integrated graphics", "Intel Core i5-12400 · 12 threads", "16 GB DDR4-3200 · 2 modules", "Intel UHD Graphics 730", "C: · Samsung SSD 980 1TB"),
+                (DeviceSketch.Kind.Laptop,   true,  "Laptop",                    "AMD Ryzen 7 5800H · 16 threads", "16 GB DDR4-3200 · 2 modules", "NVIDIA GeForce RTX 3050 Laptop GPU", "C: · WD PC SN530 512GB"),
+                (DeviceSketch.Kind.Laptop,   false, "Laptop · integrated graphics", "Intel Core i5-10210U · 8 threads", "8 GB DDR4-2667 · 1 module", "Intel UHD Graphics", "C: · WDC PC SN520 256GB"),
+                (DeviceSketch.Kind.AllInOne, false, "All-in-one",                "Intel Core i5-4570 · 4 threads", "8 GB DDR3-1600 · 2 modules", "Intel HD Graphics 4600", "C: · KINGSTON SA400S37480G"),
+                (DeviceSketch.Kind.MiniPc,   false, "Mini PC",                   "Intel N100 · 4 threads", "16 GB DDR5-4800 · 1 module", "Intel UHD Graphics", "C: · NVMe 512GB"),
+            };
+            string[] names = { "Processor", "Memory", "Storage", "Graphics card" };
+            double[] marks = { 6.2, 5.4, 7.8, 4.1 };
+            string[] values = { "11,912 pts · All cores", "38.2 GB/s · Speed", "3,412 MB/s · Sequential", "142 frames/s · 3D render" };
+            foreach (var r in rows)
+            {
+                panel.Children.Add(heading(r.Label, 4));
+                var wrap = new System.Windows.Controls.WrapPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
+                string[] hw = { r.Cpu, r.Ram, r.Disk, r.Gpu };
+                foreach (var (moment, active) in new[] { ("Before the test", -1), ("Processor in test", 0), ("Graphics in test", 3), ("After the test", 9) })
+                {
+                    try
+                    {
+                        var sk = new DeviceSketch { DeviceKind = r.Kind, DedicatedGpu = r.DGpu, Width = 440, Height = 243 };
+                        for (int i = 0; i < 4; i++)
+                        {
+                            var c = sk.Parts[i];
+                            c.Title = i == active ? names[i] + " · in test" : names[i];
+                            c.Hardware = hw[i];
+                            bool done = active == 9 || (active >= 0 && i < active && i != 3);
+                            if (i == active) { c.State = DeviceSketch.PartState.Active; c.Value = "All cores · 4.1 GHz · 72 °C"; }
+                            else if (done) { c.State = DeviceSketch.PartState.Done; c.Mark = marks[i]; c.Value = values[i]; }
+                            else if (active >= 0) { c.State = DeviceSketch.PartState.Next; c.Value = "next"; }
+                        }
+                        sk.Refresh();
+                        wrap.Children.Add(tile(sk, moment, 460, 247));
+                    }
+                    catch (Exception ex) { AppLogger.Debug($"Benchmark drawing gallery {r.Label}/{moment}: {ex.Message}"); }
+                }
+                panel.Children.Add(wrap);
+            }
+        }
+
+        /// <summary>
         /// The illustration gallery (Design experiments): all drawings in <see cref="ArtCatalog"/>, by group, plus the disks by
         /// type and health state, memory modules, monitors, the battery, the Windows area and the card icons. Shows at a glance
         /// what exists and how it looks in the current theme.
@@ -40,6 +91,8 @@ namespace SMDWin.Views
                 card.Child = stack;
                 return card;
             }
+
+            AddBenchmarkSketchGallery(panel, Heading, Tile);
 
             panel.Children.Add(Heading("Illustration library", 20));
             foreach (var group in ArtCatalog.All.GroupBy(e => e.Group))
