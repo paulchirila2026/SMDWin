@@ -347,9 +347,126 @@ namespace SMDWin.Views
             return list;
         }
 
+        /// <summary>One line of the check before the test: a warning (amber) or a condition that is fine (green).</summary>
+        private sealed record BenchCheck(string Glyph, bool Ok, string Title, string Hint, string Full, bool IsTurbo = false);
+
         /// <summary>
-        /// The warnings as small amber chips on one row: the part before " — " ("On battery", "Turbo is off in the power plan"),
-        /// the whole sentence (what to do) in the tooltip. Full-width boxes took a third of a laptop screen.
+        /// The check before the test, as tiles (mockup "warn" A): power, Turbo, power plan, free space, processor load —
+        /// each one green when fine or amber with what to do. The same conditions as BenchPreChecks (which the record keeps).
+        /// </summary>
+        private List<BenchCheck> BenchReadiness()
+        {
+            var list = new List<BenchCheck>();
+            if (BenchHasBattery())
+                list.Add(BenchOnBattery()
+                    ? new("\uE850", false, PT("On battery"), PT("Plug in the charger"), PT("On battery — plug in the charger. On battery the processor is slowed down and laptops often use the integrated graphics."))
+                    : new("\uE945", true, PT("Plugged in"), PT("Charger connected"), ""));
+            bool turboOff = BenchTurboOff();
+            list.Add(turboOff
+                ? new("\uEC4A", false, PT("Turbo is off"), PT("Marks come out lower"), PT("Turbo is off in the power plan — the processor stays at its base speed and the marks come out much lower."), IsTurbo: true)
+                : new("\uEC4A", true, PT("Turbo on"), PT("Full processor speed"), ""));
+            try
+            {
+                if (string.Equals(PowerAdvancedService.ActiveSchemeGuid(), "a1841308-3541-4fab-bc81-f71556f20b4a", StringComparison.OrdinalIgnoreCase))
+                    list.Add(new("\uE7E8", false, PT("Power saver plan"), PT("Choose Balanced"), PT("The power plan is \"Power saver\" — the marks come out lower. Choose Balanced or High performance.")));
+            }
+            catch (Exception ex) { AppLogger.Debug($"Benchmark power plan: {ex.Message}"); }
+            list.Add(BenchDiskSpaceShort(_benchDrive) is string spaceMsg
+                ? new("\uEDA2", false, PT("Not enough free space"), PT("The storage test is skipped"), spaceMsg)
+                : new("\uEDA2", true, PT("Enough free space"), PT("For the storage test"), ""));
+            if (BenchRecentCpuLoad() is float load && load >= 15)
+                list.Add(new("\uE9D9", false, PT("Processor busy · {0} %", load.ToString("0")), PT("Close background programs"),
+                             PT("The processor is already busy ({0} %) — close the programs that run in the background.", load.ToString("0"))));
+            else
+                list.Add(new("\uE9D9", true, PT("Processor idle"), PT("Nothing heavy running"), ""));
+            return list;
+        }
+
+        private Brush BenchTint(string key, byte alpha)
+        {
+            var c = (TryFindResource(key) as SolidColorBrush)?.Color ?? Colors.Orange;
+            var b = new SolidColorBrush(Color.FromArgb(alpha, c.R, c.G, c.B)); b.Freeze(); return b;
+        }
+
+        /// <summary>
+        /// One tile: a small tinted square with the icon, the title in the status colour and the advice under it; tinted
+        /// background, no outline. The Turbo tile is also the switch: a click turns "Turbo for the test" on or off and the
+        /// tile turns green ("Turbo on for the test · put back afterwards") or amber again.
+        /// </summary>
+        private Border BenchCheckTile(BenchCheck c)
+        {
+            var tile = new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(8, 6, 12, 6), Margin = new Thickness(0, 0, 8, 6) };
+            var g = new Grid();
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var iconBox = new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(7), Margin = new Thickness(0, 0, 9, 0), VerticalAlignment = VAlign.Center };
+            var icon = new TextBlock { Text = c.Glyph, FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets, Segoe Fluent Icons"), FontSize = 13,
+                                       HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
+            iconBox.Child = icon;
+            g.Children.Add(iconBox);
+            var text = new StackPanel { VerticalAlignment = VAlign.Center };
+            var title = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold };
+            var hint = new TextBlock { FontSize = Ui.FontXS, Margin = new Thickness(0, 1, 0, 0) };
+            hint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+            text.Children.Add(title); text.Children.Add(hint);
+            Grid.SetColumn(text, 1);
+            g.Children.Add(text);
+            tile.Child = g;
+
+            Border? track = null; Border? knob = null;
+            if (c.IsTurbo)
+            {
+                track = new Border { Width = 30, Height = 16, CornerRadius = new CornerRadius(8), Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VAlign.Center, BorderThickness = new Thickness(1) };
+                knob = new Border { Width = 10, Height = 10, CornerRadius = new CornerRadius(5), VerticalAlignment = VAlign.Center, Margin = new Thickness(2, 0, 2, 0) };
+                track.Child = knob;
+                Grid.SetColumn(track, 2);
+                g.Children.Add(track);
+                tile.Cursor = System.Windows.Input.Cursors.Hand;
+                tile.MouseLeftButtonUp += (_, _) => { _benchTurboForTest = !_benchTurboForTest; Paint(); };
+            }
+
+            void Paint()
+            {
+                bool ok = c.Ok || (c.IsTurbo && _benchTurboForTest);
+                string key = ok ? "StatusGoodBrush" : "StatusCheckBrush";
+                tile.Background = BenchTint(key, 26);
+                iconBox.Background = BenchTint(key, 34);
+                icon.SetResourceReference(TextBlock.ForegroundProperty, key);
+                title.SetResourceReference(TextBlock.ForegroundProperty, key);
+                if (c.IsTurbo && _benchTurboForTest)
+                {
+                    title.Text = PT("Turbo on for the test");
+                    hint.Text = PT("Put back afterwards");
+                }
+                else { title.Text = c.Title; hint.Text = c.Hint; }
+                tile.ToolTip = c.IsTurbo
+                    ? c.Full + "\n\n" + (_benchTurboForTest ? PT("Click to leave Turbo off for the test.") : PT("Click to turn Turbo on for the test (the setting is put back afterwards)."))
+                    : c.Full.Length > 0 ? c.Full : null;
+                if (track != null && knob != null)
+                {
+                    knob.HorizontalAlignment = _benchTurboForTest ? HAlign.Right : HAlign.Left;
+                    if (_benchTurboForTest)
+                    {
+                        track.SetResourceReference(Border.BackgroundProperty, "AccentBrush");
+                        track.SetResourceReference(Border.BorderBrushProperty, "AccentBrush");
+                        knob.Background = Brushes.White;
+                    }
+                    else
+                    {
+                        track.Background = Brushes.Transparent;
+                        track.SetResourceReference(Border.BorderBrushProperty, "TextSecondaryBrush");
+                        knob.SetResourceReference(Border.BackgroundProperty, "TextSecondaryBrush");
+                    }
+                }
+            }
+            Paint();
+            return tile;
+        }
+
+        /// <summary>
+        /// After a test: the conditions it ran in as small soft pills (tinted, no outline) — the part before " — " of each
+        /// warning, the whole sentence in the tooltip.
         /// </summary>
         private void AddBenchWarningChips(System.Windows.Controls.Panel host, List<string> warnings)
         {
@@ -357,12 +474,15 @@ namespace SMDWin.Views
             {
                 int cut = w.IndexOf(" — ", StringComparison.Ordinal);
                 string label = cut > 0 ? w[..cut] : w;
-                var b = new Border { CornerRadius = new CornerRadius(11), BorderThickness = new Thickness(1), Padding = new Thickness(9, 2, 10, 3), Margin = new Thickness(0, 2, 6, 2),
-                                     ToolTip = w, Background = Brushes.Transparent, VerticalAlignment = VAlign.Center };
-                b.SetResourceReference(Border.BorderBrushProperty, "StatusCheckBrush");
-                var tb = new TextBlock { Text = "⚠ " + label, FontSize = Ui.FontS, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 420 };
+                var b = new Border { CornerRadius = new CornerRadius(11), Padding = new Thickness(9, 3, 11, 4), Margin = new Thickness(0, 2, 6, 2),
+                                     ToolTip = w, Background = BenchTint("StatusCheckBrush", 26), VerticalAlignment = VAlign.Center };
+                var sp = new StackPanel { Orientation = Orientation.Horizontal };
+                var dot = new Border { Width = 6, Height = 6, CornerRadius = new CornerRadius(3), Margin = new Thickness(0, 1, 6, 0), VerticalAlignment = VAlign.Center };
+                dot.SetResourceReference(Border.BackgroundProperty, "StatusCheckBrush");
+                var tb = new TextBlock { Text = label, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 420 };
                 tb.SetResourceReference(TextBlock.ForegroundProperty, "StatusCheckBrush");
-                b.Child = tb;
+                sp.Children.Add(dot); sp.Children.Add(tb);
+                b.Child = sp;
                 host.Children.Add(b);
             }
         }
@@ -524,17 +644,6 @@ namespace SMDWin.Views
                 AppLogger.Info("Benchmark: Turbo setting put back");
             }
             catch (Exception ex) { AppLogger.Warning(ex, "Benchmark: putting Turbo back"); }
-        }
-
-        /// <summary>The "Turn on Turbo for the test" check box under the warnings (only when Turbo is off).</summary>
-        private UIElement? BenchTurboChoice(bool center)
-        {
-            if (!BenchTurboOff()) return null;
-            var cb = new CheckBox { Content = PT("Turn on Turbo for the test (the setting is put back afterwards)"), IsChecked = _benchTurboForTest,
-                                    Margin = new Thickness(4, 2, 0, 2), VerticalAlignment = VAlign.Center, HorizontalAlignment = center ? HAlign.Center : HAlign.Left, FontSize = Ui.FontS };
-            cb.Checked += (_, _) => _benchTurboForTest = true;
-            cb.Unchecked += (_, _) => _benchTurboForTest = false;
-            return cb;
         }
 
         private string BenchCpuDevice()
@@ -996,7 +1105,14 @@ namespace SMDWin.Views
                 }
                 // after a test: the conditions it ran in (not a new reading — the load is still high right after it)
                 AddBenchWarningChips(wrap, _benchLastPre ?? new List<string>());
-                if (BenchTurboChoice(false) is { } turbo) wrap.Children.Add(turbo);
+                if (BenchTurboOff())
+                {
+                    var turbo = BenchCheckTile(new BenchCheck("\uEC4A", false, PT("Turbo is off"), PT("Marks come out lower"),
+                        PT("Turbo is off in the power plan — the processor stays at its base speed and the marks come out much lower."), IsTurbo: true));
+                    turbo.Margin = new Thickness(4, 2, 0, 2);
+                    turbo.VerticalAlignment = VAlign.Center;
+                    wrap.Children.Add(turbo);
+                }
                 g.Children.Add(wrap);
             }
             else
@@ -1008,10 +1124,9 @@ namespace SMDWin.Views
                 var sub = new TextBlock { Text = PT("Close other programs during the test. The storage test writes a 256 MB temporary file and deletes it at the end."), FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 0, 0) };
                 sub.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 sp.Children.Add(sub);
-                var chips = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
-                AddBenchWarningChips(chips, BenchPreChecks());
-                if (BenchTurboChoice(false) is { } turbo) chips.Children.Add(turbo);
-                if (chips.Children.Count > 0) sp.Children.Add(chips);
+                var chips = new WrapPanel { Margin = new Thickness(0, 10, 0, -6) };
+                foreach (var check in BenchReadiness()) chips.Children.Add(BenchCheckTile(check));
+                sp.Children.Add(chips);
                 g.Children.Add(sp);
             }
             var btns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VAlign.Center, Margin = new Thickness(16, 0, 0, 0) };
