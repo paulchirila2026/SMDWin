@@ -63,6 +63,26 @@ namespace SMDWin.Views
         private double? _benchSustained;
         private bool _benchKeysHooked;
         private DeviceSketch? _benchSketch;   // the computer drawn in lines, with a callout per component
+        private ScrollViewer? _benchScroll;
+        private bool _benchFitQueued;
+
+        /// <summary>
+        /// The drawing takes the height left by the banner and the cards, so the whole page fits on a laptop screen
+        /// (a ScrollViewer gives its content unlimited height, so a star row alone would not shrink it); 240–500 px.
+        /// </summary>
+        private void FitBenchSketchSoon()
+        {
+            if (_benchFitQueued) return;
+            _benchFitQueued = true;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _benchFitQueued = false;
+                if (_benchScroll == null || _benchSketch == null || _benchBanner == null || _benchCards == null) return;
+                double free = _benchScroll.ViewportHeight - 6 - (_benchBanner.ActualHeight + 14) - _benchCards.ActualHeight - 14 - 24;
+                double h = Math.Clamp(free, 240, 500);
+                if (Math.Abs(_benchSketch.MaxHeight - h) > 2) _benchSketch.MaxHeight = h;
+            }), DispatcherPriority.Loaded);
+        }
         private readonly BenchComp[] _benchComps = new BenchComp[4];
         private CancellationTokenSource? _benchCts;
         private bool _benchRunning;
@@ -151,10 +171,12 @@ namespace SMDWin.Views
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 300 });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             scroll.Content = root;
-            scroll.SizeChanged += (_, _) => root.MinHeight = Math.Max(0, scroll.ViewportHeight - 6);
+            scroll.SizeChanged += (_, _) => { root.MinHeight = Math.Max(0, scroll.ViewportHeight - 6); FitBenchSketchSoon(); };
             host.Children.Add(scroll);
+            _benchScroll = scroll;
 
             _benchBanner = new Border { Margin = new Thickness(0, 0, 0, 14) };
+            _benchBanner.SizeChanged += (_, _) => FitBenchSketchSoon();
             root.Children.Add(_benchBanner);
             // the hero card: the computer with its callouts on the left, the general mark and the performance class on the right
             var top = BenchCard();
@@ -171,7 +193,7 @@ namespace SMDWin.Views
             Grid.SetColumn(right, 1);
             var allSp = new StackPanel { VerticalAlignment = VAlign.Center };
             allSp.Children.Add(BenchCaption(PT("General mark"), HAlign.Center));
-            _benchAllDial = new ScoreDial { Width = 176, Height = 156, Segments = 20, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
+            _benchAllDial = new ScoreDial { Width = 160, Height = 140, Segments = 20, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
             allSp.Children.Add(_benchAllDial);
             allSp.Children.Add(BuildBenchClassPanel());
             right.Child = allSp;
@@ -182,6 +204,7 @@ namespace SMDWin.Views
 
             // the component cards: 4 per row, 2 on a narrow window; they stretch to the bottom of the page
             _benchCards = new UGrid { Columns = 4 };
+            _benchCards.SizeChanged += (_, _) => FitBenchSketchSoon();
             Grid.SetRow(_benchCards, 2);
             root.Children.Add(_benchCards);
             host.SizeChanged += (_, e) => { if (_benchCards != null) _benchCards.Columns = e.NewSize.Width < 980 ? 2 : 4; };
@@ -324,19 +347,24 @@ namespace SMDWin.Views
             return list;
         }
 
-        private UIElement BenchWarnings(List<string> warnings, bool center)
+        /// <summary>
+        /// The warnings as small amber chips on one row: the part before " — " ("On battery", "Turbo is off in the power plan"),
+        /// the whole sentence (what to do) in the tooltip. Full-width boxes took a third of a laptop screen.
+        /// </summary>
+        private void AddBenchWarningChips(System.Windows.Controls.Panel host, List<string> warnings)
         {
-            var sp = new StackPanel { HorizontalAlignment = center ? HAlign.Center : HAlign.Stretch };
             foreach (var w in warnings)
             {
-                var b = new Border { CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(1), Padding = new Thickness(12, 6, 12, 6), Margin = new Thickness(0, 4, 0, 0) };
+                int cut = w.IndexOf(" — ", StringComparison.Ordinal);
+                string label = cut > 0 ? w[..cut] : w;
+                var b = new Border { CornerRadius = new CornerRadius(11), BorderThickness = new Thickness(1), Padding = new Thickness(9, 2, 10, 3), Margin = new Thickness(0, 2, 6, 2),
+                                     ToolTip = w, Background = Brushes.Transparent, VerticalAlignment = VAlign.Center };
                 b.SetResourceReference(Border.BorderBrushProperty, "StatusCheckBrush");
-                var tb = new TextBlock { Text = "⚠  " + w, FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap };
+                var tb = new TextBlock { Text = "⚠ " + label, FontSize = Ui.FontS, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 420 };
                 tb.SetResourceReference(TextBlock.ForegroundProperty, "StatusCheckBrush");
                 b.Child = tb;
-                sp.Children.Add(b);
+                host.Children.Add(b);
             }
-            return sp;
         }
 
         /// <summary>"8 GB DDR4-2667 · 1 module" (the card had no description — the summary was not read yet when
@@ -503,7 +531,7 @@ namespace SMDWin.Views
         {
             if (!BenchTurboOff()) return null;
             var cb = new CheckBox { Content = PT("Turn on Turbo for the test (the setting is put back afterwards)"), IsChecked = _benchTurboForTest,
-                                    Margin = new Thickness(0, 6, 0, 0), HorizontalAlignment = center ? HAlign.Center : HAlign.Left, FontSize = Ui.FontS };
+                                    Margin = new Thickness(4, 2, 0, 2), VerticalAlignment = VAlign.Center, HorizontalAlignment = center ? HAlign.Center : HAlign.Left, FontSize = Ui.FontS };
             cb.Checked += (_, _) => _benchTurboForTest = true;
             cb.Unchecked += (_, _) => _benchTurboForTest = false;
             return cb;
@@ -933,13 +961,10 @@ namespace SMDWin.Views
                     chip.Child = ct;
                     wrap.Children.Add(chip);
                 }
-                var col = new StackPanel { VerticalAlignment = VAlign.Center };
-                col.Children.Add(wrap);
                 // after a test: the conditions it ran in (not a new reading — the load is still high right after it)
-                var warn = _benchLastPre ?? new List<string>();
-                if (warn.Count > 0) col.Children.Add(BenchWarnings(warn, false));
-                if (BenchTurboChoice(false) is { } turbo) col.Children.Add(turbo);
-                g.Children.Add(col);
+                AddBenchWarningChips(wrap, _benchLastPre ?? new List<string>());
+                if (BenchTurboChoice(false) is { } turbo) wrap.Children.Add(turbo);
+                g.Children.Add(wrap);
             }
             else
             {
@@ -950,9 +975,10 @@ namespace SMDWin.Views
                 var sub = new TextBlock { Text = PT("Close other programs during the test. The storage test writes a 256 MB temporary file and deletes it at the end."), FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 0, 0) };
                 sub.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 sp.Children.Add(sub);
-                var warn = BenchPreChecks();
-                if (warn.Count > 0) sp.Children.Add(BenchWarnings(warn, false));
-                if (BenchTurboChoice(false) is { } turbo) sp.Children.Add(turbo);
+                var chips = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
+                AddBenchWarningChips(chips, BenchPreChecks());
+                if (BenchTurboChoice(false) is { } turbo) chips.Children.Add(turbo);
+                if (chips.Children.Count > 0) sp.Children.Add(chips);
                 g.Children.Add(sp);
             }
             var btns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VAlign.Center, Margin = new Thickness(16, 0, 0, 0) };
