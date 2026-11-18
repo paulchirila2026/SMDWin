@@ -14,6 +14,7 @@ using Color       = System.Windows.Media.Color;
 using Colors      = System.Windows.Media.Colors;
 using Cursors     = System.Windows.Input.Cursors;
 using Orientation = System.Windows.Controls.Orientation;
+using ButtonBase  = System.Windows.Controls.Primitives.ButtonBase;
 using Path        = System.Windows.Shapes.Path;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using VerticalAlignment   = System.Windows.VerticalAlignment;
