@@ -614,6 +614,7 @@ namespace SMDWin.Views
             SMDWin.Services.ThemeManager.ThemeChanged += () => Dispatcher.BeginInvoke(new Action(RemapStatusColorsAfterTheme), System.Windows.Threading.DispatcherPriority.Background);
             // every modal window opened over the app (reports, driver search, PDF export…) dims the window behind it, like the dialogs
             ModalDim.Register();
+            SetupResponsiveSoftwarePages();
             SMDWin.Services.BootTiming.Mark("MainWindow(): InitializeComponent (building the window and the pages)");
             CaptureLiteralSources();   // the XAML texts, before data or translations change them
             ApplyTempUnit();

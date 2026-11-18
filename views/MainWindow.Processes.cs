@@ -59,8 +59,16 @@ namespace SMDWin.Views
             if (_swProc.ElapsedMilliseconds > 500)
                 AppLogger.Info($"ProcessMonitor GetSnapshotAsync({count}) slow: {_swProc.ElapsedMilliseconds}ms");
 
-            TxtProcCpuTotal.Text = $"{snap.TotalCpuPct:F1}%";
-            TxtProcRamUsed.Text  = $"{snap.UsedRamMB / 1024.0:F1} GB";
+            // the first reading of the totals can come back empty (the counters need two samples) while the list already has
+            // values: then the processor total is the sum of the list, and the memory waits for the next reading ("…")
+            double cpuTotal = snap.TotalCpuPct;
+            if (cpuTotal <= 0.05)
+            {
+                double sum = snap.AllProcesses.Sum(p => (double)p.CpuPct);
+                if (sum > 0) cpuTotal = Math.Min(100, sum);
+            }
+            TxtProcCpuTotal.Text = $"{cpuTotal:F1}%";
+            TxtProcRamUsed.Text  = snap.UsedRamMB > 0 ? $"{snap.UsedRamMB / 1024.0:F1} GB" : "…";
             // Round total RAM to nearest standard size
             TxtProcCount.Text    = snap.ProcessCount.ToString();
             _procTotalRamMB = snap.TotalRamMB;

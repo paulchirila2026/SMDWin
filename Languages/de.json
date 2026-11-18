@@ -3165,6 +3165,7 @@
     "the_storage_test_could_not_run": "Der Speichertest konnte nicht laufen.",
     "storage_test_skipped": "Speichertest übersprungen",
     "welcome_to_smd_win": "Willkommen bei SMD Win",
+    "waited_at_the_sign_in_screen_0_not_counted": "Wartezeit am Anmeldebildschirm: {0} (nicht gezählt)",
     "copied": "Kopiert",
     "could_not_copy": "Kopieren fehlgeschlagen",
     "turbo_on_for_the_next_test": "Turbo an für den nächsten Test",

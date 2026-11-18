@@ -186,6 +186,7 @@ namespace SMDWin.Views
                     Opacity = latest ? 1.0 : 0.75,
                     ToolTip = $"{SMDWin.Services.DateFormatHelper.FormatDate(b.BootDate)} {b.BootDate:HH:mm} — {FormatBootMs(b.TotalBootMs)}" +
                               $"\nWindows part: {FormatBootMs(b.MainPathBootMs)} · after sign-in: {FormatBootMs(b.PostBootDisplay)}" +
+                              (b.LogonWaitMs > 1000 ? "\n" + PT("Waited at the sign-in screen: {0} (not counted)", FormatBootMs(b.LogonWaitMs)) : "") +
                               (b.IsDegradation ? "\nWindows marked this start as slower than usual" : ""),
                 };
                 bar.SetResourceReference(Border.BackgroundProperty, slow ? "StatusWarningBrush" : "AccentBrush");

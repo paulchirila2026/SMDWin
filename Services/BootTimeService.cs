@@ -21,6 +21,8 @@ namespace SMDWin.Services
         /// after the desktop appears (explains "desktop is up but still slow" feeling).</summary>
         public int PostBootMs { get; set; }
         public int BootTimeExclDelayedServicesMs { get; set; }
+        /// <summary>How long the sign-in screen waited for the user (already taken out of TotalBootMs / MainPathBootMs).</summary>
+        public int LogonWaitMs { get; set; }
         public bool IsDegradation { get; set; }   // event 200 — Windows detected reboot was abnormally slow
         public string BootType { get; set; } = "";  // "Cold" / "Resume" / "Fast" — best-effort label
 
@@ -108,8 +110,17 @@ namespace SMDWin.Services
             int total     = GetInt("BootTime");
             int mainPath  = GetInt("MainPathBootTime");
             int exclDelay = GetInt("BootTimeExcludingDelayedServices");
+            // the time the sign-in screen waited for the password is inside BootTime and MainPathBootTime: a PC turned on and
+            // left at the sign-in screen for 8 minutes "booted in 8 minutes". It is taken out, so the time is the computer's own.
+            int logonWait = Math.Max(0, GetInt("UserLogonWaitDuration"));
 
             if (total <= 0) return null; // malformed/unrelated record — skip
+            if (logonWait > 0 && logonWait < total)
+            {
+                total -= logonWait;
+                if (mainPath > logonWait) mainPath -= logonWait;
+                if (exclDelay > logonWait) exclDelay -= logonWait;
+            }
 
             return new BootTimeEntry
             {
@@ -117,6 +128,7 @@ namespace SMDWin.Services
                 TotalBootMs    = total,
                 MainPathBootMs = mainPath > 0 ? mainPath : total,
                 BootTimeExclDelayedServicesMs = exclDelay,
+                LogonWaitMs    = logonWait,
                 BootType       = total < 8000 ? "Fast/Resume" : "Cold",
             };
         }

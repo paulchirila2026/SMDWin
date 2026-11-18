@@ -699,7 +699,8 @@ namespace SMDWin.Models
             "signed"    => string.IsNullOrWhiteSpace(Publisher) ? "Signed" : Publisher,
             "untrusted" => "Signed (untrusted)",
             "unsigned"  => "Unsigned",
-            _           => string.IsNullOrWhiteSpace(Publisher) ? "—" : Publisher
+            // signature not read (yet): the program's own description ("Windows Explorer") instead of a lone dash
+            _           => !string.IsNullOrWhiteSpace(Publisher) ? Publisher : Description ?? ""
         };
         public string SignColor => SignStatus switch
         {
@@ -753,7 +754,9 @@ namespace SMDWin.Models
             kbs >= 1024 ? $"{kbs/1024:F1} MB/s" : $"{kbs:F0} KB/s";
         // Process Monitor: second line under the name, CPU bar (full at 25%), disk / network summed
         public int    GroupCount   { get; set; } = 1;
-        public string SubLine      => GroupCount > 1 ? $"{SignDisplay} · {GroupCount} processes" : SignDisplay;
+        public string SubLine      => GroupCount > 1
+            ? (SignDisplay.Length > 0 ? $"{SignDisplay} · {GroupCount} processes" : $"{GroupCount} processes")
+            : SignDisplay;
         public double CpuBarW      => Math.Max(CpuPct > 0.05f ? 2 : 0, Math.Min(56, CpuPct / 25.0 * 56.0));
         public System.Windows.Media.Brush? CpuBarBrush =>
             System.Windows.Application.Current?.TryFindResource(CpuPct >= 10 ? "StatusWarningBrush" : "AccentBrush") as System.Windows.Media.Brush;

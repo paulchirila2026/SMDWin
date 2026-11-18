@@ -2973,6 +2973,7 @@
     "the_storage_test_could_not_run": "Testul de stocare nu a putut rula.",
     "storage_test_skipped": "Test de stocare sărit",
     "welcome_to_smd_win": "Bun venit în SMD Win",
+    "waited_at_the_sign_in_screen_0_not_counted": "Așteptare la ecranul de conectare: {0} (necontorizată)",
     "copied": "Copiat",
     "could_not_copy": "Copierea nu a reușit",
     "turbo_on_for_the_next_test": "Turbo pornit la testul următor",
