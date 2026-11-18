@@ -144,7 +144,12 @@ namespace SMDWin.Views
                         }
                         else if (page == "Settings")
                         {
-                            await Step("Settings-Advanced", 1200, () => { ClickNamed("BtnSetTabAdvanced"); return Task.CompletedTask; });
+                            // every Settings tab gets its own picture (used for the README gallery)
+                            foreach (var tab in new[] { "Appearance", "Alerts", "Widget", "Sensors", "Data", "Advanced", "About" })
+                            {
+                                string t = tab;
+                                await Step("Settings-" + t, 900, () => { ClickNamed("BtnSetTab" + t); return Task.CompletedTask; });
+                            }
                             ClickNamed("BtnSetTabGeneral");
                         }
                     }

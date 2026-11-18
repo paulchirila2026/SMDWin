@@ -31,7 +31,7 @@ namespace SMDWin.Views
 
         // ── Taburi ───────────────────────────────────────────────────────────────
 
-        private static readonly string[] SettingsTabTags = { "General", "Advanced" };
+        private static readonly string[] SettingsTabTags = { "General", "Appearance", "Alerts", "Widget", "Sensors", "Data", "Advanced", "About" };
 
         internal void SettingsTab_Checked(object sender, RoutedEventArgs e)
         {
@@ -47,6 +47,10 @@ namespace SMDWin.Views
                 if (FindName("BtnSetTab" + t) is Wpf.Ui.Controls.Button b)
                     SetTabButtonActive(b, t == tag);
             if (FindName("PanelSettings") is ScrollViewer sv) sv.ScrollToTop();
+            DecorateSettingsRows();
+            if (TxtSettingsSearchHint != null) TxtSettingsSearchHint.Text = PT("Search settings…");
+            if (tag == "About") BuildSettingsAbout();
+            ScheduleFitSettingsPage();
         }
 
         // ── Cautare ──────────────────────────────────────────────────────────────
@@ -310,44 +314,9 @@ namespace SMDWin.Views
 
         // ── The page columns ────────────────────────────────────────────────────
 
-        /// <summary>
-        /// The Settings tab: 4 cards on 2 columns (General | Alerts, Look and charts | Widget and tray; cards on the same row
-        /// have the same height), stacked when the window is narrow. The Advanced tab: 2 columns or 1.
-        /// </summary>
-        private void LayoutSettingsColumns()
-        {
-            try
-            {
-                if (FindName("PanelSettings") is not ScrollViewer page || page.ActualWidth <= 0) return;
-                double w = page.ActualWidth;
-                static void Place(FrameworkElement? e, int row, int col, int span)
-                {
-                    if (e == null) return;
-                    Grid.SetRow(e, row); Grid.SetColumn(e, col); Grid.SetColumnSpan(e, span);
-                }
-                if (FindName("SetColsGrid") is Grid g && g.ColumnDefinitions.Count == 3 && g.RowDefinitions.Count == 7)
-                {
-                    bool two = w >= 900;
-                    g.ColumnDefinitions[1].Width = new GridLength(two ? 14 : 0);
-                    g.ColumnDefinitions[2].Width = two ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
-                    g.RowDefinitions[3].Height = new GridLength(two ? 0 : 14);
-                    g.RowDefinitions[5].Height = new GridLength(two ? 0 : 14);
-                    var cards = new[] { "SetCardGeneral", "SetCardAlerts", "SetCardLook", "SetCardWidget" }
-                        .Select(n => FindName(n) as FrameworkElement).ToArray();
-                    if (two) { Place(cards[0], 0, 0, 1); Place(cards[1], 0, 2, 1); Place(cards[2], 2, 0, 1); Place(cards[3], 2, 2, 1); }
-                    else for (int i = 0; i < 4; i++) Place(cards[i], i * 2, 0, 3);
-                }
-                if (FindName("AdvColsGrid") is Grid a && a.ColumnDefinitions.Count == 3)
-                {
-                    bool two = w >= 900;
-                    a.ColumnDefinitions[1].Width = new GridLength(two ? 14 : 0);
-                    a.ColumnDefinitions[2].Width = two ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
-                    Place(FindName("AdvColL") as FrameworkElement, 0, 0, two ? 1 : 3);
-                    Place(FindName("AdvColR") as FrameworkElement, two ? 0 : 1, two ? 2 : 0, two ? 1 : 3);
-                }
-            }
-            catch (Exception ex) { AppLogger.Warning(ex, "LayoutSettingsColumns"); }
-        }
+        /// <summary>Settings shows one category at a time, full width (MaxWidth in XAML): nothing to rearrange any more.
+        /// Kept as the hook the page's size / visibility events call.</summary>
+        private void LayoutSettingsColumns() { }
 
         // ── The tabs (buttons, as in Storage) and the choices in the "Look and charts" card ──
 

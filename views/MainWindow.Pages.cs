@@ -1104,7 +1104,6 @@ namespace SMDWin.Views
         internal Wpf.Ui.Controls.Button BtnSetTabAdvanced => PageSettings?.BtnSetTabAdvanced!;
         internal System.Windows.Controls.Border SetCardGeneral => PageSettings?.SetCardGeneral!;
         internal System.Windows.Controls.Border SetCardAlerts => PageSettings?.SetCardAlerts!;
-        internal System.Windows.Controls.Border SetCardLook => PageSettings?.SetCardLook!;
         internal System.Windows.Controls.RadioButton RbThemeLight => PageSettings?.RbThemeLight!;
         internal System.Windows.Controls.RadioButton RbThemeDark => PageSettings?.RbThemeDark!;
         internal System.Windows.Controls.RadioButton RbThemeAuto => PageSettings?.RbThemeAuto!;
@@ -1115,10 +1114,6 @@ namespace SMDWin.Views
         internal System.Windows.Controls.RadioButton RbWidgetStyleGauges => PageSettings?.RbWidgetStyleGauges!;
         internal System.Windows.Controls.RadioButton RbWidgetStylePill => PageSettings?.RbWidgetStylePill!;
         internal System.Windows.Controls.RadioButton RbWidgetStyleMinimal => PageSettings?.RbWidgetStyleMinimal!;
-        internal System.Windows.Controls.Grid SetColsGrid => PageSettings?.SetColsGrid!;
-        internal System.Windows.Controls.Grid AdvColsGrid => PageSettings?.AdvColsGrid!;
-        internal System.Windows.Controls.StackPanel AdvColL => PageSettings?.AdvColL!;
-        internal System.Windows.Controls.StackPanel AdvColR => PageSettings?.AdvColR!;
         internal System.Windows.Controls.CheckBox ChkWorkshopMode => PageSettings?.ChkWorkshopMode!;
         internal System.Windows.Controls.Border PnlWorkshop => PageSettings?.PnlWorkshop!;
         internal System.Windows.Controls.TextBlock TxtSettingsSearchHint => PageSettings?.TxtSettingsSearchHint!;
