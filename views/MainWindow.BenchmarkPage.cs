@@ -632,7 +632,7 @@ namespace SMDWin.Views
             scale.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });   // pin
             scale.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });     // bar
             scale.RowDefinitions.Add(new RowDefinition { Height = new GridLength(8) });    // separators between the classes
-            scale.RowDefinitions.Add(new RowDefinition { Height = new GridLength(22) });   // names
+            scale.RowDefinitions.Add(new RowDefinition { Height = new GridLength(38) });   // names (two lines when a class is narrow)
             var grad = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 0) };
             foreach (var (at, r, g, b) in new[] { (0.0, 220, 38, 38), (0.25, 249, 115, 22), (0.47, 234, 179, 8), (0.68, 132, 204, 22), (1.0, 22, 163, 74) })
                 grad.GradientStops.Add(new GradientStop(Color.FromRgb((byte)r, (byte)g, (byte)b), at));
@@ -677,14 +677,29 @@ namespace SMDWin.Views
             foreach (var t in BenchmarkScore.Tiers)
             {
                 bool on = cur == t;
-                var n = new TextBlock { Text = PT(t.Name), FontSize = Ui.FontS, FontWeight = on ? FontWeights.Bold : FontWeights.Normal };
+                // a name wider than its class wraps on two lines ("High / Performance") instead of being cut
+                var n = new TextBlock { Text = PT(t.Name), FontSize = Ui.FontS, FontWeight = on ? FontWeights.Bold : FontWeights.Normal,
+                                        TextWrapping = TextWrapping.WrapWithOverflow, TextAlignment = TextAlignment.Center, LineHeight = Ui.FontS + 3,
+                                        LineStackingStrategy = LineStackingStrategy.BlockLineHeight };
                 n.SetResourceReference(TextBlock.ForegroundProperty, on ? "TextPrimaryBrush" : "TextSecondaryBrush");
                 double center = (t.From + t.To) / 2 / 10 * w, span = (t.To - t.From) / 10 * w;
-                n.MaxWidth = span - 2; n.TextTrimming = TextTrimming.CharacterEllipsis;
                 n.ToolTip = PT(t.Name) + "\n" + PT("Suitable for: {0}", PT(t.GoodFor));
                 n.Background = Brushes.Transparent;
                 n.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                double nw = Math.Min(n.DesiredSize.Width, span - 2);
+                double nw = n.DesiredSize.Width;
+                if (nw > span - 4)
+                {
+                    // never narrower than the longest word (words are not split)
+                    double word = 0;
+                    foreach (var part in n.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var probe = new TextBlock { Text = part, FontSize = n.FontSize, FontWeight = n.FontWeight };
+                        probe.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                        word = Math.Max(word, probe.DesiredSize.Width);
+                    }
+                    nw = Math.Max(span - 4, Math.Ceiling(word) + 1);
+                }
+                n.Width = nw;
                 Canvas.SetLeft(n, Math.Clamp(center - nw / 2, 0, w - nw)); Canvas.SetTop(n, 2);
                 _benchNames.Children.Add(n);
             }
