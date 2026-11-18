@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.1 Beta] — November 2026
 
 ### Changed
+- Benchmark drawing: it now follows the real readings — the fans turn with the processor and graphics load, the processor and graphics glow with their temperature (reddish when very hot), the disk LED blinks with the disk activity. A part that finishes turns from orange into the colour of its mark, a dot runs along its line and its ring fills while the number counts up; at the end every part pulses in turn and the general mark counts up. The mouse over a card lights up its part in the drawing, and the mouse over a part lights up its card.
 - Benchmark: the graphics card is now tested before the storage, the same order as the drawing, the cards and the steps. The weakest card has a faint outline instead of a strong frame. The banner after a test shows the temperatures as text and everything else as the same soft pills, with a small Turbo switch. The drawing and the card rings animate with the screen refresh (the fans no longer jerk).
 - Benchmark: before the test, a short check as tiles (power, Turbo, power plan, free space, processor load), each green when fine or amber with what to do. The Turbo tile is also its switch: a click turns Turbo on for the test and the tile turns green. After the test, the conditions it ran in are soft pills.
 - Benchmark: Start no longer ends in an error window after ticking "Turn on Turbo for the test".

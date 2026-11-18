@@ -21,7 +21,22 @@ namespace SMDWin.Views
     public sealed class ScoreDial : FrameworkElement
     {
         private double? _score;
-        public double? Score { get => _score; set { _score = value; InvalidateVisual(); } }
+        private readonly CountUp _count;
+        /// <summary>A new mark counts up from the previous one (or 0) when the dial is on screen and animations are on.</summary>
+        public double? Score
+        {
+            get => _score;
+            set
+            {
+                var old = _score;
+                _score = value;
+                if (value is double v && (old == null || Math.Abs(old.Value - v) > 0.001)) _count.Start(old ?? 0, CountUpDelay);
+                else if (value == null) _count.Stop();
+                InvalidateVisual();
+            }
+        }
+        /// <summary>Seconds to wait before counting up (the general mark waits for the finale of the drawing).</summary>
+        public double CountUpDelay { get; set; }
         private string _caption = "";
         public string Caption { get => _caption; set { _caption = value; InvalidateVisual(); } }
         public int Segments { get; set; } = 14;
@@ -30,6 +45,7 @@ namespace SMDWin.Views
 
         public ScoreDial()
         {
+            _count = new CountUp(this);
             Loaded   += (_, _) => ThemeManager.ThemeChanged += OnTheme;
             Unloaded += (_, _) => ThemeManager.ThemeChanged -= OnTheme;
         }
@@ -39,14 +55,15 @@ namespace SMDWin.Views
         {
             double W = ActualWidth, H = ActualHeight;
             dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, W, H));
+            double? score = _score is double target ? _count.Value(target) : null;
             double R = Math.Min(W, H * 1.06) / 2 - 2;
             if (R < 20) return;
             double cx = W / 2, cy = H / 2 + R * 0.06;
             double rIn = R - GaugeArc.Thickness(R);
             int n = Math.Max(6, Segments);
             double seg = GaugeArc.SweepDeg / n, gap = GaugeArc.GapDeg(seg);
-            double lit = _score is double s ? Math.Clamp(s, 0, 10) / 10.0 * n : 0;
-            Brush on = _score is double s2 ? TierBrush(s2) : (TryFindResource("DataBrush") as Brush ?? Brushes.DodgerBlue);
+            double lit = score is double s ? Math.Clamp(s, 0, 10) / 10.0 * n : 0;
+            Brush on = score is double s2 ? TierBrush(s2) : (TryFindResource("DataBrush") as Brush ?? Brushes.DodgerBlue);
             var track = GaugeArc.Track(this);
             for (int i = 0; i < n; i++)
             {
@@ -61,7 +78,7 @@ namespace SMDWin.Views
             var ink = TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.Black;
             var ink2 = TryFindResource("TextSecondaryBrush") as Brush ?? Brushes.Gray;
             var num = new Typeface(GaugeArc.NumFont(this), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
-            string txt = _score is double v ? Format(v) : "—";
+            string txt = score is double v ? Format(v) : "—";
             double size = Math.Max(14, rIn * 0.62);
             var ft = new FormattedText(txt, CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, num, size, ink, dpi);
             double caps = GaugeArc.CapsHeight(num, size);
@@ -91,7 +108,20 @@ namespace SMDWin.Views
     public sealed class MarkRing : FrameworkElement
     {
         private double? _mark;
-        public double? Mark { get => _mark; set { _mark = value; InvalidateVisual(); } }
+        private readonly CountUp _count;
+        /// <summary>A new mark fills the ring and counts up (when on screen and animations are on).</summary>
+        public double? Mark
+        {
+            get => _mark;
+            set
+            {
+                var old = _mark;
+                _mark = value;
+                if (value is double v && (old == null || Math.Abs(old.Value - v) > 0.001)) _count.Start(old ?? 0, 0.15);
+                else if (value == null) _count.Stop();
+                InvalidateVisual();
+            }
+        }
         private bool _active;
         public bool Active { get => _active; set { if (_active != value) { _active = value; UpdateTimer(); InvalidateVisual(); } } }
         public Func<double, string> Format { get; set; } = v => v.ToString("0.0", CultureInfo.InvariantCulture);
@@ -101,6 +131,7 @@ namespace SMDWin.Views
 
         public MarkRing()
         {
+            _count = new CountUp(this);
             IsVisibleChanged += (_, _) => UpdateTimer();
             Loaded += (_, _) => { ThemeManager.ThemeChanged += OnTheme; UpdateTimer(); };
             Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; Unhook(); };
@@ -143,8 +174,9 @@ namespace SMDWin.Views
             var ink = TryFindResource("TextPrimaryBrush") as Brush ?? Brushes.Black;
             var ink2 = TryFindResource("TextSecondaryBrush") as Brush ?? Brushes.Gray;
             double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-            if (_mark is double m)
+            if (_mark is double target)
             {
+                double m = _count.Value(target);
                 double sweep = Math.Clamp(m, 0, 10) / 10 * 360;
                 if (sweep > 0.5)
                     dc.DrawGeometry(null, new Pen(ScoreDial.TierBrush(m), th) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }, Arc(c, r, -90, -90 + Math.Min(359.5, sweep)));
@@ -171,5 +203,51 @@ namespace SMDWin.Views
             sg.Freeze();
             return sg;
         }
+    }
+
+    /// <summary>
+    /// A number that counts up to its new value in 0.9 s (ease-out), drawing its owner on every screen refresh meanwhile.
+    /// Only when the owner is on screen and the animations are on; otherwise the value is shown at once.
+    /// </summary>
+    internal sealed class CountUp
+    {
+        private readonly FrameworkElement _owner;
+        private readonly System.Diagnostics.Stopwatch _clock = System.Diagnostics.Stopwatch.StartNew();
+        private double _from, _start, _delay;
+        private bool _hooked;
+        private const double Duration = 0.9;
+
+        public CountUp(FrameworkElement owner)
+        {
+            _owner = owner;
+            owner.Unloaded += (_, _) => Stop();
+        }
+
+        public void Start(double from, double delay)
+        {
+            if (!_owner.IsLoaded || !_owner.IsVisible || SettingsService.Current?.EnableAnimations == false) { Stop(); return; }
+            _from = from; _delay = delay; _start = _clock.Elapsed.TotalSeconds;
+            if (!_hooked) { CompositionTarget.Rendering += OnFrame; _hooked = true; }
+        }
+
+        /// <summary>The value to draw now for the given target.</summary>
+        public double Value(double target)
+        {
+            if (!_hooked) return target;
+            double x = (_clock.Elapsed.TotalSeconds - _start - _delay) / Duration;
+            if (x >= 1) { Stop(); return target; }
+            if (x <= 0) return _from;
+            double e = 1 - Math.Pow(1 - x, 3);
+            return _from + (target - _from) * e;
+        }
+
+        public void Stop()
+        {
+            if (!_hooked) return;
+            CompositionTarget.Rendering -= OnFrame;
+            _hooked = false;
+        }
+
+        private void OnFrame(object? sender, EventArgs e) => _owner.InvalidateVisual();
     }
 }

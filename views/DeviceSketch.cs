@@ -43,6 +43,22 @@ namespace SMDWin.Views
 
         public readonly Callout[] Parts = { new(), new(), new(), new() };
 
+        /// <summary>What the sensors read now; the drawing follows it (fans by load, glow by temperature, disk LED by activity).</summary>
+        public sealed class LiveData
+        {
+            public float? CpuTemp, CpuLoad, GpuTemp, GpuLoad, DiskActive;
+        }
+
+        /// <summary>Asked twice a second while the drawing animates.</summary>
+        public Func<LiveData?>? LiveSource { get; set; }
+
+        private int _highlight = -1, _hover = -1;
+        /// <summary>The part to emphasise (the mouse is over its card); -1 for none.</summary>
+        public int Highlight { get => _highlight; set { if (_highlight != value) { _highlight = value; InvalidateVisual(); } } }
+
+        /// <summary>The mouse moved onto a part of the drawing or its callout (the index), or off it (-1).</summary>
+        public event Action<int>? PartHover;
+
         /// <summary>The four drawings: laptops (and tablets, ultrabooks), all-in-ones, mini PCs, and everything else as a tower.</summary>
         public static Kind KindFor(ComputerKind kind) => kind switch
         {
@@ -77,6 +93,15 @@ namespace SMDWin.Views
         private readonly double[] _load = new double[4], _rot = new double[4], _edge = new double[4];
         private double _air, _trace, _ringSpin;
         private readonly double[] _glow = new double[4];
+        private LiveData _live = new();
+        private double _liveAt = -10;
+        // transitions: when each part finished (orange → its mark colour, the ring counting up, a dot along the line)
+        private readonly PartState[] _prev = new PartState[4];
+        private bool _prevInit;
+        private readonly double[] _doneAt = { -99, -99, -99, -99 };
+        private double _finaleAt = -99;
+        // the last layout, for the mouse
+        private double _k = 1, _offY;
 
         public DeviceSketch()
         {
@@ -112,6 +137,48 @@ namespace SMDWin.Views
             if (!_hooked) return;
             CompositionTarget.Rendering -= OnFrame;
             _hooked = false;
+        }
+
+        protected override void OnMouseMove(System.Windows.Input.MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            int part = PartAt(e.GetPosition(this));
+            if (part != _hover) { _hover = part; PartHover?.Invoke(part); if (!_hooked) InvalidateVisual(); }
+        }
+
+        protected override void OnMouseLeave(System.Windows.Input.MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            if (_hover != -1) { _hover = -1; PartHover?.Invoke(-1); if (!_hooked) InvalidateVisual(); }
+        }
+
+        /// <summary>The part under a point: a callout row, or a part of the drawing (its outline, a little larger).</summary>
+        private int PartAt(Point pt)
+        {
+            var p = new Point(pt.X / _k, (pt.Y - _offY) / _k);
+            if (p.X >= RingX - 26)
+            {
+                for (int r = 0; r < 4; r++) if (Math.Abs(p.Y - RowY[r]) <= 36) return RowOrder[r];
+                return -1;
+            }
+            var m = Current;
+            bool gpuShown = _dgpu && m.CanDGpu;
+            var q = new Point((p.X - m.Dx) / m.S, (p.Y - m.Dy) / m.S);
+            for (int i = m.Ops.Count - 1; i >= 0; i--)
+            {
+                var op = m.Ops[i];
+                if (op.T != OpT.Shape || op.Part < 0 || op.G == null || (op.DGpu && !gpuShown)) continue;
+                var bounds = op.G.Bounds; bounds.Inflate(6, 6);
+                if (bounds.Contains(q)) return op.Part == 0 && !gpuShown && Parts[3].State == PartState.Active ? 3 : op.Part;
+            }
+            return -1;
+        }
+
+        private static double Ease(double x) => 1 - Math.Pow(1 - Math.Clamp(x, 0, 1), 3);
+        private static Color Lerp(Color a, Color b, double f)
+        {
+            f = Math.Clamp(f, 0, 1);
+            return Color.FromRgb((byte)(a.R + (b.R - a.R) * f), (byte)(a.G + (b.G - a.G) * f), (byte)(a.B + (b.B - a.B) * f));
         }
 
         private void OnFrame(object? sender, EventArgs e)
@@ -372,16 +439,47 @@ namespace SMDWin.Views
             for (int i = 0; i < 4; i++) hot[i] = Parts[i].State == PartState.Active;
             if (hot[3] && !gpuShown) hot[0] = true;   // integrated graphics: the processor works
 
-            // fan loads follow the test smoothly (the fan spins up, it does not jump)
-            double cpuL = hot[0] ? 1 : hot[1] ? 0.7 : hot[2] ? 0.12 : 0.05;
-            double gpuL = hot[3] && gpuShown ? 1 : 0.03;
-            double[] target = { cpuL, Math.Max(0.1, Math.Max(cpuL, gpuL) * 0.8), Math.Max(0.1, Math.Max(cpuL, gpuL) * 0.6), gpuL };
+            // a part that has just finished (tested → done) starts its transition; the last one also starts the finale
+            bool justFinished = false;
+            for (int i = 0; i < 4; i++)
+            {
+                var st = Parts[i].State;
+                if (_prevInit && st == PartState.Done && _prev[i] == PartState.Active) { _doneAt[i] = now; justFinished = true; }
+                _prev[i] = st;
+            }
+            if (justFinished && _prevInit && Array.TrueForAll(Parts, x => x.State == PartState.Done)) _finaleAt = now + 0.5;
+            _prevInit = true;
+            double Blend(int i) => anim ? Math.Clamp((now - _doneAt[i]) / 0.6, 0, 1) : 1;
+            double RingFill(int i) => anim ? Ease((now - _doneAt[i] - 0.3) / 0.8) : 1;
+            double Finale(int i)
+            {
+                if (!anim) return 0;
+                double tt = now - _finaleAt - Array.IndexOf(RowOrder, i) * 0.16;
+                return tt < 0 || tt > 0.5 ? 0 : Math.Sin(tt / 0.5 * Math.PI);
+            }
+            int emph = _highlight >= 0 ? _highlight : _hover;
+            if (emph == 3 && !gpuShown) emph = 0;
+
+            // the live readings (twice a second)
+            if (anim && now - _liveAt > 0.5) { _liveAt = now; try { _live = LiveSource?.Invoke() ?? _live; } catch { } }
+            double cpuTempF = _live.CpuTemp is float ctc ? Math.Clamp((ctc - 50) / 40.0, 0, 1) : 0;
+            double gpuTempF = _live.GpuTemp is float gtc ? Math.Clamp((gtc - 50) / 40.0, 0, 1) : 0;
+            Color GlowColor(int part) => Lerp(Hot, Color.FromRgb(0xFF, 0x4D, 0x3D), part == 3 && gpuShown
+                ? (_live.GpuTemp is float g2 ? (g2 - 78) / 15.0 : 0) : (_live.CpuTemp is float c2 ? (c2 - 78) / 15.0 : 0));
+
+            // fan loads follow the test and the real load, smoothly (the fan spins up, it does not jump)
+            double liveCpu = (_live.CpuLoad ?? 0) / 100.0, liveGpu = gpuShown ? (_live.GpuLoad ?? 0) / 100.0 : 0;
+            double cpuL = Math.Max(hot[0] ? 1 : hot[1] ? 0.7 : hot[2] ? 0.12 : 0.02, Math.Clamp(liveCpu, 0, 1) * 0.9);
+            double gpuL = Math.Max(hot[3] && gpuShown ? 1 : 0.02, Math.Clamp(liveGpu, 0, 1) * 0.9);
+            double[] target = { cpuL, Math.Max(0.06, Math.Max(cpuL, gpuL) * 0.8), Math.Max(0.06, Math.Max(cpuL, gpuL) * 0.6), gpuL };
             for (int i = 0; i < 4; i++)
             {
                 _load[i] = anim ? _load[i] + (target[i] - _load[i]) * Math.Min(1, dt * 1.6) : target[i];
-                _rot[i] = (_rot[i] + dt * 360 / (3.2 - 2.9 * _load[i])) % 360;
-                _edge[i] = (_edge[i] + dt * 18 / (3.0 - 2.75 * _load[i])) % 18;
-                double gTarget = hot[i] ? 1 : 0;
+                _rot[i] = (_rot[i] + dt * 360 * (0.06 + 2.3 * _load[i])) % 360;
+                _edge[i] = (_edge[i] + dt * 18 * (0.25 + 3.75 * _load[i])) % 18;
+                // the glow: full while tested, otherwise a little with the temperature (60 °C faint, 90 °C clear)
+                double tf = i == 3 ? gpuTempF : i == 0 ? cpuTempF : 0;
+                double gTarget = hot[i] ? 0.75 + 0.25 * tf : 0.4 * tf;
                 _glow[i] = anim ? _glow[i] + (gTarget - _glow[i]) * Math.Min(1, dt * 2.5) : gTarget;
             }
             _air = (_air + dt * 32 / (2.2 - 1.5 * _load[FanCase])) % 32;
@@ -403,10 +501,12 @@ namespace SMDWin.Views
             var shadow = B(Colors.Black, light ? 0.08 : 0.35);
             var hotPen = P(B(Hot), 1.9);
             var hotFill = B(Hot, 0.13);
+            var accentC = (TryFindResource("DataBrush") as SolidColorBrush)?.Color ?? Color.FromRgb(0x4F, 0x86, 0xFF);
 
             double k = Math.Min(W / SceneW, H / SceneH);
             // left-aligned: a wider control gives the callout texts more room instead of empty margins
             dc.PushTransform(new TranslateTransform(0, (H - SceneH * k) / 2));
+            _k = k; _offY = (H - SceneH * k) / 2;
             _textRight = W / k - 6;
             dc.PushTransform(new ScaleTransform(k, k));
 
@@ -424,6 +524,8 @@ namespace SMDWin.Views
                 var c = Parts[p];
                 bool isHot = c.State == PartState.Active;
                 var a = model.Map(p == 3 && !gpuShown ? model.Anchor[0] : model.Anchor[p]);
+                if (_highlight == p || _hover == p)
+                    dc.DrawRoundedRectangle(B(accentC, light ? 0.07 : 0.10), null, new Rect(RingX - 28, y - 28, _textRight - RingX + 30, 62), 10, 10);
                 double dy = Math.Abs(y - a.Y);
                 double bx = Math.Min(LeadEndX - 10, Math.Max(a.X + dy * 0.7, a.X + 12));
                 var lead = new StreamGeometry();
@@ -434,10 +536,22 @@ namespace SMDWin.Views
                     g.LineTo(new Point(LeadEndX, y), true, true);
                 }
                 lead.Freeze();
-                dc.DrawGeometry(null, isHot ? P(B(Hot), 1.2) : P(B(subC, light ? 0.5 : 0.42), 1), lead);
+                bool emphRow = _highlight == p || _hover == p;
+                dc.DrawGeometry(null, isHot ? P(B(Hot), 1.2) : emphRow ? P(B(accentC, 0.9), 1.2) : P(B(subC, light ? 0.5 : 0.42), 1), lead);
                 dc.DrawEllipse(B(Hot), null, a, 2.2, 2.2);
+                // just finished: a dot runs from the part to the ring, in the colour of the mark
+                double bl = Blend(p);
+                if (c.State == PartState.Done && c.Mark is double mk0 && bl > 0 && bl < 1)
+                {
+                    var pts = new[] { a, dy > 3 ? new Point(bx, y) : a, new Point(LeadEndX, y) };
+                    double l1 = (pts[1] - pts[0]).Length, l2 = (pts[2] - pts[1]).Length, at = Ease(bl) * (l1 + l2);
+                    var pos = at <= l1 || l2 <= 0 ? pts[0] + (pts[1] - pts[0]) * (l1 > 0 ? at / l1 : 0) : pts[1] + (pts[2] - pts[1]) * ((at - l1) / l2);
+                    var mc0 = Mark(mk0);
+                    dc.DrawEllipse(B(mc0, 0.25), null, pos, 7, 7);
+                    dc.DrawEllipse(B(mc0), null, pos, 3, 3);
+                }
 
-                DrawRing(dc, RingX, y, 20, c, trackBrush, inkC, subC, dpi);
+                DrawRing(dc, RingX, y, 20, c, trackBrush, inkC, subC, dpi, RingFill(p));
 
                 var titleBrush = isHot ? B(light ? HotTextLight : HotText) : B(inkC);
                 Text(dc, c.Title, TextX, y - 6, 13, titleBrush, FontWeights.SemiBold, dpi);
@@ -471,11 +585,14 @@ namespace SMDWin.Views
                             if (part >= 0)
                             {
                                 if (hot[part]) { pen = hotPen; f = hotFill; blink = part == 1 && anim; }
-                                else if (Parts[part].State == PartState.Done && Parts[part].Mark is double mk && !(part == 0 && Parts[0].Mark == null))
+                                else if (Parts[part].State == PartState.Done && Parts[part].Mark is double mk)
                                 {
-                                    var mc = Mark(mk);
-                                    pen = P(B(mc), 1.8); f = B(mc, 0.10);
+                                    // from orange to the mark colour; at the finale a short pulse, part after part
+                                    var mc = Lerp(Hot, Mark(mk), Ease(Blend(part)));
+                                    double fp = Finale(part);
+                                    pen = P(B(mc), 1.8 + 1.0 * fp); f = B(mc, 0.10 + 0.22 * fp);
                                 }
+                                if (part == emph && !hot[part]) { pen = P(B(accentC), 2.2); f = B(accentC, light ? 0.10 : 0.14); }
                             }
                             if (blink)
                             {
@@ -492,7 +609,7 @@ namespace SMDWin.Views
                         {
                             int src = op.Src, part = src == FanGpu ? 3 : 0;
                             d.DrawEllipse(null, lnPen, new Point(op.X, op.Y), op.R, op.R);
-                            Brush blade = hot[part] ? B(HotText) : Parts[part].State == PartState.Done && Parts[part].Mark is double mk ? B(Mark(mk)) : bladeBrush;
+                            Brush blade = hot[part] ? B(HotText) : Parts[part].State == PartState.Done && Parts[part].Mark is double mk ? B(Lerp(HotText, Mark(mk), Ease(Blend(part)))) : bladeBrush;
                             Brush hub = hot[part] ? B(Hot) : blade;
                             d.PushTransform(new TranslateTransform(op.X, op.Y));
                             d.PushTransform(new RotateTransform(_rot[src]));
@@ -515,7 +632,8 @@ namespace SMDWin.Views
                         }
                         case OpT.Heat:
                         {
-                            if (!hot[op.Part] || !anim) break;
+                            bool tooHot = (op.Part == 0 ? _live.CpuTemp : _live.GpuTemp) is float ht && ht >= 85;
+                            if (!(hot[op.Part] || tooHot) || !anim) break;
                             var hp = HeatWave;
                             for (int i = 0; i < 3; i++)
                             {
@@ -531,7 +649,8 @@ namespace SMDWin.Views
                         {
                             double lvl = _glow[op.Part];
                             if (lvl < 0.01) break;
-                            var g = new RadialGradientBrush(Color.FromArgb((byte)(255 * 0.7 * lvl * (light ? 0.6 : 1)), Hot.R, Hot.G, Hot.B), Color.FromArgb(0, Hot.R, Hot.G, Hot.B));
+                            var gc = GlowColor(op.Part);
+                            var g = new RadialGradientBrush(Color.FromArgb((byte)(255 * 0.7 * lvl * (light ? 0.6 : 1)), gc.R, gc.G, gc.B), Color.FromArgb(0, gc.R, gc.G, gc.B));
                             g.Freeze();
                             d.DrawEllipse(g, null, new Point(op.X, op.Y), op.R, op.R);
                             break;
@@ -544,7 +663,10 @@ namespace SMDWin.Views
                             break;
                         case OpT.Led:
                         {
-                            bool off = hot[2] && anim && ((int)(t / 0.125) % 2) == 1;
+                            // tested: fast; otherwise in the rhythm of the real disk activity; idle: steady
+                            double da = _live.DiskActive ?? 0;
+                            double period = hot[2] ? 0.25 : da > 3 ? 0.6 - 0.45 * Math.Min(1, da / 60) : 0;
+                            bool off = anim && period > 0 && ((int)(t / (period / 2)) % 2) == 1;
                             if (!off) d.DrawEllipse(B(Led), null, new Point(op.X, op.Y), 2, 2);
                             break;
                         }
@@ -581,7 +703,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>The callout ring: empty with a dash before / after the turn, a spinning arc while tested, the mark when done.</summary>
-        private void DrawRing(DrawingContext dc, double cx, double cy, double r, Callout c, Brush track, Color ink, Color sub, double dpi)
+        private void DrawRing(DrawingContext dc, double cx, double cy, double r, Callout c, Brush track, Color ink, Color sub, double dpi, double fill = 1)
         {
             dc.DrawEllipse(null, P(track, 5), new Point(cx, cy), r, r);
             if (c.State == PartState.Active)
@@ -593,10 +715,12 @@ namespace SMDWin.Views
             }
             if (c.State == PartState.Done && c.Mark is double m)
             {
-                double sweep = Math.Clamp(m, 0, 10) / 10 * 360;
+                // just finished: the ring fills and the number counts up to the mark
+                double shown = m * Math.Clamp(fill, 0, 1);
+                double sweep = Math.Clamp(shown, 0, 10) / 10 * 360;
                 if (sweep > 0.5) dc.DrawGeometry(null, P(B(Mark(m)), 5, null, 0, true), Arc(cx, cy, r, -90, -90 + Math.Min(359.5, sweep)));
                 var tf = new Typeface(TryFindResource("NumFont") as FontFamily ?? new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
-                var ft = new FormattedText(Format(m), CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, tf, 13.5, B(ink), dpi);
+                var ft = new FormattedText(Format(shown), CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, tf, 13.5, B(ink), dpi);
                 dc.DrawText(ft, new Point(cx - ft.Width / 2, cy - ft.Height / 2));
                 return;
             }

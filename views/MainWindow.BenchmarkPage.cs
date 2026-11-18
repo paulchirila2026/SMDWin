@@ -187,13 +187,25 @@ namespace SMDWin.Views
             hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
             hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 330 });
             _benchSketch = new DeviceSketch { MaxHeight = 500, Format = v => BNum(v), VerticalAlignment = VAlign.Center };
+            // the drawing follows the real readings: fans by load, glow by temperature, the disk LED by activity
+            _benchSketch.LiveSource = () =>
+            {
+                var snap = _lastTempSnap;
+                return new DeviceSketch.LiveData
+                {
+                    CpuTemp = snap?.CpuTemp, CpuLoad = snap?.CpuLoadPct, GpuTemp = snap?.GpuTemp, GpuLoad = snap?.GpuLoadPct,
+                    DiskActive = _lastDiskActivePct,
+                };
+            };
+            // the mouse over a part of the drawing lights up its card (and the mouse over a card lights up the part)
+            _benchSketch.PartHover += part => { _benchHoverPart = part; for (int i = 0; i < 4; i++) BenchCardBorder(i); };
             hero.Children.Add(_benchSketch);
             var right = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(20, 6, 0, 6), Margin = new Thickness(8, 0, 0, 0) };
             right.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
             Grid.SetColumn(right, 1);
             var allSp = new StackPanel { VerticalAlignment = VAlign.Center };
             allSp.Children.Add(BenchCaption(PT("General mark"), HAlign.Center));
-            _benchAllDial = new ScoreDial { Width = 160, Height = 140, Segments = 20, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
+            _benchAllDial = new ScoreDial { Width = 160, Height = 140, Segments = 20, CountUpDelay = 1.1, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
             allSp.Children.Add(_benchAllDial);
             allSp.Children.Add(BuildBenchClassPanel());
             right.Child = allSp;
@@ -992,7 +1004,21 @@ namespace SMDWin.Views
                 tests.Children.Add(row);
             }
             c.Card = card;
+            card.MouseEnter += (_, _) => { if (_benchSketch != null) _benchSketch.Highlight = index; };
+            card.MouseLeave += (_, _) => { if (_benchSketch != null && _benchSketch.Highlight == index) _benchSketch.Highlight = -1; };
             return card;
+        }
+
+        private int _benchHoverPart = -1, _benchWeakest = -1;
+
+        /// <summary>The card outline: blue tint while its part is under the mouse in the drawing, a faint amber for the weakest.</summary>
+        private void BenchCardBorder(int i)
+        {
+            var c = _benchComps[i];
+            if (c?.Card == null) return;
+            if (i == _benchHoverPart) c.Card.BorderBrush = BenchTint("DataBrush", 150);
+            else if (i == _benchWeakest) c.Card.BorderBrush = BenchTint("StatusCheckBrush", 80);
+            else c.Card.ClearValue(Border.BorderBrushProperty);
         }
 
         // ══ the view ═══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1036,8 +1062,9 @@ namespace SMDWin.Views
                 bool weak = i == weakest;
                 c.WeakText.Visibility = weak ? Visibility.Visible : Visibility.Collapsed;
                 // the weakest card: a faint amber outline (the "▲ weakest component" line says it; a strong frame shouted)
-                if (weak) c.Card.BorderBrush = BenchTint("StatusCheckBrush", 80);
-                else c.Card.ClearValue(Border.BorderBrushProperty);
+                if (weak) _benchWeakest = i;
+                else if (_benchWeakest == i) _benchWeakest = -1;
+                BenchCardBorder(i);
                 string? advice = _benchRunning ? null : BenchAdvice(i);
                 c.AdviceText.Text = advice ?? "";
                 c.AdviceText.Visibility = advice != null ? Visibility.Visible : Visibility.Collapsed;
