@@ -51,14 +51,15 @@ namespace SMDWin.Views
                 ScanAction  = () => Task.Run(() =>
                 {
                     var sizes = new Dictionary<string, long>();
-                    sizes["Temp"]       = GetFolderSize(System.IO.Path.GetTempPath())
-                                        + GetFolderSize(@"C:\Windows\Temp");
-                    sizes["Prefetch"]   = GetFolderSize(@"C:\Windows\Prefetch");
+                    // the same folders and rules as the clean-up itself (TempCleanup: only the two checked Temp folders, files older than 7 days)
+                    var rules = SMDWin.Services.TempCleanup.MakeRules(true);
+                    sizes["Temp"]       = SMDWin.Services.TempCleanup.SafeRoots()
+                                            .Sum(r => SMDWin.Services.TempCleanup.Files(r).Where(f => SMDWin.Services.TempCleanup.MayDelete(f, rules)).Sum(f => { try { return f.Length; } catch { return 0L; } }));
+                    sizes["Prefetch"]   = GetFolderSize(System.IO.Path.Combine(WinDir, "Prefetch"), "*.pf");
                     sizes["Thumb"]      = GetFolderSize(System.IO.Path.Combine(
                                             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                                             @"Microsoft\Windows\Explorer"), "thumbcache*.db");
-                    sizes["WinUpdate"]  = GetFolderSize(@"C:\Windows\SoftwareDistribution\Download");
-                    sizes["EventLog"]   = GetFolderSize(@"C:\Windows\System32\winevt\Logs", "*.evtx");
+                    sizes["WinUpdate"]  = GetFolderSize(System.IO.Path.Combine(WinDir, @"SoftwareDistribution\Download"));
                     sizes["RecycleBin"] = GetRecycleBinSize();
                     return sizes;
                 }),
@@ -68,17 +69,23 @@ namespace SMDWin.Views
                     await Task.Run(() =>
                     {
                         if (selected.GetValueOrDefault("Temp"))
-                        { freed += DeleteFolder(System.IO.Path.GetTempPath()); freed += DeleteFolder(@"C:\Windows\Temp"); }
+                        {
+                            var rules = SMDWin.Services.TempCleanup.MakeRules(true);
+                            foreach (var root in SMDWin.Services.TempCleanup.SafeRoots())
+                            {
+                                var r = SMDWin.Services.TempCleanup.Clean(root, rules);
+                                freed += r.Freed;
+                                AppLogger.Info($"Auto-Clean: {root} -> {FormatBytes(r.Freed)} freed, {r.Deleted} deleted, {r.Skipped} skipped (in use or protected)");
+                            }
+                        }
                         if (selected.GetValueOrDefault("Prefetch"))
-                            freed += DeleteFolder(@"C:\Windows\Prefetch");
+                            freed += DeleteFiles(System.IO.Path.Combine(WinDir, "Prefetch"), "*.pf");   // only the .pf traces, nothing else in that folder
                         if (selected.GetValueOrDefault("Thumb"))
                             freed += DeleteFiles(System.IO.Path.Combine(
                                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                                 @"Microsoft\Windows\Explorer"), "thumbcache*.db");
                         if (selected.GetValueOrDefault("WinUpdate"))
-                            freed += DeleteFolder(@"C:\Windows\SoftwareDistribution\Download");
-                        if (selected.GetValueOrDefault("EventLog"))
-                            freed += DeleteFiles(@"C:\Windows\System32\winevt\Logs", "*.evtx");
+                            freed += CleanWindowsUpdateDownloads();
                         if (selected.GetValueOrDefault("RecycleBin"))
                             EmptyRecycleBin();
                     });
@@ -100,42 +107,62 @@ namespace SMDWin.Views
             catch { return 0; }
         }
 
+        private static string WinDir => Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
         /// <summary>
-        /// Empties the content of a temporary folder. Does not touch the app's own folder (%TEMP%\SMDWin: the "bundle" tools)
-        /// and does NOT follow links (junction / symlink) to other folders. Errors are written to the log.
+        /// The downloaded update files (SoftwareDistribution\Download). Never while an update is half installed (a restart is
+        /// pending, or the Windows Modules Installer is working) — that could break the update. Otherwise the update services are
+        /// stopped for the moment of the deletion (as Microsoft's own reset does) and started again; the files are downloaded
+        /// again by Windows if it still needs them. Links are not followed.
         /// </summary>
-        private static long DeleteFolder(string path)
+        private static long CleanWindowsUpdateDownloads()
         {
-            long freed = 0;
-            int failed = 0;
-            string own = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SMDWin").TrimEnd('\\');
-            void Walk(string dir)
+            string dir = System.IO.Path.Combine(WinDir, @"SoftwareDistribution\Download");
+            if (!System.IO.Directory.Exists(dir)) return 0;
+            if (SMDWin.Services.TempCleanup.RebootPending() || ServiceRunning("TrustedInstaller"))
             {
-                if (dir.TrimEnd('\\').Equals(own, StringComparison.OrdinalIgnoreCase)) return;   // the app folder
-                try
-                {
-                    foreach (var f in System.IO.Directory.EnumerateFiles(dir))
-                        try { var fi = new System.IO.FileInfo(f); long len = fi.Length; fi.Delete(); freed += len; } catch { failed++; }
-                    foreach (var d in System.IO.Directory.EnumerateDirectories(dir))
-                    {
-                        try
-                        {
-                            var di = new System.IO.DirectoryInfo(d);
-                            if ((di.Attributes & System.IO.FileAttributes.ReparsePoint) != 0)
-                            {   // link: only the link is deleted, not what is behind it
-                                di.Delete(false); continue;
-                            }
-                            Walk(d);
-                            if (!d.TrimEnd('\\').Equals(own, StringComparison.OrdinalIgnoreCase)) di.Delete(false);   // only if it was left empty
-                        }
-                        catch { failed++; }
-                    }
-                }
-                catch (Exception ex) { AppLogger.Warning(ex, "AutoClean.DeleteFolder " + dir); }
+                AppLogger.Info("Auto-Clean: Windows Update files kept — an update is being installed or a restart is pending");
+                return 0;
             }
-            if (System.IO.Directory.Exists(path)) Walk(path);
-            AppLogger.Info($"Auto-Clean: {path} -> {FormatBytes(freed)} freed, {failed} items skipped (in use or protected)");
+            var stopped = new List<string>();
+            foreach (var svc in new[] { "wuauserv", "bits" })
+                if (ServiceRunning(svc) && RunSc($"stop {svc}")) stopped.Add(svc);
+            long freed = 0; int failed = 0;
+            try
+            {
+                var opt = new System.IO.EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = System.IO.FileAttributes.ReparsePoint };
+                foreach (var f in new System.IO.DirectoryInfo(dir).EnumerateFiles("*", opt).ToList())
+                    try { long len = f.Length; f.Delete(); freed += len; } catch { failed++; }
+                foreach (var d in new System.IO.DirectoryInfo(dir).EnumerateDirectories("*", opt).OrderByDescending(x => x.FullName.Length).ToList())
+                    try { if (!d.EnumerateFileSystemInfos().Any()) d.Delete(false); } catch { }
+            }
+            catch (Exception ex) { AppLogger.Warning(ex, "Auto-Clean Windows Update files"); }
+            finally
+            {
+                foreach (var svc in stopped) RunSc($"start {svc}");
+            }
+            AppLogger.Info($"Auto-Clean: Windows Update files -> {FormatBytes(freed)} freed, {failed} skipped");
             return freed;
+        }
+
+        private static bool ServiceRunning(string name)
+        {
+            try { using var sc = new System.ServiceProcess.ServiceController(name); return sc.Status == System.ServiceProcess.ServiceControllerStatus.Running; }
+            catch { return false; }
+        }
+
+        private static bool RunSc(string args)
+        {
+            try
+            {
+                using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("sc.exe", args) { CreateNoWindow = true, UseShellExecute = false });
+                p?.WaitForExit(30_000);
+                // "stop" returns before the service has stopped: wait for it a little
+                if (args.StartsWith("stop "))
+                    for (int i = 0; i < 20 && ServiceRunning(args[5..]); i++) System.Threading.Thread.Sleep(500);
+                return true;
+            }
+            catch { return false; }
         }
 
         private static long DeleteFiles(string path, string pattern)

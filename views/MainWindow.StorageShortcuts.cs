@@ -42,51 +42,8 @@ namespace SMDWin.Views
         // ── Quick Shortcut handlers ────────────────────────────────────────────
         internal void ShortcutAutoClean_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool isLight = SMDWin.Services.ThemeManager.IsLight(SMDWin.Services.SettingsService.Current.ThemeName) ||
-                               (SMDWin.Services.SettingsService.Current.ThemeName == "Auto" &&
-                                !SMDWin.Services.ThemeManager.IsDark(SMDWin.Services.ThemeManager.ResolveAuto()));
-                var dlg = new AutoCleanDialog(isLight)
-                {
-                    Owner       = this,
-                    FormatBytes = FormatBytes,
-                    ScanAction  = () => Task.Run(() =>
-                    {
-                        var sizes = new Dictionary<string, long>();
-                        sizes["Temp"]      = GetFolderSize(System.IO.Path.GetTempPath()) + GetFolderSize(@"C:\Windows\Temp");
-                        sizes["Prefetch"]  = GetFolderSize(@"C:\Windows\Prefetch");
-                        sizes["Thumb"]     = GetFolderSize(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\Explorer"), "thumbcache*.db");
-                        sizes["WinUpdate"] = GetFolderSize(@"C:\Windows\SoftwareDistribution\Download");
-                        sizes["EventLog"]  = GetFolderSize(@"C:\Windows\System32\winevt\Logs", "*.evtx");
-                        sizes["RecycleBin"] = GetRecycleBinSize();
-                        return sizes;
-                    }),
-                    CleanAction = async (selected) =>
-                    {
-                        long freed = 0;
-                        await Task.Run(() =>
-                        {
-                            if (selected.GetValueOrDefault("Temp"))
-                            { freed += DeleteFolder(System.IO.Path.GetTempPath()); freed += DeleteFolder(@"C:\Windows\Temp"); }
-                            if (selected.GetValueOrDefault("Prefetch"))
-                                freed += DeleteFolder(@"C:\Windows\Prefetch");
-                            if (selected.GetValueOrDefault("Thumb"))
-                                freed += DeleteFiles(System.IO.Path.Combine(
-                                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                                    @"Microsoft\Windows\Explorer"), "thumbcache*.db");
-                            if (selected.GetValueOrDefault("WinUpdate"))
-                                freed += DeleteFolder(@"C:\Windows\SoftwareDistribution\Download");
-                            if (selected.GetValueOrDefault("EventLog"))
-                                freed += DeleteFiles(@"C:\Windows\System32\winevt\Logs", "*.evtx");
-                            if (selected.GetValueOrDefault("RecycleBin"))
-                                EmptyRecycleBin();
-                        });
-                        return freed;
-                    },
-                };
-                dlg.ShowDialog();
-            }
+            // the same dialog and the same safe rules as Tools → Auto-Clean (one copy of the clean-up code, not two)
+            try { AutoClean_Click(sender, e); }
             catch (Exception ex) { SetShortcutResult($"Could not open Auto Clean: {ex.Message}"); }
         }
 

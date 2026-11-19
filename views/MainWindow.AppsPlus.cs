@@ -283,6 +283,9 @@ namespace SMDWin.Views
                 path = path.Trim().Trim('"').TrimEnd('\\');
                 if (!Directory.Exists(path) || !seen.Add(path)) return;
                 if (!AppCommands.IsOwnFolder(path, AppInsight.SharedFoldersPublic())) return;
+                // nothing inside the Windows folder is ever proposed, whatever the uninstaller said its folder was
+                string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\');
+                if (winDir.Length > 0 && (path.Equals(winDir, StringComparison.OrdinalIgnoreCase) || path.StartsWith(winDir + "\\", StringComparison.OrdinalIgnoreCase))) return;
                 if (stillInstalled.Any(o => AppCommands.IsInside(o.InstallLocation, path) || string.Equals((o.InstallLocation ?? "").Trim().TrimEnd('\\'), path, StringComparison.OrdinalIgnoreCase))) return;
                 found.Add(new Leftover(path, false, DirSize(path)));
             }

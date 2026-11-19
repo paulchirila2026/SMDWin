@@ -43,7 +43,6 @@ namespace SMDWin.Views
         private bool _busy, _done;
 
         private static string PT(string en, params object?[] a) => MainWindow.PT(en, a);
-        private static string Own => System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SMDWin");
 
         public TempCleanDialog()
         {
@@ -52,17 +51,21 @@ namespace SMDWin.Views
             root.Children.Add(DialogKit.Header(this, "Icon.Delete", PT("Temporary files"),
                 PT("Files left by programs and by Windows while they work. Documents, pictures and programs are not touched. Files a program is using right now are skipped."), out _));
 
-            AddTarget(PT("Temp of this account"), PT("programs, installers, browser updates"), System.IO.Path.GetTempPath());
-            AddTarget(PT("Windows Temp"), PT("left over from updates and services"),
-                      System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"));
+            // only the two folders TempCleanup has checked (never the TEMP/TMP variables, which may point anywhere)
+            foreach (var root in TempCleanup.SafeRoots())
+            {
+                bool windows = root.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
+                AddTarget(windows ? PT("Windows Temp") : PT("Temp of this account"),
+                          windows ? PT("left over from updates and services") : PT("programs, installers, browser updates"), root);
+            }
             foreach (var t in _targets) root.Children.Add(TargetRow(t));
 
             _olderOnly = new CheckBox { IsChecked = true, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
             _olderOnly.Checked += (_, _) => _ = ScanAsync(); _olderOnly.Unchecked += (_, _) => _ = ScanAsync();
             var optText = new StackPanel();
-            var ot = DialogKit.Text(PT("Only files older than 1 day"), Ui.FontM, semibold: true);
+            var ot = DialogKit.Text(PT("Only files older than 7 days"), Ui.FontM, semibold: true);
             optText.Children.Add(ot);
-            optText.Children.Add(DialogKit.Text(PT("today's files may belong to an installation that is still running"), Ui.FontXS, secondary: true));
+            optText.Children.Add(DialogKit.Text(PT("like Windows' own Disk Cleanup — newer files may belong to a program or an installation still in progress"), Ui.FontXS, secondary: true));
             var opt = new DockPanel(); opt.Children.Add(_olderOnly); opt.Children.Add(optText);
             root.Children.Add(DialogKit.RowCard(opt, () => _olderOnly.IsChecked = !(_olderOnly.IsChecked ?? false)));
 
@@ -71,6 +74,12 @@ namespace SMDWin.Views
             var note = DialogKit.Text(PT("ⓘ The files are deleted for good (not to the Recycle Bin), but nothing here is needed by programs — it is created again when needed."), Ui.FontXS, secondary: true);
             note.Margin = new Thickness(2, 4, 2, 0);
             root.Children.Add(note);
+            if (TempCleanup.RebootPending())
+            {
+                var pend = DialogKit.Text(PT("ⓘ Windows is waiting for a restart: the files that restart still needs are kept."), Ui.FontXS, secondary: true);
+                pend.Margin = new Thickness(2, 4, 2, 0);
+                root.Children.Add(pend);
+            }
 
             var left = new StackPanel();
             _total = DialogKit.Text("—", Ui.FontL, semibold: true);
@@ -121,35 +130,27 @@ namespace SMDWin.Views
             return p.StartsWith(user, StringComparison.OrdinalIgnoreCase) ? @"C:\Users\…" + p[user.Length..] : p;
         }
 
-        private bool Eligible(FileInfo f, bool olderOnly, DateTime cutoff) =>
-            !f.FullName.StartsWith(Own, StringComparison.OrdinalIgnoreCase) && (!olderOnly || f.LastWriteTime < cutoff);
-
-        private static IEnumerable<FileInfo> Files(DirectoryInfo d)
-        {
-            var opt = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint };
-            try { return d.EnumerateFiles("*", opt); } catch { return Array.Empty<FileInfo>(); }
-        }
 
         private async Task ScanAsync()
         {
             if (_busy || _done) return;
             _busy = true; _deleteBtn.IsEnabled = false; _status.Text = PT("Scanning…");
             bool olderOnly = _olderOnly.IsChecked == true;
-            var cutoff = DateTime.Now.AddDays(-1);
             var targets = _targets.Select(t => t.Path).ToList();
             var result = await Task.Run(() =>
             {
+                var rules = TempCleanup.MakeRules(olderOnly);
                 var per = new List<(long Bytes, int Files)>();
                 var tops = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
                 foreach (var path in targets)
                 {
                     long bytes = 0; int files = 0;
                     var root = new DirectoryInfo(path);
-                    foreach (var f in Files(root))
+                    foreach (var f in TempCleanup.Files(path))
                     {
                         try
                         {
-                            if (!Eligible(f, olderOnly, cutoff)) continue;
+                            if (!TempCleanup.MayDelete(f, rules)) continue;
                             bytes += f.Length; files++;
                             // the top-level item inside Temp it belongs to (a folder or a single file)
                             string rel = f.FullName.Substring(root.FullName.TrimEnd('\\').Length + 1);
@@ -204,35 +205,15 @@ namespace SMDWin.Views
             _busy = true; _deleteBtn.IsEnabled = false; _cancelBtn.IsEnabled = false;
             _status.Text = PT("Deleting…");
             bool olderOnly = _olderOnly.IsChecked == true;
-            var cutoff = DateTime.Now.AddDays(-1);
             var paths = _targets.Where(t => t.Check.IsChecked == true).Select(t => t.Path).ToList();
             var (freed, deleted, skipped) = await Task.Run(() =>
             {
+                var rules = TempCleanup.MakeRules(olderOnly);
                 long fr = 0; int del = 0, sk = 0;
                 foreach (var path in paths)
                 {
-                    var root = new DirectoryInfo(path);
-                    foreach (var f in Files(root).ToList())
-                    {
-                        try
-                        {
-                            if (!Eligible(f, olderOnly, cutoff)) continue;
-                            long len = f.Length;
-                            if (f.IsReadOnly) f.IsReadOnly = false;
-                            f.Delete(); fr += len; del++;
-                        }
-                        catch { sk++; }   // in use or protected: left alone
-                    }
-                    // the folders left empty (deepest first); never the Temp folder itself, never SMD Win's own folder
-                    try
-                    {
-                        var dirs = root.EnumerateDirectories("*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint })
-                                       .Where(d => !d.FullName.StartsWith(Own, StringComparison.OrdinalIgnoreCase))
-                                       .OrderByDescending(d => d.FullName.Length).ToList();
-                        foreach (var d in dirs)
-                            try { if (!d.EnumerateFileSystemInfos().Any()) d.Delete(); } catch { }
-                    }
-                    catch { }
+                    var r = TempCleanup.Clean(path, rules);
+                    fr += r.Freed; del += r.Deleted; sk += r.Skipped;
                 }
                 return (fr, del, sk);
             });

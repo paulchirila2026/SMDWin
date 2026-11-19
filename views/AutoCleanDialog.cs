@@ -39,7 +39,7 @@ namespace SMDWin.Views
             new("Thumb",      "Icon.Display",  SL("CatThumbLabel"),      SL("CatThumbDesc"),      true,  false, ""),
             new("WinUpdate",  "Icon.Download", SL("CatWinUpdateLabel"),  SL("CatWinUpdateDesc"),  false, false, ""),
             new("Prefetch",   "Icon.Startup",  SL("CatPrefetchLabel"),   SL("CatPrefetchDesc"),   false, true,  SL("TipPrefetch")),
-            new("EventLog",   "Icon.Log",      SL("CatEventLogLabel"),   SL("CatEventLogDesc"),   false, true,  SL("TipEventLog")),
+            // the event logs are no longer offered: they are the history this app diagnoses from (crashes, shutdowns, disk errors)
             new("RecycleBin", "Icon.Delete",   SL("CatRecycleBinLabel"), SL("CatRecycleBinDesc"), false, true,  SL("TipRecycleBin")),
         };
 
