@@ -173,8 +173,23 @@ namespace SMDWin.Views
         // the minimum and maximum speed of the sequential test (shown under the dials: ▼ min  ▲ max)
         private double _seqWriteMin = double.MaxValue, _seqWriteMax, _seqReadMin = double.MaxValue, _seqReadMax;
 
+        // The whole run on one chart: each stage has its own section (sequential write and read wide, then 4K read, 4K write,
+        // latency and the queue-depth tests), so the chart fills until the end of the test, not only during the sequential part.
+        private double _benchBar;                  // the overall progress, 0–1
+        private bool   _benchDone;
+        private int    _benchSeqPasses, _benchTotalUnits;
+        private string _benchStageKey = "";
+        private int    _benchStageIdx = -1;        // the furthest stage reached (index in BenchStageKeys)
+        private static readonly string[] BenchStageKeys = { "seqw", "seqr", "r4k", "w4k", "lat", "qd" };
+        // the disk throughput measured during the later stages: (place inside the stage 0–1, MB/s, write?)
+        private readonly Dictionary<string, List<(double F, double V, bool W)>> _stageSamples = new();
+        private readonly Dictionary<string, string> _stageValue = new();
+
         private void ResetSeqChart()
         {
+            _benchBar = 0; _benchDone = false; _benchSeqPasses = 0; _benchTotalUnits = 0;
+            _benchStageKey = ""; _benchStageIdx = -1;
+            _stageSamples.Clear(); _stageValue.Clear();
             Array.Clear(_seqWriteSum); Array.Clear(_seqReadSum);
             Array.Clear(_seqWriteCnt); Array.Clear(_seqReadCnt);
             _seqTotalMB = 0; _seqReadActive = false; _seqLive = false;
@@ -263,6 +278,11 @@ namespace SMDWin.Views
                 double realR = readActive  ? rawRead  : 0.0;
                 _realEmaWrite += BenchEmaAlpha * (realW - _realEmaWrite);
                 _realEmaRead  += BenchEmaAlpha * (realR - _realEmaRead);
+                if (_benchStageKey is "r4k" or "w4k" or "lat" or "qd" && (writeActive || readActive))
+                {
+                    if (!_stageSamples.TryGetValue(_benchStageKey, out var list)) _stageSamples[_benchStageKey] = list = new();
+                    list.Add((StageFrac(_benchStageKey, _benchBar), writeActive ? realW : realR, writeActive));
+                }
 
                 // Values shown on the dials: active phase → real EMA; inactive → frozen average
                 // (the user sees "I wrote at X MB/s" even after the phase ends)
@@ -286,6 +306,7 @@ namespace SMDWin.Views
                 if (TxtBenchPhase     != null) TxtBenchPhase.Text     = p.Message;
                 _seqLive = p.SeqFraction >= 0;
                 UpdateStageStrip(p.Phase, p.Message);
+                NoteBenchProgress(p);
                 if (p.SeqFraction >= 0) AddSeqPoint(p.Phase == "write", p.SeqFraction, p.CurrentMBps, p.SeqTotalMB);
 
                 int pct = (int)Math.Round(p.BarFraction * 100);
@@ -530,7 +551,7 @@ namespace SMDWin.Views
             _liveChartCanvas.SizeChanged += (_, _) => { if (_liveChartCanvas != null) DrawSeqChart(_liveChartCanvas); };
             var chartHost = new Border
             {
-                Margin = new Thickness(0, 8, 0, 0), Height = 190, MaxWidth = 900, CornerRadius = new CornerRadius(6),
+                Margin = new Thickness(0, 8, 0, 0), Height = 220, MaxWidth = 1500, CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(8, 6, 8, 4), Child = _liveChartCanvas, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
             };
             chartHost.SetResourceReference(Border.BackgroundProperty, "BgInputBrush");
@@ -560,6 +581,7 @@ namespace SMDWin.Views
                 _liveStageChips.Add((key, chip));
             }
             _liveStageIndex = -1;
+            stageStrip.Visibility = Visibility.Collapsed;   // the labels under the chart sections show the stages now
 
             var inner = new StackPanel { HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch, VerticalAlignment = System.Windows.VerticalAlignment.Center };
             inner.Children.Add(dialsRow); inner.Children.Add(progressBlock); inner.Children.Add(legend); inner.Children.Add(chartHost); inner.Children.Add(stageStrip);
@@ -582,9 +604,13 @@ namespace SMDWin.Views
             FillBenchViewport(liveBorder);
             liveBorder.SizeChanged += (_, e) =>
             {
-                double h = Math.Clamp((e.NewSize.Height - 330) * 0.75, 140, 230);
+                // the chart gets most of the height (it shows the whole run); the dials take what is left. The sum stays under
+                // the card height, so the card (MinHeight = the visible area) does not grow from its own resize.
+                double H = e.NewSize.Height;
+                double h = Math.Clamp((H - 420) * 0.45, 120, 200);
                 foreach (var g in new[] { _liveWriteGauge, _liveReadGauge })
                     if (g != null) { g.Height = h; g.Width = h * 1.16; }
+                chartHost.Height = Math.Clamp(H - h - 230, 200, 460);
             };
         }
 
@@ -651,6 +677,66 @@ namespace SMDWin.Views
 
         private static string FmtDataMB(double mb) => mb >= 1000 ? $"{mb / 1024:0.#} GB" : $"{mb:0} MB";
 
+        private void NoteBenchProgress(SMDWin.Services.BenchmarkProgress p)
+        {
+            if (p.SeqPasses > 0) _benchSeqPasses = p.SeqPasses;
+            if (p.TotalUnits > 0) _benchTotalUnits = p.TotalUnits;
+            // preparing the 4K file (written before the 4K read): the 4K read section is shown as next, but empty — the writes of
+            // the preparation are not the 4K test, and its progress would fill the section before the test starts
+            if (p.Message?.Contains("preparing", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                _benchStageIdx = Math.Max(_benchStageIdx, 2); _benchStageKey = "";
+                return;
+            }
+            _benchBar = p.BarFraction;
+            if (p.Phase == "done") { _benchDone = true; _benchStageIdx = BenchStageKeys.Length; _benchStageKey = ""; return; }
+            string key = StageKeyFor(p.Phase, p.Message);
+            int idx = Array.IndexOf(BenchStageKeys, key);
+            if (idx < 0 || idx < _benchStageIdx) return;
+            _benchStageIdx = idx; _benchStageKey = key;
+
+            static string L(string en, string ro, string de, string fr) => SMDWin.Services.LanguageService.CurrentCode switch
+                { "ro" => ro, "de" => de, "fr" => fr, _ => en };
+            if (key is "r4k" or "w4k" && p.Iops > 0)
+                _stageValue[key] = $"{p.Iops:N0} IOPS";
+            else if (key == "lat" && p.LatencyUs > 0)
+                _stageValue[key] = p.LatencyUs < 1000 ? $"{p.LatencyUs:0} µs" : $"{p.LatencyUs / 1000:0.0} ms";
+            else if (key == "qd")
+            {
+                string m = p.Message ?? "";
+                string q = m.Contains("QD32") ? "QD32" : "QD8";
+                bool w = p.Phase is "write" or "iops_write";
+                _stageValue[key] = q + " " + (w ? L("write", "scriere", "Schreiben", "écriture") : L("read", "citire", "Lesen", "lecture"));
+            }
+        }
+
+        /// <summary>The sections of the chart: progress units (as the service counts them) and the visual place of each stage.</summary>
+        private List<(string Key, double U0, double UL, double X0, double XL)> BenchStages()
+        {
+            int n = Math.Max(1, _benchSeqPasses);
+            bool qd = _benchTotalUnits == 0 || _benchTotalUnits > 2 * n + 3;
+            double[] vis   = qd ? new[] { 0.29, 0.29, 0.09, 0.09, 0.08, 0.16 } : new[] { 0.33, 0.33, 0.12, 0.12, 0.10 };
+            double[] units = { n, n, 1, 1, 1, 4 };
+            var list = new List<(string, double, double, double, double)>();
+            double u = 0, x = 0;
+            for (int k = 0; k < vis.Length; k++)
+            {
+                list.Add((BenchStageKeys[k], u, units[k], x, vis[k]));
+                u += units[k]; x += vis[k];
+            }
+            return list;
+        }
+
+        /// <summary>How far a stage has got (0–1), from the overall progress.</summary>
+        private double StageFrac(string key, double bar)
+        {
+            int total = _benchTotalUnits > 0 ? _benchTotalUnits : 0;
+            if (total == 0) return 0;
+            foreach (var st in BenchStages())
+                if (st.Key == key) return Math.Clamp((bar * total - st.U0) / st.UL, 0, 1);
+            return 0;
+        }
+
         private void DrawSeqChart(Canvas cv)
         {
             cv.Children.Clear();
@@ -660,7 +746,11 @@ namespace SMDWin.Views
             var writeColor = WpfColor.FromRgb(249, 115, 22);   // the same as the "Write" label
             var readColor  = WpfColor.FromRgb(34, 197, 94);    // the same as the "Read" label
             var labelBrush = (TryFindResource("TextSecondaryBrush") as Brush) ?? System.Windows.Media.Brushes.Gray;
+            var okBrush     = (TryFindResource("StatusOkBrush") as Brush) ?? new SolidColorBrush(readColor);
+            var accentBrush = (TryFindResource("AccentBrush") as Brush) ?? System.Windows.Media.Brushes.DodgerBlue;
             var gridBrush  = new SolidColorBrush(WpfColor.FromArgb(40, 140, 150, 170));
+            var stages = BenchStages();
+            (string Key, double U0, double UL, double X0, double XL) St(string key) => stages.First(t => t.Key == key);
 
             double max = 0;
             for (int i = 0; i < SeqBuckets; i++)
@@ -668,14 +758,17 @@ namespace SMDWin.Views
                 if (_seqWriteCnt[i] > 0) max = Math.Max(max, _seqWriteSum[i] / _seqWriteCnt[i]);
                 if (_seqReadCnt[i]  > 0) max = Math.Max(max, _seqReadSum[i]  / _seqReadCnt[i]);
             }
+            foreach (var l in _stageSamples.Values) foreach (var sm in l) max = Math.Max(max, sm.V);
             double top = SeqTops[^1];
             foreach (double t in SeqTops) if (t >= Math.Max(1, max) * 1.12) { top = t; break; }
             if (max > top) top = max * 1.15;
 
-            const double pL = 46, pR = 12, pT = 8, pB = 20;
+            const double pL = 46, pR = 12, pT = 8, pB = 22;
             static string L(string en, string ro, string de, string fr) => SMDWin.Services.LanguageService.CurrentCode switch
                 { "ro" => ro, "de" => de, "fr" => fr, _ => en };
             double cW = w - pL - pR, cH = h - pT - pB;
+            double X(string key, double f) { var st = St(key); return pL + cW * (st.X0 + st.XL * Math.Clamp(f, 0, 1)); }
+            double Y(double v) => pT + cH * (1 - Math.Clamp(v / top, 0, 1));
 
             void Label(string text, double x, double y, double width, TextAlignment align)
             {
@@ -684,75 +777,137 @@ namespace SMDWin.Views
                 cv.Children.Add(tb);
             }
 
-            // Y axis: speed (MB/s)
+            // Y axis: speed (MB/s) — the same scale for every section
             for (int g = 0; g <= 4; g++)
             {
                 double y = pT + cH * (1 - g / 4.0);
-                cv.Children.Add(new System.Windows.Shapes.Line { X1 = pL, X2 = pL + cW, Y1 = y, Y2 = y, Stroke = gridBrush, StrokeThickness = 1 });
+                cv.Children.Add(new Line { X1 = pL, X2 = pL + cW, Y1 = y, Y2 = y, Stroke = gridBrush, StrokeThickness = 1 });
                 double v = top * g / 4.0;
                 if (g > 0) Label(v >= 1000 ? $"{v / 1000:0.#}K" : $"{v:0}", 0, y - 8, pL - 6, TextAlignment.Right);
             }
-            // X axis: the write takes the left half, the read the right half — they show one after the other, not overlapping
+
+            // sections: a dotted separator and, under the axis, the stage name (✓ done, accent = now, grey = still to come)
+            string data = _seqTotalMB > 0 ? " · " + FmtDataMB(_seqTotalMB) : "";
+            var names = new Dictionary<string, string>
             {
-                double mid = pL + cW / 2;
-                cv.Children.Add(new System.Windows.Shapes.Line { X1 = mid, X2 = mid, Y1 = pT, Y2 = pT + cH, Stroke = gridBrush, StrokeThickness = 1, StrokeDashArray = new DoubleCollection { 3, 3 } });
-                string data = _seqTotalMB > 0 ? " · " + FmtDataMB(_seqTotalMB) : "";
-                var wl = new TextBlock { Text = L("Write", "Scriere", "Schreiben", "Écriture") + data, FontSize = Ui.FontXS, Foreground = new SolidColorBrush(writeColor), Width = cW / 2, TextAlignment = TextAlignment.Center };
-                var rl = new TextBlock { Text = L("Read", "Citire", "Lesen", "Lecture") + data, FontSize = Ui.FontXS, Foreground = new SolidColorBrush(readColor), Width = cW / 2, TextAlignment = TextAlignment.Center };
-                Canvas.SetLeft(wl, pL); Canvas.SetTop(wl, pT + cH + 3);
-                Canvas.SetLeft(rl, mid); Canvas.SetTop(rl, pT + cH + 3);
-                cv.Children.Add(wl); cv.Children.Add(rl);
+                ["seqw"] = L("Write", "Scriere", "Schreiben", "Écriture") + data,
+                ["seqr"] = L("Read", "Citire", "Lesen", "Lecture") + data,
+                ["r4k"]  = L("4K read", "Citire 4K", "4K lesen", "Lecture 4K"),
+                ["w4k"]  = L("4K write", "Scriere 4K", "4K schreiben", "Écriture 4K"),
+                ["lat"]  = L("Latency", "Latență", "Latenz", "Latence"),
+                ["qd"]   = L("Queue depth", "Adâncime coadă", "Warteschlange", "Profondeur de file"),
+            };
+            for (int k = 0; k < stages.Count; k++)
+            {
+                var st = stages[k];
+                double x0 = pL + cW * st.X0, sw = cW * st.XL;
+                if (k > 0)
+                    cv.Children.Add(new Line { X1 = x0, X2 = x0, Y1 = pT, Y2 = pT + cH, Stroke = gridBrush, StrokeThickness = 1, StrokeDashArray = new DoubleCollection { 3, 3 } });
+                bool done = k < _benchStageIdx || _benchDone, now = !done && k == _benchStageIdx;
+                Brush fg = k < 2 && !now ? new SolidColorBrush(k == 0 ? writeColor : readColor) : done ? okBrush : now ? accentBrush : labelBrush;
+                var tb = new TextBlock
+                {
+                    Text = (done && k >= 2 ? "✓ " : "") + names[st.Key], FontSize = Ui.FontXS, Foreground = fg,
+                    FontWeight = now ? FontWeights.SemiBold : FontWeights.Normal,
+                    Width = sw, TextAlignment = TextAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis,
+                };
+                Canvas.SetLeft(tb, x0); Canvas.SetTop(tb, pT + cH + 4);
+                cv.Children.Add(tb);
             }
 
-            void Series(double[] sum, int[] cnt, WpfColor color, bool active, double xOff)
+            void Area(PointCollection pts, WpfColor color, bool dot)
             {
-                var pts = new PointCollection();
-                double lastX = 0, lastY = 0;
-                for (int i = 0; i < SeqBuckets; i++)
-                {
-                    if (cnt[i] == 0) continue;
-                    lastX = pL + cW * (xOff + 0.5 * (i + 0.5) / SeqBuckets);
-                    lastY = pT + cH * (1 - Math.Clamp(sum[i] / cnt[i] / top, 0, 1));
-                    pts.Add(new System.Windows.Point(lastX, lastY));
-                }
                 if (pts.Count == 0) return;
-                var area = new PointCollection(pts) { new System.Windows.Point(lastX, pT + cH) };
-                area.Insert(0, new System.Windows.Point(pts[0].X, pT + cH));
-                cv.Children.Add(new System.Windows.Shapes.Polygon { Points = area, Fill = new SolidColorBrush(WpfColor.FromArgb(30, color.R, color.G, color.B)) });
-                cv.Children.Add(new System.Windows.Shapes.Polyline
+                var area = new PointCollection(pts) { new WpfPoint(pts[^1].X, pT + cH) };
+                area.Insert(0, new WpfPoint(pts[0].X, pT + cH));
+                cv.Children.Add(new Polygon { Points = area, Fill = new SolidColorBrush(WpfColor.FromArgb(30, color.R, color.G, color.B)) });
+                cv.Children.Add(new Polyline
                 {
                     Points = pts, Stroke = new SolidColorBrush(color), StrokeThickness = 2,
                     StrokeLineJoin = PenLineJoin.Round, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round,
                 });
-                if (active)
+                if (dot)
                 {
-                    var dot = new System.Windows.Shapes.Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush(color) };
-                    Canvas.SetLeft(dot, lastX - 4); Canvas.SetTop(dot, lastY - 4);
-                    cv.Children.Add(dot);
+                    var e = new Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush(color) };
+                    Canvas.SetLeft(e, pts[^1].X - 4); Canvas.SetTop(e, pts[^1].Y - 4);
+                    cv.Children.Add(e);
                 }
             }
-            bool running = _seqLive;
-            Series(_seqWriteSum, _seqWriteCnt, writeColor, running && !_seqReadActive, 0.0);
-            Series(_seqReadSum,  _seqReadCnt,  readColor,  running && _seqReadActive, 0.5);
 
-            // the average of each half (dotted line + value) or "no data" when the half is empty
-            void Average(double[] sum, int[] cnt, WpfColor color, double xOff, string none)
+            // sequential write and read: X = the data transferred inside their section
+            void Series(double[] sum, int[] cnt, WpfColor color, bool active, string key)
+            {
+                var pts = new PointCollection();
+                for (int i = 0; i < SeqBuckets; i++)
+                {
+                    if (cnt[i] == 0) continue;
+                    pts.Add(new WpfPoint(X(key, (i + 0.5) / SeqBuckets), Y(sum[i] / cnt[i])));
+                }
+                Area(pts, color, active);
+            }
+            bool running = _seqLive;
+            Series(_seqWriteSum, _seqWriteCnt, writeColor, running && !_seqReadActive, "seqw");
+            Series(_seqReadSum,  _seqReadCnt,  readColor,  running && _seqReadActive, "seqr");
+
+            // the later stages: the disk throughput while they ran (read green, write orange) and their live value on top
+            foreach (var key in new[] { "r4k", "w4k", "lat", "qd" })
+            {
+                var st = St(key);
+                int k = Array.IndexOf(BenchStageKeys, key);
+                if (k > _benchStageIdx && !_benchDone) continue;
+                double x0 = pL + cW * st.X0, sw = cW * st.XL;
+                bool now = k == _benchStageIdx && !_benchDone;
+                // the part already run, faintly tinted, so the progress shows even when the throughput is tiny (latency, a hard disk)
+                double f = now ? StageFrac(key, _benchBar) : 1;
+                if (f > 0)
+                {
+                    var band = new Rectangle { Width = Math.Max(1, sw * f), Height = cH, Fill = new SolidColorBrush(WpfColor.FromArgb(16, 96, 140, 230)) };
+                    Canvas.SetLeft(band, x0); Canvas.SetTop(band, pT);
+                    cv.Children.Add(band);
+                }
+                if (_stageSamples.TryGetValue(key, out var list) && list.Count > 0)
+                {
+                    // contiguous runs of the same direction (the queue-depth part switches between read and write)
+                    var run = new PointCollection(); bool runW = list[0].W;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var sm = list[i];
+                        if (sm.W != runW && run.Count > 0) { Area(run, runW ? writeColor : readColor, false); run = new PointCollection { run[^1] }; runW = sm.W; }
+                        run.Add(new WpfPoint(X(key, sm.F), Y(sm.V)));
+                    }
+                    Area(run, runW ? writeColor : readColor, now);
+                }
+                if (_stageValue.TryGetValue(key, out var val))
+                {
+                    var vt = new TextBlock
+                    {
+                        Text = val, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, Width = sw, TextAlignment = TextAlignment.Center,
+                        TextTrimming = TextTrimming.CharacterEllipsis, Foreground = now ? accentBrush : labelBrush,
+                    };
+                    Canvas.SetLeft(vt, x0); Canvas.SetTop(vt, pT + 2);
+                    cv.Children.Add(vt);
+                }
+            }
+
+            // the average of each sequential section (dotted line + value) or "no data" when it stayed empty
+            void Average(double[] sum, int[] cnt, WpfColor color, string key, string none)
             {
                 double total = 0; int n = 0;
                 for (int i = 0; i < SeqBuckets; i++) if (cnt[i] > 0) { total += sum[i] / cnt[i]; n++; }
-                double left = pL + cW * xOff;
+                var st = St(key);
+                double left = pL + cW * st.X0, sw = cW * st.XL;
                 if (n == 0)
                 {
-                    if (_seqLive) return;   // the test is running: this half has not started yet
-                    var t = new TextBlock { Text = none, FontSize = Ui.FontS, Foreground = labelBrush, Width = cW / 2, TextAlignment = TextAlignment.Center };
+                    if (_seqLive || !_benchDone) return;   // the test is running: this part has not started yet
+                    var t = new TextBlock { Text = none, FontSize = Ui.FontS, Foreground = labelBrush, Width = sw, TextAlignment = TextAlignment.Center };
                     Canvas.SetLeft(t, left); Canvas.SetTop(t, pT + cH / 2 - 8); cv.Children.Add(t);
                     return;
                 }
                 double avg = total / n;
-                double y = pT + cH * (1 - Math.Clamp(avg / top, 0, 1));
-                cv.Children.Add(new System.Windows.Shapes.Line
+                double y = Y(avg);
+                cv.Children.Add(new Line
                 {
-                    X1 = left + 2, X2 = left + cW / 2 - 2, Y1 = y, Y2 = y, StrokeThickness = 1,
+                    X1 = left + 2, X2 = left + sw - 2, Y1 = y, Y2 = y, StrokeThickness = 1,
                     Stroke = new SolidColorBrush(WpfColor.FromArgb(150, color.R, color.G, color.B)), StrokeDashArray = new DoubleCollection { 4, 3 },
                 });
                 // the label sits at the top, on the card background — next to the dotted line it overlapped the curve (which passes right there)
@@ -761,8 +916,8 @@ namespace SMDWin.Views
                 Canvas.SetLeft(lab, left + 6); Canvas.SetTop(lab, pT + 1);
                 cv.Children.Add(lab);
             }
-            Average(_seqWriteSum, _seqWriteCnt, writeColor, 0.0, L("no write data", "fără date de scriere", "keine Schreibdaten", "pas de données d'écriture"));
-            Average(_seqReadSum,  _seqReadCnt,  readColor,  0.5, L("no read data", "fără date de citire", "keine Lesedaten", "pas de données de lecture"));
+            Average(_seqWriteSum, _seqWriteCnt, writeColor, "seqw", L("no write data", "fără date de scriere", "keine Schreibdaten", "pas de données d'écriture"));
+            Average(_seqReadSum,  _seqReadCnt,  readColor,  "seqr", L("no read data", "fără date de citire", "keine Lesedaten", "pas de données de lecture"));
         }
 
     }

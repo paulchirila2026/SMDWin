@@ -89,6 +89,14 @@ namespace SMDWin.Services
         public double SeqFraction { get; set; } = -1;
         /// <summary>The sequential test: the total volume of a phase, in MB (file × passes).</summary>
         public double SeqTotalMB  { get; set; }
+        /// <summary>The test plan, so the chart can give each stage its place: sequential passes per direction and the total
+        /// number of progress units (N writes + N reads + 4K read + 4K write + latency [+ 4 queue-depth tests]); 0 until known.</summary>
+        public int    SeqPasses   { get; set; }
+        public int    TotalUnits  { get; set; }
+        /// <summary>4K tests: operations per second so far; 0 elsewhere.</summary>
+        public double Iops        { get; set; }
+        /// <summary>Latency test: the average so far, in microseconds; 0 elsewhere.</summary>
+        public double LatencyUs   { get; set; }
     }
 
     // ── Service ──────────────────────────────────────────────────────────────
@@ -466,6 +474,7 @@ namespace SMDWin.Services
                 const double targetSecondsPerPhaseFull  = 12.0;
                 const double targetSecondsPerPhaseQuick = 3.0;
                 const double SlowRemovableThresholdMBps = 15.0;
+                s_seqPasses = 0; s_totalUnits = 0;
                 Report(progress, "calibrate", "Calibrating…", 0, 1, 1, 0.0);
                 const double VerySlowWriteMBps = 20.0;
                 bool slowDrive = false;
@@ -522,6 +531,7 @@ namespace SMDWin.Services
                 try
                 {
                     int totalUnits = seqPasses * 2 + 3 + (quickMode ? 0 : 4); // N writes + N reads + iops_read + iops_write + latency [+ 4×QD]
+                    s_seqPasses = seqPasses; s_totalUnits = totalUnits;
                     double UnitFrac(int unitsCompleted, double withinUnitFrac) =>
                         Math.Clamp((unitsCompleted + Math.Clamp(withinUnitFrac, 0, 1)) / totalUnits, 0.0, 0.99);
 
@@ -707,6 +717,7 @@ namespace SMDWin.Services
                         long readOps = 0;
                         var deadline = DateTime.UtcNow.AddSeconds(5);
                         var sw = Stopwatch.StartNew();
+                        long lastRepMs = 0;
                         IntPtr iopsAlignedPtr = AllocAligned(r4kChunk, 4096, out IntPtr iopsRawPtr);
                         try
                         {
@@ -719,9 +730,13 @@ namespace SMDWin.Services
                                 SetFilePointerEx(fs.SafeFileHandle, offset, out _, FILE_BEGIN);
                                 ReadAligned(fs.SafeFileHandle, iopsAlignedPtr, r4kChunk);
                                 readOps++;
-                                if (readOps % 500 == 0)
+                                if (readOps % 500 == 0 || sw.ElapsedMilliseconds - lastRepMs >= 250)
+                                {
+                                    lastRepMs = sw.ElapsedMilliseconds;
                                     Report(progress, "iops_read", $"4K Random Read… {readOps:N0} ops",
-                                        0, 1, 1, UnitFrac(iopsReadUnit, sw.Elapsed.TotalSeconds / 5.0));
+                                        0, 1, 1, UnitFrac(iopsReadUnit, sw.Elapsed.TotalSeconds / 5.0),
+                                        iops: readOps / Math.Max(0.001, sw.Elapsed.TotalSeconds));
+                                }
                             }
                         }
                         finally { Marshal.FreeHGlobal(iopsRawPtr); }
@@ -740,6 +755,7 @@ namespace SMDWin.Services
                         long writeOps = 0;
                         var deadline2 = DateTime.UtcNow.AddSeconds(3);
                         var sw = Stopwatch.StartNew();
+                        long lastRepMs = 0;
                         IntPtr wAlignedPtr = AllocAligned(r4kChunk, 4096, out IntPtr wRawPtr);
                         try
                         {
@@ -753,9 +769,13 @@ namespace SMDWin.Services
                                 SetFilePointerEx(fs.SafeFileHandle, offset, out _, FILE_BEGIN);
                                 WriteAligned(fs.SafeFileHandle, wAlignedPtr, r4kChunk);
                                 writeOps++;
-                                if (writeOps % 500 == 0)
+                                if (writeOps % 500 == 0 || sw.ElapsedMilliseconds - lastRepMs >= 250)
+                                {
+                                    lastRepMs = sw.ElapsedMilliseconds;
                                     Report(progress, "iops_write", $"4K Random Write… {writeOps:N0} ops",
-                                        0, 1, 1, UnitFrac(iopsWriteUnit, sw.Elapsed.TotalSeconds / 3.0));
+                                        0, 1, 1, UnitFrac(iopsWriteUnit, sw.Elapsed.TotalSeconds / 3.0),
+                                        iops: writeOps / Math.Max(0.001, sw.Elapsed.TotalSeconds));
+                                }
                             }
                         }
                         finally { Marshal.FreeHGlobal(wRawPtr); }
@@ -773,6 +793,7 @@ namespace SMDWin.Services
                     {
                         var lrng = new Random(31);
                         var latencies = new List<double>(latencyOps);
+                        double latSum = 0; long latLastMs = 0;
                         IntPtr latAlignedPtr = AllocAligned(r4kChunk, 4096, out IntPtr latRawPtr);
                         try
                         {
@@ -787,10 +808,15 @@ namespace SMDWin.Services
                                 long t0 = Stopwatch.GetTimestamp();
                                 ReadAligned(fs.SafeFileHandle, latAlignedPtr, r4kChunk);
                                 long t1 = Stopwatch.GetTimestamp();
-                                latencies.Add((t1 - t0) * 1_000_000.0 / Stopwatch.Frequency); // μs
-                                if (i % 100 == 0 && i > 0)
+                                double us = (t1 - t0) * 1_000_000.0 / Stopwatch.Frequency;
+                                latencies.Add(us); // μs
+                                latSum += us;
+                                if (i > 0 && (i % 100 == 0 || latencySw.ElapsedMilliseconds - latLastMs >= 250))
+                                {
+                                    latLastMs = latencySw.ElapsedMilliseconds;
                                     Report(progress, "latency", $"Latency… {i}/{latencyOps}",
-                                        0, 1, 1, UnitFrac(latencyUnit, (double)i / latencyOps));
+                                        0, 1, 1, UnitFrac(latencyUnit, (double)i / latencyOps), latUs: latSum / (i + 1));
+                                }
                             }
                         }
                         finally { Marshal.FreeHGlobal(latRawPtr); }
@@ -980,13 +1006,18 @@ namespace SMDWin.Services
             }, ct);
         }
 
+        // the plan of the run in progress (one benchmark at a time); read by Report from any thread
+        private static volatile int s_seqPasses, s_totalUnits;
+
         private static void Report(IProgress<BenchmarkProgress>? p, string phase,
-            string msg, double mbps, int pass, int total, double bar, double seqFrac = -1, double seqTotalMB = 0)
+            string msg, double mbps, int pass, int total, double bar, double seqFrac = -1, double seqTotalMB = 0,
+            double iops = 0, double latUs = 0)
             => p?.Report(new BenchmarkProgress
             {
                 Phase = phase, Message = msg, CurrentMBps = mbps,
                 PassNumber = pass, TotalPasses = total, BarFraction = bar,
-                SeqFraction = seqFrac, SeqTotalMB = seqTotalMB
+                SeqFraction = seqFrac, SeqTotalMB = seqTotalMB,
+                SeqPasses = s_seqPasses, TotalUnits = s_totalUnits, Iops = iops, LatencyUs = latUs,
             });
 
         private static void TryDelete(string path)
