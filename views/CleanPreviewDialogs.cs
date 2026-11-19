@@ -56,7 +56,7 @@ namespace SMDWin.Views
             {
                 bool windows = tempRoot.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
                 AddTarget(windows ? PT("Windows Temp") : PT("Temp of this account"),
-                          windows ? PT("left over from updates and services") : PT("programs, installers, browser updates"), root);
+                          windows ? PT("left over from updates and services") : PT("programs, installers, browser updates"), tempRoot);
             }
             foreach (var t in _targets) root.Children.Add(TargetRow(t));
 
