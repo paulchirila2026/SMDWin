@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -227,6 +228,37 @@ namespace SMDWin.Views
             return d.TypeText + usb;
         }
 
+        /// <summary>The drive's findings as small chips (worst first); the explanation is in the tooltip.</summary>
+        private async Task FillDiskFindingsAsync(DiskHealthEntry d, WrapPanel host)
+        {
+            try
+            {
+                var list = await Task.Run(() => StorageChecks.Run(d));
+                host.Children.Clear();
+                var sorted = list.OrderByDescending(f => f.Severity).ToList();
+                foreach (var f in sorted.Take(4))
+                {
+                    string key = f.Severity switch { DiskFinding.Level.Crit => "StatusCritBrush", DiskFinding.Level.Warn => "StatusWarnBrush", _ => "TextSecondaryBrush" };
+                    var chip = new Border { CornerRadius = new CornerRadius(6), Padding = new Thickness(7, 2, 8, 3), Margin = new Thickness(0, 4, 6, 0),
+                                            Background = BenchTint(f.Severity == DiskFinding.Level.Info ? "TextSecondaryBrush" : key, 28),
+                                            ToolTip = f.Detail, Cursor = System.Windows.Input.Cursors.Help };
+                    ToolTipService.SetInitialShowDelay(chip, 150);
+                    var t = new TextBlock { Text = (f.Severity == DiskFinding.Level.Info ? "" : "⚠ ") + f.Short, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold };
+                    t.SetResourceReference(TextBlock.ForegroundProperty, key);
+                    chip.Child = t;
+                    host.Children.Add(chip);
+                }
+                if (sorted.Count > 4)
+                {
+                    var more = new TextBlock { Text = $"+{sorted.Count - 4}", FontSize = Ui.FontXS, Margin = new Thickness(0, 6, 0, 0),
+                                               ToolTip = string.Join("\n\n", sorted.Skip(4).Select(f => f.Short + " — " + f.Detail)) };
+                    more.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                    host.Children.Add(more);
+                }
+            }
+            catch (Exception ex) { AppLogger.Debug($"FillDiskFindingsAsync: {ex.Message}"); }
+        }
+
         private Border MakeDriveRow(DiskHealthEntry d)
         {
             var card = new Border { Style = TryFindResource("CompCardStyle") as Style, Cursor = System.Windows.Input.Cursors.Arrow,
@@ -277,6 +309,10 @@ namespace SMDWin.Views
             stT.SetResourceReference(TextBlock.ForegroundProperty, stKey);
             stRow.Children.Add(dot); stRow.Children.Add(stT);
             info.Children.Add(stRow);
+            // what else is worth knowing: the link, Windows disk errors, alignment, TRIM, SMR, firmware (StorageChecks)
+            var finds = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
+            info.Children.Add(finds);
+            _ = FillDiskFindingsAsync(d, finds);
             Grid.SetColumn(info, 1); body.Children.Add(info);
 
             // the state is written in words here; its figure is in the dial of the health strip

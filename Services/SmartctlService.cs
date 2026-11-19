@@ -40,6 +40,17 @@ namespace SMDWin.Services
         public string ModelName { get; set; } = "";
         public string SerialNumber { get; set; } = "";
         public string FirmwareVersion { get; set; } = "";
+        /// <summary>SATA link: what the drive supports and what it negotiated ("6.0 Gb/s" / "3.0 Gb/s"), with the speed in
+        /// tenths of Gb/s (60 = 6.0); "" / 0 = not reported (NVMe, USB bridges).</summary>
+        public string SataLinkMax { get; set; } = "";
+        public string SataLinkCurrent { get; set; } = "";
+        public int SataLinkMaxTenths { get; set; }
+        public int SataLinkCurrentTenths { get; set; }
+        /// <summary>NVMe thermal management: how many times the drive slowed itself down (light / heavy) and for how long (s).</summary>
+        public long? NvmeThrottleLightCount { get; set; }
+        public long? NvmeThrottleHeavyCount { get; set; }
+        public long? NvmeThrottleLightSeconds { get; set; }
+        public long? NvmeThrottleHeavySeconds { get; set; }
         public bool IsNvme { get; set; }
         /// <summary>The logical sector size (512 / 4096), from "logical_block_size"; 0 = unknown.</summary>
         public int LogicalBlockSize { get; set; }
@@ -239,6 +250,11 @@ namespace SMDWin.Services
         {
             yield return (normalized, null);
             yield return (normalized, "sat");
+            // USB enclosures that hide SMART behind their bridge chip: the NVMe-to-USB bridges (JMicron JMS583, ASMedia ASM2362,
+            // Realtek RTL9210) and old SATA bridges that only accept the short command form. Tried only after the usual forms
+            // failed, so normal disks never get these commands.
+            foreach (var bridge in new[] { "sntjmicron", "sntasmedia", "sntrealtek", "sat,12" })
+                yield return (normalized, bridge);
             var m = _rxPhysDrive.Match(normalized);
             if (m.Success && int.TryParse(m.Groups[1].Value, out int n))
             {
@@ -829,6 +845,19 @@ namespace SMDWin.Services
             if (TryProp(root, "logical_block_size", out var lbs) && AsInt(lbs) is int lbsv) report.LogicalBlockSize = lbsv;
             if (TryProp(root, "serial_number", out var sn)) report.SerialNumber = AsString(sn);
             if (TryProp(root, "firmware_version", out var fw)) report.FirmwareVersion = AsString(fw);
+            if (TryProp(root, "interface_speed", out var ispd))
+            {
+                if (TryProp(ispd, "max", out var mx))
+                {
+                    if (TryProp(mx, "string", out var ms)) report.SataLinkMax = AsString(ms);
+                    if (TryProp(mx, "units_per_second", out var mu) && AsInt(mu) is int mui) report.SataLinkMaxTenths = mui;
+                }
+                if (TryProp(ispd, "current", out var cu))
+                {
+                    if (TryProp(cu, "string", out var cs)) report.SataLinkCurrent = AsString(cs);
+                    if (TryProp(cu, "units_per_second", out var cuu) && AsInt(cuu) is int cui) report.SataLinkCurrentTenths = cui;
+                }
+            }
 
             if (TryProp(root, "device", out var dev) && TryProp(dev, "type", out var dt))
                 report.IsNvme = AsString(dt).Contains("nvme", StringComparison.OrdinalIgnoreCase);
@@ -878,6 +907,10 @@ namespace SMDWin.Services
             if (TryProp(log, "num_err_log_entries", out var nerr) && AsLong(nerr) is long errEntries) report.NvmeErrorLogEntries = errEntries;
             if (TryProp(log, "warning_temp_time", out var wtt) && AsLong(wtt) is long warnTime) report.NvmeWarningTempMinutes = warnTime;
             if (TryProp(log, "critical_comp_time", out var cct) && AsLong(cct) is long critTime) report.NvmeCriticalTempMinutes = critTime;
+            if (TryProp(log, "thermal_temp1_transition_count", out var t1c) && AsLong(t1c) is long t1) report.NvmeThrottleLightCount = t1;
+            if (TryProp(log, "thermal_temp2_transition_count", out var t2c) && AsLong(t2c) is long t2) report.NvmeThrottleHeavyCount = t2;
+            if (TryProp(log, "thermal_temp1_total_time", out var t1t) && AsLong(t1t) is long t1s) report.NvmeThrottleLightSeconds = t1s;
+            if (TryProp(log, "thermal_temp2_total_time", out var t2t) && AsLong(t2t) is long t2s) report.NvmeThrottleHeavySeconds = t2s;
 
             // Fallbacks if the root fields are missing (older smartctl versions)
             if (!report.TemperatureCelsius.HasValue && TryProp(log, "temperature", out var lt)

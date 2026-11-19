@@ -1287,6 +1287,8 @@
                   <Button x:Name="BtnStopFullBench" Visibility="Collapsed" Click="StopFullBench_Click"/>
                 </StackPanel>
                 </DockPanel>
+                <!-- the extra drive tests (real capacity, sustained write, access time), filled in code: MainWindow.StartCards.cs -->
+                <WrapPanel x:Name="BenchMoreTests" Margin="31,10,0,0"/>
                 <!-- Compat stubs -->
                 <TextBlock x:Name="TxtBenchPhase" Visibility="Collapsed"/>
                 <TextBlock x:Name="TxtBenchAnimSpeed" Visibility="Collapsed"/>

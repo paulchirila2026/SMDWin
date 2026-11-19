@@ -150,6 +150,19 @@ namespace SMDWin.Models
                     c == 0 ? Green : Red);
             }
 
+            // 12 / 13 — the drive slowing itself down because of heat (thermal management)
+            if (r.NvmeThrottleLightCount.HasValue || r.NvmeThrottleHeavyCount.HasValue)
+            {
+                long l = r.NvmeThrottleLightCount ?? 0, h = r.NvmeThrottleHeavyCount ?? 0;
+                long secs = (r.NvmeThrottleLightSeconds ?? 0) + (r.NvmeThrottleHeavySeconds ?? 0);
+                string time = secs >= 3600 ? $"{secs / 3600.0:0.#} h" : secs >= 60 ? $"{secs / 60} min" : $"{secs} s";
+                Add(0x12, "Thermal Throttling", $"{l + h:N0}×",
+                    l + h == 0 ? "The drive never slowed down because of heat — OK"
+                    : h > 0 ? $"⚠ Slowed down by heat {l + h:N0} times ({h:N0} heavily), {time} in all — needs better cooling (heatsink / airflow)"
+                    : $"Slowed down lightly by heat {l:N0} times, {time} in all — normal under long heavy use; often means it runs warm",
+                    l + h == 0 ? Green : h > 0 ? Red : Amber);
+            }
+
             return rows;
         }
     }

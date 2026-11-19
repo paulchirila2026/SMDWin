@@ -576,6 +576,12 @@ namespace SMDWin.Services
         public static bool ApplySmartctlAttributes(DiskHealthEntry disk, SmartctlReport report)
         {
             if (report == null || !report.Success) return false;
+            if (!string.IsNullOrWhiteSpace(report.FirmwareVersion)) disk.Firmware = report.FirmwareVersion.Trim();
+            if (report.SataLinkMaxTenths > 0)
+            {
+                disk.SataLinkMax = report.SataLinkMax; disk.SataLinkCurrent = report.SataLinkCurrent;
+                disk.SataLinkMaxTenths = report.SataLinkMaxTenths; disk.SataLinkCurrentTenths = report.SataLinkCurrentTenths;
+            }
 
             if (report.IsNvme)
             {

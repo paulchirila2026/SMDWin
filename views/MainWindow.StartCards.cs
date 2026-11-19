@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace SMDWin.Views
@@ -31,6 +32,36 @@ namespace SMDWin.Views
                 null, null,
                 drive.Length > 0 ? StartCard.InfoLine(PT("Drive"), drive) : null,
                 framed: false);
+        }
+
+        private bool _benchMoreBuilt;
+
+        /// <summary>The row under the Benchmark title: three extra drive tests, each in its own window.</summary>
+        internal void EnsureBenchMoreTests()
+        {
+            if (_benchMoreBuilt || FindName("BenchMoreTests") is not WrapPanel host) return;
+            _benchMoreBuilt = true;
+            var lbl = new TextBlock { Text = PT("More tests:"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0), FontSize = Ui.FontS };
+            lbl.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+            host.Children.Add(lbl);
+            void Add(string text, string tip, DriveTestsWindow.Mode mode)
+            {
+                var b = new Wpf.Ui.Controls.Button { Content = text, ToolTip = tip, Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary,
+                                                     Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 0, 8, 0), FontSize = Ui.FontS };
+                b.Click += (_, _) =>
+                {
+                    var disks = _allDisks.Select(d => new DriveTestsWindow.PhysicalDisk(
+                        $"{(string.IsNullOrWhiteSpace(d.Model) ? "Disk " + d.DiskIndex : d.Model.Trim())} · {d.Size}",
+                        string.IsNullOrEmpty(d.PhysicalDevicePath) ? $"\\\\.\\PhysicalDrive{d.DiskIndex}" : d.PhysicalDevicePath,
+                        d.SizeBytes, d.Kind is "HDD" or "External HDD" || d.RotationRpm > 0)).ToList();
+                    var w = new DriveTestsWindow(mode, disks) { Owner = this };
+                    SMDWin.Views.Net.NetWindowHelper.ShowModalWithOverlay(w, this);
+                };
+                host.Children.Add(b);
+            }
+            Add(PT("Real capacity"), PT("USB sticks and memory cards: finds a fake capacity"), DriveTestsWindow.Mode.Capacity);
+            Add(PT("Sustained write"), PT("SSDs: how big the fast cache is and the speed after it"), DriveTestsWindow.Mode.Sustained);
+            Add(PT("Access time"), PT("Hard disks: how quickly the head reaches any place — worn mechanics"), DriveTestsWindow.Mode.Access);
         }
 
         /// <summary>The empty block map of Surface scan shows the start card on top.</summary>

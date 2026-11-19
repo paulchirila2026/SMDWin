@@ -95,6 +95,12 @@ namespace SMDWin.Models
         public List<SmartAttributeEntry> SmartAttributes { get; set; } = new();
         public List<NvmeHealthRow> NvmeHealthRows { get; set; } = new();
         public string PhysicalDevicePath { get; set; } = "";
+        /// <summary>From smartctl: the firmware and, for SATA drives, the link the drive supports / negotiated.</summary>
+        public string Firmware { get; set; } = "";
+        public string SataLinkMax { get; set; } = "";
+        public string SataLinkCurrent { get; set; } = "";
+        public int SataLinkMaxTenths { get; set; }
+        public int SataLinkCurrentTenths { get; set; }
         public int DiskIndex { get; set; } = 0;
         /// <summary>The exact disk type (from MSFT_PhysicalDisk: BusType + MediaType + SpindleSpeed, then the name):
         /// "NVMe SSD", "SATA SSD", "HDD", "USB stick", "External HDD", "External SSD", "External drive", "SD card",

@@ -49,6 +49,7 @@ namespace SMDWin.Views
                 bool none = (BenchResultsPanel?.Children.Count ?? 0) == 0;
                 empty.Visibility = none ? Visibility.Visible : Visibility.Collapsed;
                 if (none) FillBenchStartCard(empty);
+                EnsureBenchMoreTests();
             }
         }
     }
