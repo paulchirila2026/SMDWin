@@ -228,8 +228,17 @@ namespace SMDWin.Views
                         if (FindName("RamFindings") is System.Windows.Controls.WrapPanel rf)
                         {
                             var modsCopy = modules.ToList();
-                            _ = System.Threading.Tasks.Task.Run(() => SMDWin.Services.RamChecks.Run(modsCopy))
-                                .ContinueWith(t => { if (t.Status == System.Threading.Tasks.TaskStatus.RanToCompletion) Dispatcher.InvokeAsync(() => RenderFindingChips(rf, t.Result)); });
+                            _ = System.Threading.Tasks.Task.Run(() =>
+                            {
+                                var found = SMDWin.Services.RamChecks.Run(modsCopy);
+                                Dispatcher.InvokeAsync(() => RenderFindingChips(rf, found));
+                                // then 10 s of measuring: is the RAM enough for what runs now?
+                                if (SMDWin.Services.RamChecks.PressureVerdict() is { } pv)
+                                {
+                                    found.Add(pv);
+                                    Dispatcher.InvokeAsync(() => RenderFindingChips(rf, found));
+                                }
+                            });
                         }
                         if (FindName("RamGrid") is System.Windows.Controls.DataGrid dg)
                         {

@@ -169,6 +169,47 @@ namespace SMDWin.Services
             return list;
         }
 
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct MEMORYSTATUSEX
+        {
+            public uint dwLength, dwMemoryLoad;
+            public ulong ullTotalPhys, ullAvailPhys, ullTotalPageFile, ullAvailPageFile, ullTotalVirtual, ullAvailVirtual, ullAvailExtendedVirtual;
+        }
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX m);
+
+        /// <summary>
+        /// Is the memory enough for what runs now? 10 seconds of the pages Windows has to read back from disk (hard faults) and
+        /// how full the commit limit (RAM + page file) is. Only a warning is returned; null = enough.
+        /// </summary>
+        public static DiskFinding? PressureVerdict()
+        {
+            try
+            {
+                var m = new MEMORYSTATUSEX { dwLength = (uint)System.Runtime.InteropServices.Marshal.SizeOf<MEMORYSTATUSEX>() };
+                if (!GlobalMemoryStatusEx(ref m) || m.ullTotalPhys == 0) return null;
+                double commitPct = m.ullTotalPageFile > 0 ? 100.0 * (m.ullTotalPageFile - m.ullAvailPageFile) / m.ullTotalPageFile : 0;
+                double availPct = 100.0 * m.ullAvailPhys / m.ullTotalPhys;
+                double faults = 0; int n = 0;
+                using (var pc = new System.Diagnostics.PerformanceCounter("Memory", "Pages Input/sec", true))
+                {
+                    pc.NextValue();
+                    for (int i = 0; i < 10; i++) { System.Threading.Thread.Sleep(1000); faults += pc.NextValue(); n++; }
+                }
+                faults /= Math.Max(1, n);
+                double totalGb = m.ullTotalPhys / 1073741824.0;
+                if (commitPct >= 90)
+                    return new(DiskFinding.Level.Warn, PT("Almost out of memory"),
+                        PT("{0}% of the memory Windows can hand out (RAM + page file) is in use. Programs may close or refuse to open. Close some, or add RAM.", commitPct.ToString("F0")));
+                if (faults >= 400 && availPct < 15)
+                    return new(DiskFinding.Level.Warn, PT("Too little RAM for this load"),
+                        PT("Windows keeps reading memory back from the disk ({0} pages a second) and only {1}% of the RAM is free — the PC slows down. More RAM (now {2} GB) would help, or fewer programs at once.",
+                           faults.ToString("F0"), availPct.ToString("F0"), totalGb.ToString("F0")));
+                return null;
+            }
+            catch (Exception ex) { AppLogger.Debug($"RamChecks pressure: {ex.Message}"); return null; }
+        }
+
         /// <summary>The theoretical peak in GB/s (MT/s × 8 bytes × channels).</summary>
         public static double TheoreticalGBs(int mts, int channels) => mts * 8.0 * Math.Max(1, channels) / 1000.0;
     }

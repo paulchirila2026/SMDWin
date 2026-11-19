@@ -144,7 +144,7 @@ namespace SMDWin.Services
                         {
                             ChunkIndex = chunk, TotalChunks = totalChunks,
                             TargetTotalMB = (int)targetMB, PatternName = name,
-                            PercentDone = (chunk + 0.0) * 100.0 / totalChunks,
+                            PercentDone = (chunk + 0.0) * 60.0 / totalChunks,
                             ErrorCount = totalErrors + chunkErrors,
                             StatusText = string.Format(
                                 LanguageService.Get("Ram", "FullScanSectorProgress", "Sector {0}/{1} — {2}…"),
@@ -166,7 +166,7 @@ namespace SMDWin.Services
                     {
                         ChunkIndex = chunk + 1, TotalChunks = totalChunks,
                         TargetTotalMB = (int)targetMB,
-                        PercentDone = (chunk + 1) * 100.0 / totalChunks,
+                        PercentDone = (chunk + 1) * 60.0 / totalChunks,
                         ErrorCount = totalErrors,
                         StatusText = chunkErrors == 0
                             ? string.Format(LanguageService.Get("Ram", "FullScanSectorOk", "✔ Sector {0}/{1} OK"), chunk + 1, totalChunks)
@@ -177,6 +177,47 @@ namespace SMDWin.Services
                             Passed = chunkErrors == 0, Errors = chunkErrors
                         }
                     });
+                }
+
+                // ── Phase 2: the same memory again, on all processor threads at once ─────────────────────────────────────────
+                // Errors often show only under load and heat (memory controller, marginal timings / XMP), and the fixed patterns
+                // above miss addressing faults. Here: own address (each word holds a value derived from its place — catches
+                // two addresses landing on the same cell), random data (data-dependent faults) and moving inversions
+                // (write / verify / invert up and down — coupling between neighbouring cells).
+                if (!ct.IsCancellationRequested && liveBuffers.Count > 0)
+                {
+                    long p2Errors = 0;
+                    var po = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount), CancellationToken = ct };
+                    ulong seed = (ulong)DateTime.UtcNow.Ticks;
+                    uint Own(int b, int i) => (uint)(i * 2654435761u) ^ (uint)(b * 0x9E3779B9u) ^ 0xA5A5A5A5u;
+                    uint Rnd(int b, int i) => (uint)DrivePattern.Word(seed, ((long)b << 32) | (uint)i);
+                    void Report(string name, double pct) => progress.Report(new FullScanProgress
+                    {
+                        ChunkIndex = totalChunks, TotalChunks = totalChunks, TargetTotalMB = (int)targetMB, PatternName = name,
+                        PercentDone = pct, ErrorCount = totalErrors + p2Errors,
+                        StatusText = string.Format(LanguageService.Get("Ram", "FullScanLoadPhase", "All threads at once — {0}…"), name),
+                    });
+                    try
+                    {
+                        // own address
+                        Report("own address", 62);
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; for (int i = 0; i < x.Length; i++) x[i] = Own(b, i); });
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; long e = 0; for (int i = 0; i < x.Length; i++) if (x[i] != Own(b, i)) e++; if (e > 0) Interlocked.Add(ref p2Errors, e); });
+                        // random data
+                        Report("random data", 75);
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; for (int i = 0; i < x.Length; i++) x[i] = Rnd(b, i); });
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; long e = 0; for (int i = 0; i < x.Length; i++) if (x[i] != Rnd(b, i)) e++; if (e > 0) Interlocked.Add(ref p2Errors, e); });
+                        // moving inversions
+                        Report("moving inversions", 88);
+                        const uint P = 0x5A5A5A5Au;
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; for (int i = 0; i < x.Length; i++) x[i] = P; });
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; long e = 0; for (int i = 0; i < x.Length; i++) { if (x[i] != P) e++; x[i] = ~P; } if (e > 0) Interlocked.Add(ref p2Errors, e); });
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; long e = 0; for (int i = x.Length - 1; i >= 0; i--) { if (x[i] != ~P) e++; x[i] = P; } if (e > 0) Interlocked.Add(ref p2Errors, e); });
+                        Parallel.For(0, liveBuffers.Count, po, b => { var x = liveBuffers[b]; long e = 0; for (int i = 0; i < x.Length; i++) if (x[i] != P) e++; if (e > 0) Interlocked.Add(ref p2Errors, e); });
+                    }
+                    catch (OperationCanceledException) { }
+                    totalErrors += p2Errors;
+                    if (p2Errors > 0) AppLogger.Warning($"RAM full scan: {p2Errors} error(s) in the all-threads phase");
                 }
 
                 bool cancelled = ct.IsCancellationRequested;
