@@ -85,19 +85,28 @@ namespace SMDWin.Views
                 // when that does not fit (laptop screen), the test descriptions under the bars step out (they stay as tooltips)
                 // so the drawing grows and the page fits without scrolling — before and after the test
                 double need = Math.Max(380, (_benchHeroRight?.ActualHeight ?? 0) + 24);
+                // the free space the page WOULD have with the descriptions shown: hiding them gave back (full − now) pixels,
+                // so showing them takes those back. A wide margin and a pause after each switch keep it from flipping back and
+                // forth (each switch changes the card height, which calls this again).
                 if (!_benchTipsHidden && free < need && _benchTips.Count > 0)
                 {
                     _benchCardsFullH = _benchCards.ActualHeight;
+                    _benchTipsSwitchedAt = Environment.TickCount64;
                     SetBenchTipsVisible(false);
                 }
-                else if (_benchTipsHidden && free + (_benchCardsFullH - _benchCards.ActualHeight) >= need + 10)
+                else if (_benchTipsHidden && Environment.TickCount64 - _benchTipsSwitchedAt > 1500
+                         && free - (_benchCardsFullH - _benchCards.ActualHeight) >= need + 40)
+                {
+                    _benchTipsSwitchedAt = Environment.TickCount64;
                     SetBenchTipsVisible(true);
+                }
             }), DispatcherPriority.Loaded);
         }
         private readonly BenchComp[] _benchComps = new BenchComp[4];
         private readonly List<(TextBlock Tip, FrameworkElement Key)> _benchTips = new();
         private bool _benchTipsHidden;
         private double _benchCardsFullH;
+        private long _benchTipsSwitchedAt;
         private Border? _benchHeroRight;
 
         private void SetBenchTipsVisible(bool on)
