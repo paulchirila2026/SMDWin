@@ -189,6 +189,17 @@ namespace SMDWin.Views
                                 xmpTS.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                                 xmpS.Visibility = Visibility.Visible;
                             }
+                            // the speed the modules are made for, read from the part number (XMP / EXPO kits report only their
+                            // standard JEDEC speed to Windows, so "configured = reported" used to read as "XMP active" even when it was off)
+                            else if (SMDWin.Services.RamChecks.XmpState(modules) is { } xs
+                                && FindName("BorderRamXmp") is System.Windows.Controls.Border xmpBx
+                                && FindName("TxtRamXmp") is System.Windows.Controls.TextBlock xmpTx)
+                            {
+                                xmpTx.Text = xs.Text;
+                                xmpTx.ToolTip = xs.Tip;
+                                xmpTx.SetResourceReference(TextBlock.ForegroundProperty, xs.Key);
+                                xmpBx.Visibility = Visibility.Visible;
+                            }
                             else if (firstMod.RatedMHz > 0 && firstMod.ConfiguredMHz > 0
                                 && FindName("BorderRamXmp") is System.Windows.Controls.Border xmpBorder
                                 && FindName("TxtRamXmp") is System.Windows.Controls.TextBlock xmpTxt)
@@ -213,6 +224,13 @@ namespace SMDWin.Views
                         }
                         BuildRamSlotDiagram(modules);
                         BuildRamSlotTiles(modules); // the slots as blocks (the "Modules" card)
+                        // what is worth knowing about the memory (XMP off, mixed modules, Windows memory test, corrected errors)
+                        if (FindName("RamFindings") is System.Windows.Controls.WrapPanel rf)
+                        {
+                            var modsCopy = modules.ToList();
+                            _ = System.Threading.Tasks.Task.Run(() => SMDWin.Services.RamChecks.Run(modsCopy))
+                                .ContinueWith(t => { if (t.Status == System.Threading.Tasks.TaskStatus.RanToCompletion) Dispatcher.InvokeAsync(() => RenderFindingChips(rf, t.Result)); });
+                        }
                         if (FindName("RamGrid") is System.Windows.Controls.DataGrid dg)
                         {
                             var installed = modules.Where(m => !m.IsEmpty).ToList();

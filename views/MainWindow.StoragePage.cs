@@ -234,6 +234,16 @@ namespace SMDWin.Views
             try
             {
                 var list = await Task.Run(() => StorageChecks.Run(d));
+                RenderFindingChips(host, list);
+            }
+            catch (Exception ex) { AppLogger.Debug($"FillDiskFindingsAsync: {ex.Message}"); }
+        }
+
+        /// <summary>Findings as small chips, worst first, at most 4 (+N with the rest in its tooltip). Storage and RAM.</summary>
+        internal void RenderFindingChips(WrapPanel host, List<DiskFinding> list)
+        {
+            try
+            {
                 host.Children.Clear();
                 var sorted = list.OrderByDescending(f => f.Severity).ToList();
                 foreach (var f in sorted.Take(4))
@@ -256,7 +266,7 @@ namespace SMDWin.Views
                     host.Children.Add(more);
                 }
             }
-            catch (Exception ex) { AppLogger.Debug($"FillDiskFindingsAsync: {ex.Message}"); }
+            catch (Exception ex) { AppLogger.Debug($"RenderFindingChips: {ex.Message}"); }
         }
 
         private Border MakeDriveRow(DiskHealthEntry d)

@@ -345,6 +345,23 @@ namespace SMDWin.Views
                 if (descTb != null)
                 {
                     descTb.Text = $"{readGBs:F1} / {writeGBs:F1} GB/s  ·  {rating}";
+                    // against the theoretical peak of this configuration (MT/s × 8 bytes × channels)
+                    var inst = _ramModules?.Where(m => !m.IsEmpty).ToList() ?? new List<SMDWin.Models.RamEntry>();
+                    var m0 = inst.FirstOrDefault(m => m.ConfiguredMHz > 0);
+                    if (m0 != null)
+                    {
+                        int mts = SMDWin.Services.RamChecks.RunningMts(m0.ConfiguredMHz, SMDWin.Services.RamChecks.RatedFromPart(m0.PartNumber) ?? m0.RatedMHz);
+                        var ch = SMDWin.Services.RamDiagnosticsService.DetectChannelMode(_ramModules!).Status;
+                        int channels = ch switch { SMDWin.Services.DualChannelStatus.QuadChannel => 4, SMDWin.Services.DualChannelStatus.DualChannel or SMDWin.Services.DualChannelStatus.FlexMode => 2,
+                                                   SMDWin.Services.DualChannelStatus.SingleChannel => 1, _ => Math.Min(2, inst.Count) };
+                        double theo = SMDWin.Services.RamChecks.TheoreticalGBs(mts, channels);
+                        if (theo > 1)
+                        {
+                            double pct = readGBs / theo * 100;
+                            descTb.Text += "  ·  " + PT("{0}% of the {1} GB/s peak", pct.ToString("F0"), theo.ToString("F1"));
+                            if (pct < 25) descTb.Text += " ⚠";
+                        }
+                    }
                     // Details (number of passes + note) — in the tooltip, no visual space taken
                     descTb.ToolTip = $"{_LS("Ram", "SyntheticTestNote")}  ·  {result.WritePasses} write + {result.ReadPasses} read passes";
                 }
