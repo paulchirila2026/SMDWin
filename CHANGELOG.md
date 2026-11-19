@@ -6,6 +6,9 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Settings: on a wide window the card lines up with the tabs on the left (it sat centered); the Close button and Language rows have their own icons.
+- Self-test: the speed test runs to the end and the finished Benchmark is captured after its final count-up, so the pictures show real results.
+- README: new screenshots (Benchmark, SMART, surface scan, Applications, Services, Tools).
 - Benchmark: while the test runs, its button in the sidebar shows the running-test animation, like Storage and RAM.
 - Benchmark: the drawing comes first — it is larger (a wider column, a smaller general-mark dial) and on a laptop screen the page fits without scrolling, before and after the test (the test descriptions under the bars step out into tooltips when the drawing would get less than about 380 px), the texts next to the drawing are larger on a small drawing, and the checks before the test follow the PC while the page is open (charger, processor load).
 - Settings: the search box next to the tabs is gone — the search in the sidebar finds the options too and marks them on the Settings page; the note on Advanced is a light band instead of a dark one.

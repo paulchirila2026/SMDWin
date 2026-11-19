@@ -90,7 +90,8 @@ namespace SMDWin.Views
             try
             {
                 await NavigateTo("Network");
-                foreach (var (key, ms) in new[] { ("SpeedTest", 12000), ("Ping", 10000), ("Traceroute", 10000), ("Dns", 5000),
+                // the speed test runs to the end (download + upload ≈ 45 s), so its "after" picture shows real results
+                foreach (var (key, ms) in new[] { ("SpeedTest", 50000), ("Ping", 10000), ("Traceroute", 10000), ("Dns", 5000),
                                                   ("Ports", 10000), ("Lan", 10000), ("Wifi", 10000) })
                     await Step("Network-" + key, () => StartNet(key), () => StopNet(key), ms);
                 ShowNetTool("Overview", null);
@@ -152,7 +153,8 @@ namespace SMDWin.Views
                     Shoot("Benchmark-running");
                     var finished = await Task.WhenAny(run, Task.Delay(TimeSpan.FromMinutes(6), ct));
                     if (finished != run) { _benchCts?.Cancel(); await run; }
-                    await Task.Delay(1200, ct);
+                    // the finale: each part pulses, then the general mark counts up (~3 s) — the picture shows the final numbers
+                    await Task.Delay(4500, ct);
                     Shoot("Benchmark-done");
                 }
                 done++;

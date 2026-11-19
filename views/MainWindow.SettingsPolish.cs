@@ -71,7 +71,11 @@ namespace SMDWin.Views
             ["ChkEnableNotifications"] = IcoBell,
             ["ChkAnimations"] = IcoGauge, ["RbBgRecFull"] = IcoGauge, ["RbSpeedNormal"] = IcoGauge,
             ["ChkAutoSnapshotStress"] = IcoDoc,
+            // "S:" = drawn as a line (stroke), not filled
+            ["RbCloseQuit"] = "S:M4.75,5.75 A1,1 0 0 1 5.75,4.75 L18.25,4.75 A1,1 0 0 1 19.25,5.75 L19.25,18.25 A1,1 0 0 1 18.25,19.25 L5.75,19.25 A1,1 0 0 1 4.75,18.25 Z M9.5,9.5 L14.5,14.5 M14.5,9.5 L9.5,14.5",
         };
+        // the language row has no option with a default (the language follows Windows), so it is found by its list
+        private const string IcoGlobe = "S:M12,2.75 A9.25,9.25 0 1 0 12,21.25 A9.25,9.25 0 1 0 12,2.75 Z M12,2.75 C9.6,5.3 8.6,8.6 8.6,12 C8.6,15.4 9.6,18.7 12,21.25 M12,2.75 C14.4,5.3 15.4,8.6 15.4,12 C15.4,15.4 14.4,18.7 12,21.25 M3,12 L21,12";
 
         private bool _settingsDecorated;
         private readonly List<(SetDefault Spec, FrameworkElement Dot, FrameworkElement Link)> _settingsMarks = new();
@@ -100,6 +104,9 @@ namespace SMDWin.Views
                         DecorateRow(row, spec, tabIcon, iconStyle, titleStyle, controlStyle);
                     }
                 }
+                // the card width follows the page (a scroll bar appearing changes it without resizing the window)
+                if (FindName("SettingsPageContent") is FrameworkElement spc)
+                    spc.SizeChanged += (_, e) => { if (e.WidthChanged) LayoutSettingsColumns(); };
                 var page = FindName("PanelSettings") as UIElement;
                 if (page != null)
                 {
@@ -124,6 +131,8 @@ namespace SMDWin.Views
                 var old = dock.Children.OfType<Viewbox>().FirstOrDefault(v => iconStyle != null && v.Style == iconStyle);
                 if (old != null) { data = LogicalDescendants(old).OfType<Path>().FirstOrDefault()?.Data?.ToString(); dock.Children.Remove(old); }
                 if (data == null && spec != null) SettingsRowIcons.TryGetValue(spec.Control, out data);
+                if (data == null && LogicalDescendants(row).OfType<FrameworkElement>().Any(f => f.Name == "LangPacksPanel" || f.Name == "CbLanguage"))
+                    data = IcoGlobe;
                 data ??= tabIcon;
                 if (data != null)
                 {
@@ -133,8 +142,15 @@ namespace SMDWin.Views
                         VerticalAlignment = VerticalAlignment.Center, Background = SummaryTint("AccentBrush", 24),
                     };
                     DockPanel.SetDock(tile, Dock.Left);
-                    var p = new Path { Data = Geometry.Parse(data), Stretch = Stretch.Uniform, Width = 16, Height = 16 };
-                    p.SetResourceReference(Shape.FillProperty, "AccentBrush");
+                    bool stroke = data.StartsWith("S:");
+                    var p = new Path { Data = Geometry.Parse(stroke ? data[2..] : data), Stretch = Stretch.Uniform, Width = 16, Height = 16 };
+                    if (stroke)
+                    {
+                        p.StrokeThickness = 1.5; p.StrokeLineJoin = PenLineJoin.Round;
+                        p.StrokeStartLineCap = p.StrokeEndLineCap = PenLineCap.Round;
+                        p.SetResourceReference(Shape.StrokeProperty, "AccentBrush");
+                    }
+                    else p.SetResourceReference(Shape.FillProperty, "AccentBrush");
                     tile.Child = p;
                     dock.Children.Insert(0, tile);
                 }

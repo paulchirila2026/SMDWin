@@ -8,9 +8,15 @@ SMD Win is made for the moment someone asks "is this computer OK?". It is starte
 
 ![Dashboard](docs/screenshots/dashboard-dark.png)
 
-| Temp & Stress | Storage |
+| Benchmark | Temp & Stress |
 |---|---|
-| ![Temp & Stress](docs/screenshots/temp-stress-light.png) | ![Storage](docs/screenshots/storage-dark.png) |
+| ![Benchmark — a drawing of the PC follows the test](docs/screenshots/benchmark-dark.png) | ![Temp & Stress](docs/screenshots/temp-stress-light.png) |
+| **Storage — SMART** | **Storage — surface scan** |
+| ![Storage — SMART, every value explained](docs/screenshots/storage-smart-dark.png) | ![Surface scan](docs/screenshots/surface-scan-dark.png) |
+| **Applications** | **Windows Services** |
+| ![Applications — size, age, updates](docs/screenshots/apps-dark.png) | ![Windows Services — safe changes, recent problems](docs/screenshots/services-dark.png) |
+| **Tools** | |
+| ![Tools — repair, clean up, before a reinstall](docs/screenshots/tools-light.png) | |
 
 ## What it does
 

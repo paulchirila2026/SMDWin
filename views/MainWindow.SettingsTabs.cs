@@ -338,9 +338,23 @@ namespace SMDWin.Views
 
         // ── The page columns ────────────────────────────────────────────────────
 
-        /// <summary>Settings shows one category at a time, full width (MaxWidth in XAML): nothing to rearrange any more.
-        /// Kept as the hook the page's size / visibility events call.</summary>
-        private void LayoutSettingsColumns() { }
+        /// <summary>Settings shows one category at a time. On a wide window the card stays at most 1180 px wide and lines up
+        /// on the left with the tabs (with MaxWidth alone it sat centered, away from the tabs). Called on size / visibility.</summary>
+        private void LayoutSettingsColumns()
+        {
+            try
+            {
+                if (FindName("SettingsPageContent") is not FrameworkElement content || content.ActualWidth <= 0) return;
+                double w = Math.Min(content.ActualWidth, 1180);
+                foreach (var t in SettingsTabTags)
+                    if (FindName("SetPanel" + t) is FrameworkElement p)
+                    {
+                        p.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+                        p.Width = w;
+                    }
+            }
+            catch (Exception ex) { AppLogger.Warning(ex, "LayoutSettingsColumns"); }
+        }
 
         // ── The tabs (buttons, as in Storage) and the choices in the "Look and charts" card ──
 
