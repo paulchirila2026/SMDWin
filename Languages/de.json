@@ -3165,6 +3165,8 @@
     "the_storage_test_could_not_run": "Der Speichertest konnte nicht laufen.",
     "storage_test_skipped": "Speichertest übersprungen",
     "welcome_to_smd_win": "Willkommen bei SMD Win",
+    "show_less": "Weniger anzeigen",
+    "show_all_0": "Alle anzeigen ({0})",
     "appearance": "Darstellung",
     "about": "Info",
     "search_settings": "Einstellungen durchsuchen…",

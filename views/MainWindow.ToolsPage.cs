@@ -36,6 +36,8 @@ namespace SMDWin.Views
         private bool _toolActivityHooked;
 
         /// <summary>The "Recent activity" card in Tools + "Last export" in the diagnostic package card.</summary>
+        private bool _toolsHistoryAll;
+
         private void RefreshToolActivity()
         {
             if (!_toolActivityHooked)
@@ -51,7 +53,21 @@ namespace SMDWin.Views
             var merged = all.Select(en => (when: en.When, row: (UIElement)BuildToolActivityRow(en)))
                             .Concat(svc.Select(c => (when: c.When, row: (UIElement)BuildServiceChangeRow(c))))
                             .OrderByDescending(x => x.when).Take(10).ToList();
-            foreach (var m in merged) ToolActivityList.Children.Add(m.row);
+            // only the last 3 by default, so Tools fits on a laptop screen; "Show all" opens the rest
+            int shown = _toolsHistoryAll ? merged.Count : Math.Min(3, merged.Count);
+            foreach (var m in merged.Take(shown)) ToolActivityList.Children.Add(m.row);
+            if (merged.Count > 3)
+            {
+                var more = new TextBlock
+                {
+                    Text = _toolsHistoryAll ? PT("Show less") : PT("Show all ({0})", merged.Count),
+                    FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 2),
+                    Cursor = System.Windows.Input.Cursors.Hand, HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                };
+                more.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
+                more.MouseLeftButtonUp += (_, _) => { _toolsHistoryAll = !_toolsHistoryAll; RefreshToolActivity(); };
+                ToolActivityList.Children.Add(more);
+            }
             bool empty = merged.Count == 0;
             TxtToolActivityNone.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
             // before the Tests card exists (old layout): with nothing run, the activity card is hidden and Snapshots takes its place

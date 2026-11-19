@@ -87,6 +87,30 @@ namespace SMDWin.Views
             Dispatcher.BeginInvoke(new Action(() => target.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
+        /// <summary>True when an option on the Settings page mentions the text (for the sidebar search).</summary>
+        private bool SettingsHasMatch(string q)
+        {
+            var rowStyle = TryFindResource("SetRow") as Style;
+            if (rowStyle == null) return false;
+            foreach (var t in SettingsTabTags)
+            {
+                if (FindName("SetPanel" + t) is not FrameworkElement panel) continue;
+                if (LogicalDescendants(panel).OfType<Border>().Any(b => b.Style == rowStyle
+                        && TextsOf(b).Any(x => x.Contains(q, StringComparison.CurrentCultureIgnoreCase))))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>The sidebar text drives the (hidden) Settings search while Settings is open, and is cleared with it.</summary>
+        private void ForwardSidebarQueryToSettings(string query)
+        {
+            if (TxtSettingsSearch == null) return;
+            bool onSettings = FindName("PanelSettings") is UIElement ps && ps.IsVisible;
+            string want = onSettings ? query : "";
+            if (TxtSettingsSearch.Text != want) TxtSettingsSearch.Text = want;
+        }
+
         private static bool CardTitleMatches(Border card, string q)
         {
             var titleStyle = Application.Current?.TryFindResource("SetCardTitle") as Style;

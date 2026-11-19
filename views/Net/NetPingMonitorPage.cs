@@ -248,8 +248,7 @@ namespace SMDWin.Views.Net
                 SMDWin.Views.MainWindow.PT("Ping monitor"),
                 SMDWin.Views.MainWindow.PT("Pings an address every second and draws the delay — shows drops and lag spikes."),
                 new[] { SMDWin.Views.MainWindow.PT("runs until stopped"), SMDWin.Views.MainWindow.PT("almost no data used") },
-                SMDWin.Views.MainWindow.PT("Start"),
-                () => PingStart_Click(this, new RoutedEventArgs()),
+                null, null,
                 compact: true);
             _startCard.Margin = new Thickness(4);
             _startCard.Visibility = _owner.PingIsRunning ? Visibility.Collapsed : Visibility.Visible;

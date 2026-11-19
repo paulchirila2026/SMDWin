@@ -123,7 +123,7 @@ namespace SMDWin.Views
 
         internal void SettingsPage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is true) { DecorateSettingsRows(); if (TxtSettingsSearchHint != null) TxtSettingsSearchHint.Text = PT("Search settings…"); LayoutSettingsColumns(); ScheduleFitSettingsPage(); }
+            if (e.NewValue is true) { DecorateSettingsRows(); if (TxtSettingsSearchHint != null) TxtSettingsSearchHint.Text = PT("Search settings…"); ForwardSidebarQueryToSettings(TxtSidebarSearch?.Text?.Trim() ?? ""); LayoutSettingsColumns(); ScheduleFitSettingsPage(); }
         }
 
         private void ScheduleFitSettingsPage() =>

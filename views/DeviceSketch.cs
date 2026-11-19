@@ -508,6 +508,8 @@ namespace SMDWin.Views
             dc.PushTransform(new TranslateTransform(0, (H - SceneH * k) / 2));
             _k = k; _offY = (H - SceneH * k) / 2;
             _textRight = W / k - 6;
+            // callout texts grow in scene units on a small drawing (laptop screen), so the title stays about 12–13 px on screen
+            double tk = Math.Clamp(0.95 / Math.Max(0.1, k), 1, 1.6);
             dc.PushTransform(new ScaleTransform(k, k));
 
             // ── the device ──
@@ -525,7 +527,7 @@ namespace SMDWin.Views
                 bool isHot = c.State == PartState.Active;
                 var a = model.Map(p == 3 && !gpuShown ? model.Anchor[0] : model.Anchor[p]);
                 if (_highlight == p || _hover == p)
-                    dc.DrawRoundedRectangle(B(accentC, light ? 0.07 : 0.10), null, new Rect(RingX - 28, y - 28, _textRight - RingX + 30, 62), 10, 10);
+                    dc.DrawRoundedRectangle(B(accentC, light ? 0.07 : 0.10), null, new Rect(RingX - 28, y - 28, _textRight - RingX + 30, 62 + 26 * (tk - 1)), 10, 10);
                 double dy = Math.Abs(y - a.Y);
                 double bx = Math.Min(LeadEndX - 10, Math.Max(a.X + dy * 0.7, a.X + 12));
                 var lead = new StreamGeometry();
@@ -554,10 +556,11 @@ namespace SMDWin.Views
                 DrawRing(dc, RingX, y, 20, c, trackBrush, inkC, subC, dpi, RingFill(p));
 
                 var titleBrush = isHot ? B(light ? HotTextLight : HotText) : B(inkC);
-                Text(dc, c.Title, TextX, y - 6, 13, titleBrush, FontWeights.SemiBold, dpi);
-                Text(dc, c.Hardware, TextX, y + 10, 11.5, B(subC), FontWeights.Normal, dpi);
+                double tb = y - 4 - 2 * tk;
+                Text(dc, c.Title, TextX, tb, 13 * tk, titleBrush, FontWeights.SemiBold, dpi);
+                Text(dc, c.Hardware, TextX, tb + 16 * tk, 11.5 * tk, B(subC), FontWeights.Normal, dpi);
                 if (c.Value.Length > 0)
-                    Text(dc, c.Value, TextX, y + 26, 12, isHot ? B(light ? HotTextLight : HotText) : B(inkC, 0.85), FontWeights.Normal, dpi);
+                    Text(dc, c.Value, TextX, tb + 32 * tk, 12 * tk, isHot ? B(light ? HotTextLight : HotText) : B(inkC, 0.85), FontWeights.Normal, dpi);
             }
 
             dc.PushTransform(new MatrixTransform(model.S, 0, 0, model.S, model.Dx, model.Dy));

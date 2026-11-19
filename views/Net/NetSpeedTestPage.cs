@@ -220,8 +220,7 @@ namespace SMDWin.Views.Net
                 SMDWin.Views.MainWindow.PT("Internet speed test"),
                 SMDWin.Views.MainWindow.PT("Measures download and upload speed, ping and jitter against a nearby server."),
                 new[] { SMDWin.Views.MainWindow.PT("about 1 minute"), SMDWin.Views.MainWindow.PT("data use grows with the speed") },
-                SMDWin.Views.MainWindow.PT("Start test"),
-                () => { if (_btnRun.IsEnabled) RunTest_Click(this, new RoutedEventArgs()); },
+                null, null,
                 compact: true);
             _startCard.Margin = new Thickness(4);
             Grid.SetRow(_startCard, 0); Grid.SetRowSpan(_startCard, 3); chartBody.Children.Add(_startCard);

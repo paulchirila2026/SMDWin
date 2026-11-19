@@ -2456,7 +2456,7 @@
                               </Border>
                               <Image x:Name="AppRowIcon" Source="{Binding Icon, IsAsync=True}" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Grid>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" MaxWidth="360">
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" MaxWidth="360" HorizontalAlignment="Left">
                               <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
                               <TextBlock Text="{Binding PublisherLine}" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
@@ -2607,7 +2607,7 @@
                                MinHeight="44" MaxHeight="72" MaxLength="600" VerticalScrollBarVisibility="Auto" Padding="8,5" Margin="0,3,0,12"
                                FontSize="{StaticResource FontSizeS}" LostFocus="AppNotes_LostFocus"
                                ToolTip="A note about this program, kept on this PC next to SMD Win's data (saved automatically)"/>
-                      <ui:Button x:Name="BtnUninstall" Appearance="Danger" HorizontalAlignment="Stretch" IsEnabled="False" Click="UninstallApp_Click" Margin="0,0,0,8">
+                      <ui:Button x:Name="BtnUninstall" Appearance="Secondary" Foreground="{DynamicResource StatusErrorBrush}" FontWeight="SemiBold" HorizontalAlignment="Stretch" IsEnabled="False" Click="UninstallApp_Click" Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                           <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M10,5 L14,5 A2,2 0 0 0 10,5 M8.5,5 A3.5,3.5 0 0 1 15.5,5 L21.25,5 A0.75,0.75 0 0 1 21.25,6.5 L19.93,6.5 L18.76,18.61 A3.75,3.75 0 0 1 15.03,22 L8.97,22 A3.75,3.75 0 0 1 5.24,18.61 L4.07,6.5 L2.75,6.5 A0.75,0.75 0 0 1 2.75,5 Z M10.5,9.75 A0.75,0.75 0 0 0 9,9.75 L9,17.25 A0.75,0.75 0 0 0 10.5,17.25 Z M14.25,9 C14.66,9 15,9.34 15,9.75 L15,17.25 A0.75,0.75 0 0 1 13.5,17.25 L13.5,9.75 C13.5,9.34 13.84,9 14.25,9 M6.73,18.47 A2.25,2.25 0 0 0 8.97,20.5 L15.03,20.5 C16.18,20.5 17.15,19.62 17.27,18.47 L18.42,6.5 L5.58,6.5 Z"/></Canvas></Viewbox>
                           <TextBlock Text="Uninstall" VerticalAlignment="Center"/>

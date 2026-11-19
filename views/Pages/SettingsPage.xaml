@@ -43,7 +43,8 @@
                 </ui:Button>
               </WrapPanel></Border>
               <!-- search: matching rows stay bright, the others fade; the first match opens its tab -->
-              <Grid Grid.Column="1" Width="240" Margin="16,0,0,0" VerticalAlignment="Center">
+              <!-- hidden: the global search in the sidebar finds the settings too -->
+              <Grid Grid.Column="1" Width="240" Margin="16,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
                 <TextBox x:Name="TxtSettingsSearch" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="30,0,9,0" VerticalContentAlignment="Center" TextChanged="SettingsSearch_TextChanged"/>
                 <Viewbox Width="13" Height="13" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" Opacity="0.6"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Viewbox>
                 <TextBlock x:Name="TxtSettingsSearchHint" Text="Search settings…" Margin="30,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.7"/>
@@ -429,9 +430,10 @@
             </Border>
           </StackPanel>
           <StackPanel x:Name="SetPanelAdvanced" Visibility="Collapsed" MaxWidth="1180" HorizontalAlignment="Stretch">
-            <Border CornerRadius="10" Padding="14,10" Margin="0,0,0,14" Background="{DynamicResource StatusInfoBgBrush}">
-              <TextBlock TextWrapping="Wrap" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextPrimaryBrush}" Text="Nothing here is needed for normal use. A changed option shows a dot, and Default puts it back."/>
-            </Border>
+            <Grid Margin="0,0,0,14">
+              <Border CornerRadius="10" Background="{DynamicResource AccentBrush}" Opacity="0.09"/>
+              <TextBlock Margin="14,10" TextWrapping="Wrap" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextPrimaryBrush}" Text="Nothing here is needed for normal use. A changed option shows a dot, and Default puts it back."/>
+            </Grid>
             <Border x:Name="SetCardAdvanced" Style="{StaticResource SetCard}">
               <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,16,0,12">

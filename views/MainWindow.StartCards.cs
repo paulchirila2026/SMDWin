@@ -28,8 +28,7 @@ namespace SMDWin.Views
                 PT("Disk benchmark"),
                 PT("Writes and reads temporary test files to measure how fast this drive really is. The files are deleted at the end."),
                 new[] { PT("about 1–2 minutes"), PT("needs about 2 GB free"), PT("your files are not touched") },
-                PT("Start benchmark"),
-                () => RunFullBench_Click(BtnRunFullBench, new RoutedEventArgs()),
+                null, null,
                 drive.Length > 0 ? StartCard.InfoLine(PT("Drive"), drive) : null,
                 framed: false);
         }
@@ -37,14 +36,13 @@ namespace SMDWin.Views
         /// <summary>The empty block map of Surface scan shows the start card on top.</summary>
         private void FillSurfaceStartCard(Border host)
         {
-            host.IsHitTestVisible = true;
+            host.IsHitTestVisible = false;
             host.Padding = new Thickness(12, 6, 12, 6);
             host.Child = StartCard.Build(StartIconSearch,
                 PT("Surface scan"),
                 PT("Reads every area of the drive to find slow or unreadable spots. It only reads — nothing is written."),
                 new[] { PT("long on large hard drives"), PT("can be stopped at any time") },
-                PT("Start scan"),
-                () => SurfaceScan_Start_Click(BtnSurfaceStart, new RoutedEventArgs()),
+                null, null,
                 compact: true);
         }
     }

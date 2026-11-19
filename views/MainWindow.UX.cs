@@ -298,6 +298,9 @@ namespace SMDWin.Views
 
             if (NavStackPanel == null) return;
 
+            // the sidebar search is also the Settings search: on the Settings page it marks the matching options right away,
+            // and Settings stays in the list when one of its options matches (Settings has no search box of its own)
+            ForwardSidebarQueryToSettings(query);
             if (query.Length == 0)
             {
                 // Restore all nav buttons and category separators
@@ -314,6 +317,7 @@ namespace SMDWin.Views
                 .Where(kv => kv.Value.Any(term => term.Contains(query, StringComparison.OrdinalIgnoreCase)))
                 .Select(kv => kv.Key)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (query.Length >= 2 && SettingsHasMatch(query)) matchedTags.Add("Settings");
 
             foreach (var btn in AllNavButtons())
             {

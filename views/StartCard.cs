@@ -30,7 +30,7 @@ namespace SMDWin.Views
         /// <param name="compact">Smaller variant for narrow areas (overlay on a chart).</param>
         /// <param name="framed">False when the host is already a card (no second border).</param>
         public static Border Build(string iconData, string title, string description, string[] facts,
-                                   string buttonText, Action onStart, UIElement? extra = null, bool compact = false, bool framed = true)
+                                   string? buttonText, Action? onStart, UIElement? extra = null, bool compact = false, bool framed = true)
         {
             var card = new Border
             {
@@ -100,39 +100,43 @@ namespace SMDWin.Views
             Grid.SetColumn(text, 1);
             g.Children.Add(text);
 
-            // ③ the big Start button
-            var btn = new Wpf.Ui.Controls.Button
+            // ③ the big Start button — optional: the pages keep their Start at the top right, the card then only explains
+            if (buttonText != null && onStart != null)
             {
-                Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
-                Padding = compact ? new Thickness(18, 9, 20, 9) : new Thickness(24, 12, 26, 12),
-                FontSize = compact ? 14 : 15.5, FontWeight = FontWeights.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(compact ? 14 : 22, 0, 0, 0),
-                Cursor = Cursors.Hand,
-            };
-            var bc = new StackPanel { Orientation = Orientation.Horizontal };
-            var play = new Path { Data = Geometry.Parse("M0,0 L10,6 L0,12 Z"), Width = compact ? 9 : 11, Height = compact ? 11 : 13, Stretch = Stretch.Fill, Margin = new Thickness(0, 0, 9, 0), VerticalAlignment = VerticalAlignment.Center };
-            play.SetBinding(Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = btn });
-            bc.Children.Add(play);
-            bc.Children.Add(new TextBlock { Text = buttonText, VerticalAlignment = VerticalAlignment.Center });
-            btn.Content = bc;
-            btn.Click += (_, _) => onStart();
-            Grid.SetColumn(btn, 2);
-            g.Children.Add(btn);
-
-            // narrow areas: the button moves under the text
-            g.SizeChanged += (_, e) =>
-            {
-                bool narrow = e.NewSize.Width < (compact ? 430 : 560);
-                Grid.SetColumn(btn, narrow ? 1 : 2);
-                Grid.SetRow(btn, narrow ? 1 : 0);
-                btn.HorizontalAlignment = narrow ? HorizontalAlignment.Left : HorizontalAlignment.Stretch;
-                btn.Margin = narrow ? new Thickness(0, 12, 0, 0) : new Thickness(compact ? 14 : 22, 0, 0, 0);
-                if (narrow && g.RowDefinitions.Count == 0)
+                // ③ the big Start button
+                var btn = new Wpf.Ui.Controls.Button
                 {
-                    g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                    g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                }
-            };
+                    Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
+                    Padding = compact ? new Thickness(18, 9, 20, 9) : new Thickness(24, 12, 26, 12),
+                    FontSize = compact ? 14 : 15.5, FontWeight = FontWeights.SemiBold,
+                    VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(compact ? 14 : 22, 0, 0, 0),
+                    Cursor = Cursors.Hand,
+                };
+                var bc = new StackPanel { Orientation = Orientation.Horizontal };
+                var play = new Path { Data = Geometry.Parse("M0,0 L10,6 L0,12 Z"), Width = compact ? 9 : 11, Height = compact ? 11 : 13, Stretch = Stretch.Fill, Margin = new Thickness(0, 0, 9, 0), VerticalAlignment = VerticalAlignment.Center };
+                play.SetBinding(Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = btn });
+                bc.Children.Add(play);
+                bc.Children.Add(new TextBlock { Text = buttonText, VerticalAlignment = VerticalAlignment.Center });
+                btn.Content = bc;
+                btn.Click += (_, _) => onStart();
+                Grid.SetColumn(btn, 2);
+                g.Children.Add(btn);
+
+                // narrow areas: the button moves under the text
+                g.SizeChanged += (_, e) =>
+                {
+                    bool narrow = e.NewSize.Width < (compact ? 430 : 560);
+                    Grid.SetColumn(btn, narrow ? 1 : 2);
+                    Grid.SetRow(btn, narrow ? 1 : 0);
+                    btn.HorizontalAlignment = narrow ? HorizontalAlignment.Left : HorizontalAlignment.Stretch;
+                    btn.Margin = narrow ? new Thickness(0, 12, 0, 0) : new Thickness(compact ? 14 : 22, 0, 0, 0);
+                    if (narrow && g.RowDefinitions.Count == 0)
+                    {
+                        g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                        g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                    }
+                };
+            }
 
             card.Child = g;
             return card;

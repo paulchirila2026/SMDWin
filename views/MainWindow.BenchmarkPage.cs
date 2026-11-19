@@ -81,9 +81,33 @@ namespace SMDWin.Views
                 double free = _benchScroll.ViewportHeight - 6 - (_benchBanner.ActualHeight + 14) - _benchCards.ActualHeight - 14 - 24;
                 double h = Math.Clamp(free, 240, 500);
                 if (Math.Abs(_benchSketch.MaxHeight - h) > 2) _benchSketch.MaxHeight = h;
+                // the hero cannot be lower than the general mark panel on its right; when even that does not fit (laptop screen),
+                // the test descriptions under the bars step out (they stay as tooltips) so the page fits without scrolling
+                double need = Math.Max(240, (_benchHeroRight?.ActualHeight ?? 0) + 24);
+                if (!_benchTipsHidden && free < need && _benchTips.Count > 0)
+                {
+                    _benchCardsFullH = _benchCards.ActualHeight;
+                    SetBenchTipsVisible(false);
+                }
+                else if (_benchTipsHidden && free + (_benchCardsFullH - _benchCards.ActualHeight) >= need + 10)
+                    SetBenchTipsVisible(true);
             }), DispatcherPriority.Loaded);
         }
         private readonly BenchComp[] _benchComps = new BenchComp[4];
+        private readonly List<(TextBlock Tip, FrameworkElement Key)> _benchTips = new();
+        private bool _benchTipsHidden;
+        private double _benchCardsFullH;
+        private Border? _benchHeroRight;
+
+        private void SetBenchTipsVisible(bool on)
+        {
+            _benchTipsHidden = !on;
+            foreach (var (tip, key) in _benchTips)
+            {
+                tip.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+                key.ToolTip = on ? null : tip.Text;
+            }
+        }
         private CancellationTokenSource? _benchCts;
         private bool _benchRunning;
         private string _benchDoneText = "";
@@ -203,6 +227,7 @@ namespace SMDWin.Views
             var right = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(20, 6, 0, 6), Margin = new Thickness(8, 0, 0, 0) };
             right.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
             Grid.SetColumn(right, 1);
+            _benchHeroRight = right;
             var allSp = new StackPanel { VerticalAlignment = VAlign.Center };
             allSp.Children.Add(BenchCaption(PT("General mark"), HAlign.Center));
             _benchAllDial = new ScoreDial { Width = 160, Height = 140, Segments = 20, CountUpDelay = 1.1, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
@@ -240,6 +265,7 @@ namespace SMDWin.Views
                           new[] { PT("3D render"), PT("Compute"), PT("Texture / memory") },
                           new[] { PT("A 3D picture with lighting, 1920 × 1080"), PT("Floating-point operations (FP32)"), PT("Copying data in the card's memory") });
             _benchComps[0].MainTest = 1;   // processor: all cores; the others: their first test
+            _benchTips.Clear();
             foreach (int i in BenchOrder) _benchCards.Children.Add(BuildBenchCompCard(_benchComps[i], i));
 
             HookBenchKeys();
@@ -392,6 +418,35 @@ namespace SMDWin.Views
             else
                 list.Add(new("\uE9D9", true, PT("Processor idle"), PT("Nothing heavy running"), ""));
             return list;
+        }
+
+        // the checks before the test follow the PC while the page is open (charger plugged in, processor calming down)
+        private WrapPanel? _benchReadyChips;
+        private string _benchReadySig = "";
+        private DispatcherTimer? _benchReadyTimer;
+
+        private static string BenchReadySig(List<BenchCheck> l) => string.Join("|", l.Select(c => c.Title + c.Ok));
+
+        private void StartBenchReadyWatch()
+        {
+            if (_benchReadyTimer != null) return;
+            _benchReadyTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            _benchReadyTimer.Tick += (_, _) =>
+            {
+                var chips = _benchReadyChips;
+                if (chips == null || !chips.IsVisible || _benchRunning) return;
+                try
+                {
+                    var ready = BenchReadiness();
+                    string sig = BenchReadySig(ready);
+                    if (sig == _benchReadySig) return;
+                    _benchReadySig = sig;
+                    chips.Children.Clear();
+                    foreach (var check in ready) chips.Children.Add(BenchCheckTile(check));
+                }
+                catch (Exception ex) { AppLogger.Debug($"Benchmark readiness refresh: {ex.Message}"); }
+            };
+            _benchReadyTimer.Start();
         }
 
         private Brush BenchTint(string key, byte alpha)
@@ -979,6 +1034,8 @@ namespace SMDWin.Views
                     tip.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                     Grid.SetRow(tip, 2); Grid.SetColumnSpan(tip, 3);
                     row.Children.Add(tip);
+                    _benchTips.Add((tip, keyLine));
+                    if (_benchTipsHidden) { tip.Visibility = Visibility.Collapsed; keyLine.ToolTip = tip.Text; }
                 }
                 var v = new TextBlock { Text = "—", FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VAlign.Center };
                 v.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
@@ -1166,8 +1223,12 @@ namespace SMDWin.Views
                 sub.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 sp.Children.Add(sub);
                 var chips = new WrapPanel { Margin = new Thickness(0, 10, 0, -6) };
-                foreach (var check in BenchReadiness()) chips.Children.Add(BenchCheckTile(check));
+                var ready = BenchReadiness();
+                foreach (var check in ready) chips.Children.Add(BenchCheckTile(check));
                 sp.Children.Add(chips);
+                _benchReadyChips = chips;
+                _benchReadySig = BenchReadySig(ready);
+                StartBenchReadyWatch();
                 g.Children.Add(sp);
             }
             var btns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VAlign.Center, Margin = new Thickness(16, 0, 0, 0) };

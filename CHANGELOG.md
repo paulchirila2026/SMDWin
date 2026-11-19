@@ -6,6 +6,11 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Benchmark: on a laptop screen the page fits without scrolling (the test descriptions under the bars step out into tooltips when there is no room), the texts next to the drawing are larger on a small drawing, and the checks before the test follow the PC while the page is open (charger, processor load).
+- Settings: the search box next to the tabs is gone — the search in the sidebar finds the options too and marks them on the Settings page; the note on Advanced is a light band instead of a dark one.
+- Start cards: they only explain the test (what it does, how long, what it needs); Start stays the button at the top right, as everywhere else.
+- Tools: History shows the last 3 entries, with "Show all" for the rest, so the page fits on a laptop screen.
+- Applications: the program names line up on the left, and Uninstall in the details card is an outlined red button like the others.
 - Settings, reorganized: eight tabs at the top (General, Appearance, Alerts, Widget & tray, Sensors, Data & reports, Advanced, About) with a search box next to them; one category is shown at a time. Every row has an icon; an option that differs from its default shows a small dot and a "Default" link that puts it back; a few options are marked "Recommended". Advanced starts with a short note, and About has the version, the update check and the links.
 - Tests start from a large card: while there are no results, the empty area of Disk benchmark, Surface scan, Internet speed test and Ping monitor shows what the test does, how long it takes, what it needs and a big Start button (the small button at the top stays). When the test starts, the live view takes the same place.
 - Applications: an "Updates" filter (the programs with a newer version, found with winget — update one from the right-click menu or all with one button; hidden when winget is not on the PC), an "Unused" filter (not started for more than 90 days, as recorded by Windows), and after an uninstall SMD Win looks for the folders and registry keys left behind and offers to remove them (folders to the Recycle Bin, keys saved first).
