@@ -52,9 +52,9 @@ namespace SMDWin.Views
                 PT("Files left by programs and by Windows while they work. Documents, pictures and programs are not touched. Files a program is using right now are skipped."), out _));
 
             // only the two folders TempCleanup has checked (never the TEMP/TMP variables, which may point anywhere)
-            foreach (var root in TempCleanup.SafeRoots())
+            foreach (var tempRoot in TempCleanup.SafeRoots())
             {
-                bool windows = root.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
+                bool windows = tempRoot.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
                 AddTarget(windows ? PT("Windows Temp") : PT("Temp of this account"),
                           windows ? PT("left over from updates and services") : PT("programs, installers, browser updates"), root);
             }
