@@ -28,7 +28,7 @@ namespace SMDWin.Views
         {
             try
             {
-                bool busy = _taskBadgeStressOn || _taskBadgeDiskOn || _ramTaskActiveCount > 0;
+                bool busy = _taskBadgeStressOn || _taskBadgeDiskOn || _taskBadgeBenchOn || _ramTaskActiveCount > 0;
                 if (busy == _logoBusy && !force) return;
                 _logoBusy = busy;
 

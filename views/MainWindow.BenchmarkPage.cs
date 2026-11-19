@@ -1506,6 +1506,7 @@ namespace SMDWin.Views
             _benchCts = new CancellationTokenSource();
             var ct = _benchCts.Token;
             _benchRunning = true;
+            SetNavTaskBadge("TaskBadgeBench", true);   // the sidebar button shows the running-test animation, like Storage / RAM
             _benchDoneText = "";
             _benchDoneChips.Clear();
             _benchMaxCpuTemp = _benchMaxGpuTemp = _benchCpuMhzMax = _benchCpuMhzMinLate = 0;
@@ -1714,6 +1715,7 @@ namespace SMDWin.Views
                 _benchTicker?.Stop();
                 BenchCloseStep();
                 _benchRunning = false;
+                SetNavTaskBadge("TaskBadgeBench", false);
                 _benchStep = -1;
                 var took = _benchClock?.Elapsed ?? TimeSpan.Zero;
                 _benchDoneText = cancelled ? PT("Test stopped") : PT("Test finished in {0}", $"{(int)took.TotalMinutes}:{took.Seconds:00}");

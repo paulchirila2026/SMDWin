@@ -98,7 +98,7 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Warning(ex, "CheckEventsBadgeOnStartupAsync"); }
         }
 
-        private bool _taskBadgeStressOn = false, _taskBadgeDiskOn = false;
+        private bool _taskBadgeStressOn = false, _taskBadgeDiskOn = false, _taskBadgeBenchOn = false;
         private int _ramTaskActiveCount = 0;
         private void SetNavTaskBadge(string canvasName, bool busy)
         {
@@ -117,6 +117,12 @@ namespace SMDWin.Views
                         _taskBadgeDiskOn = busy;
                         if (TaskBadgeDisk != null)
                             TaskBadgeDisk.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+                        break;
+                    case "TaskBadgeBench":
+                        if (_taskBadgeBenchOn == busy) return;
+                        _taskBadgeBenchOn = busy;
+                        if (FindName("TaskBadgeBench") is FrameworkElement tbb)
+                            tbb.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
                         break;
                     case "TaskBadgeRam":
                         _ramTaskActiveCount = Math.Max(0, _ramTaskActiveCount + (busy ? 1 : -1));
@@ -139,7 +145,7 @@ namespace SMDWin.Views
             try
             {
                 string style = SettingsService.Current.TaskBadgeStyle;
-                foreach (var prefix in new[] { "TaskBadgeStress", "TaskBadgeDisk", "TaskBadgeRam" })
+                foreach (var prefix in new[] { "TaskBadgeStress", "TaskBadgeDisk", "TaskBadgeRam", "TaskBadgeBench" })
                 {
                     var dot  = FindName(prefix + "Dot")       as FrameworkElement;
                     var ring = FindName(prefix + "Ring")      as FrameworkElement;
@@ -177,7 +183,7 @@ namespace SMDWin.Views
         {
             try
             {
-                bool anyActive = _taskBadgeStressOn || _taskBadgeDiskOn || _ramTaskActiveCount > 0;
+                bool anyActive = _taskBadgeStressOn || _taskBadgeDiskOn || _taskBadgeBenchOn || _ramTaskActiveCount > 0;
                 if (anyActive && _taskBadgeSpinTimer == null)
                 {
                     _taskBadgeSpinTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(70) };
@@ -205,6 +211,7 @@ namespace SMDWin.Views
                 if (FindName("TaskBadgeStressRingRotate") is System.Windows.Media.RotateTransform r1) r1.Angle = _taskBadgeAnimAngle;
                 if (FindName("TaskBadgeDiskRingRotate")   is System.Windows.Media.RotateTransform r2) r2.Angle = _taskBadgeAnimAngle;
                 if (FindName("TaskBadgeRamRingRotate")    is System.Windows.Media.RotateTransform r3) r3.Angle = _taskBadgeAnimAngle;
+                if (FindName("TaskBadgeBenchRingRotate")  is System.Windows.Media.RotateTransform r4) r4.Angle = _taskBadgeAnimAngle;
             }
             catch (Exception ex) { AppLogger.Debug($"AdvanceSpinRingFast: {ex.Message}"); }
         }
@@ -222,6 +229,7 @@ namespace SMDWin.Views
                 if (_taskBadgeStressOn && FindName("TaskBadgeStressSquares") is TaskBadgeSquares s1) s1.Phase = phase;
                 if (_taskBadgeDiskOn && FindName("TaskBadgeDiskSquares") is TaskBadgeSquares s2) s2.Phase = phase;
                 if (_ramTaskActiveCount > 0 && FindName("TaskBadgeRamSquares") is TaskBadgeSquares s3) s3.Phase = phase;
+                if (_taskBadgeBenchOn && FindName("TaskBadgeBenchSquares") is TaskBadgeSquares s4) s4.Phase = phase;
             }
             catch (Exception ex) { AppLogger.Debug($"AdvanceSquareBadges: {ex.Message}"); }
         }
@@ -249,6 +257,7 @@ namespace SMDWin.Views
                     if (FindName("TaskBadgeStressDot") is System.Windows.Shapes.Ellipse e1) e1.Opacity = op;
                     if (FindName("TaskBadgeDiskDot")   is System.Windows.Shapes.Ellipse e2) e2.Opacity = op;
                     if (FindName("TaskBadgeRamDot")    is System.Windows.Shapes.Ellipse e3) e3.Opacity = op;
+                    if (FindName("TaskBadgeBenchDot")  is System.Windows.Shapes.Ellipse e4) e4.Opacity = op;
                 }
                 else if (style == "Hourglass")
                 {
@@ -258,6 +267,7 @@ namespace SMDWin.Views
                     ApplyFlipY("TaskBadgeStressHourglass", scaleY);
                     ApplyFlipY("TaskBadgeDiskHourglass",   scaleY);
                     ApplyFlipY("TaskBadgeRamHourglass",    scaleY);
+                    ApplyFlipY("TaskBadgeBenchHourglass",  scaleY);
                 }
                 else if (style == "Bolt")
                 {
@@ -265,6 +275,7 @@ namespace SMDWin.Views
                     if (FindName("TaskBadgeStressBolt") is FrameworkElement b1) b1.Opacity = op;
                     if (FindName("TaskBadgeDiskBolt")   is FrameworkElement b2) b2.Opacity = op;
                     if (FindName("TaskBadgeRamBolt")    is FrameworkElement b3) b3.Opacity = op;
+                    if (FindName("TaskBadgeBenchBolt")  is FrameworkElement b4) b4.Opacity = op;
                 }
             }
             catch (Exception ex) { AppLogger.Debug($"AdvanceTaskBadgeAnim: {ex.Message}"); }
