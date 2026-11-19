@@ -558,6 +558,8 @@ namespace SMDWin.Models
         private bool _hasNote;
         /// <summary>The program folder (InstallLocation from the registry; may be missing).</summary>
         public string InstallLocation { get; set; } = "";
+        /// <summary>The date in the registry when it is newer than the first install (the program rewrote it on an update).</summary>
+        public DateTime? UpdatedDateRaw { get; set; }
         /// <summary>A newer version found by winget (null = none / not checked) and the winget package id.</summary>
         public string? UpdateVersion { get; set; }
         public string? WingetId { get; set; }

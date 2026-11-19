@@ -219,6 +219,9 @@ namespace SMDWin.Views
             TxtAppDetVersion.Text   = Or(app.Version);
             TxtAppDetSize.Text      = Or(app.Size);
             TxtAppDetInstalled.Text = Or(app.InstallDate);
+            // the registry date was rewritten by an update: the first install is shown, the update next to it
+            if (app.UpdatedDateRaw is DateTime upd)
+                TxtAppDetInstalled.Text += " · " + PT("updated {0}", SMDWin.Services.DateFormatHelper.FormatDate(upd));
             TxtAppDetScope.Text     = app.Hive == "HKCU" ? "This account" : "All users";
             TxtAppDetLocation.Text  = string.IsNullOrWhiteSpace(app.InstallLocation) ? "Not reported by the installer" : app.InstallLocation;
             BtnAppOpenFolder.IsEnabled = !string.IsNullOrWhiteSpace(app.InstallLocation) && Directory.Exists(app.InstallLocation);

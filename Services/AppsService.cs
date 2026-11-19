@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using SMDWin.Models;
@@ -96,8 +97,21 @@ namespace SMDWin.Services
                                         }
                                     }
 
+                                    // Many programs (Edge, Chrome, browsers, VS Code) rewrite InstallDate on every update, so a program
+                                    // installed years ago looked "new". The program's folder keeps the date of the first install:
+                                    // when it is clearly older, that is the install date and the registry date becomes "updated".
+                                    DateTime? updatedRaw = null;
+                                    if (dateRaw.HasValue && FirstInstallFromFolder(installLocation, sub.GetValue("DisplayIcon")?.ToString()) is DateTime first
+                                        && first < dateRaw.Value.AddDays(-2))
+                                    {
+                                        updatedRaw = dateRaw;
+                                        dateRaw = first;
+                                        date = DateFormatHelper.FormatDate(first);
+                                    }
+
                                     results.Add(new InstalledApp
                                     {
+                                        UpdatedDateRaw = updatedRaw,
                                         Name           = name,
                                         Version        = version,
                                         Publisher      = publisher,
@@ -199,6 +213,40 @@ namespace SMDWin.Services
         {
             if (string.IsNullOrWhiteSpace(version)) return version;
             return _versionPrefixRx.Replace(version, "");
+        }
+
+        /// <summary>The creation date of the program's own folder (InstallLocation, else the folder of its icon file), or null
+        /// when there is none or it is a shared/system folder whose date says nothing about this program.</summary>
+        private static DateTime? FirstInstallFromFolder(string installLocation, string? displayIcon)
+        {
+            try
+            {
+                string dir = installLocation;
+                if (string.IsNullOrWhiteSpace(dir) || !System.IO.Directory.Exists(dir))
+                {
+                    string icon = AppCommands.IconFilePath(displayIcon);
+                    dir = icon.Length > 0 ? (System.IO.Path.GetDirectoryName(icon) ?? "") : "";
+                }
+                if (string.IsNullOrWhiteSpace(dir) || !System.IO.Directory.Exists(dir)) return null;
+                string full = System.IO.Path.GetFullPath(dir).TrimEnd('\\');
+                string win = Environment.GetFolderPath(Environment.SpecialFolder.Windows).TrimEnd('\\');
+                if (full.StartsWith(win + "\\", StringComparison.OrdinalIgnoreCase) || full.Equals(win, StringComparison.OrdinalIgnoreCase)) return null;
+                // shared roots (Program Files, AppData, the drive itself): their date belongs to Windows, not to the program
+                var shared = new[]
+                {
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs"),
+                    System.IO.Path.GetPathRoot(full) ?? "",
+                };
+                if (shared.Any(r => r.Length > 0 && full.Equals(r.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))) return null;
+                var created = System.IO.Directory.GetCreationTime(full);
+                return created.Year > 1980 && created <= DateTime.Now ? created.Date : null;
+            }
+            catch (Exception ex) { AppLogger.Debug($"AppsService first install: {ex.Message}"); return null; }
         }
 
         private static string FormatSize(long bytes)
