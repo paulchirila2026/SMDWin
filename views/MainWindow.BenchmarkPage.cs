@@ -79,11 +79,12 @@ namespace SMDWin.Views
                 _benchFitQueued = false;
                 if (_benchScroll == null || _benchSketch == null || _benchBanner == null || _benchCards == null) return;
                 double free = _benchScroll.ViewportHeight - 6 - (_benchBanner.ActualHeight + 14) - _benchCards.ActualHeight - 14 - 24;
-                double h = Math.Clamp(free, 240, 500);
+                double h = Math.Clamp(free, 240, 540);
                 if (Math.Abs(_benchSketch.MaxHeight - h) > 2) _benchSketch.MaxHeight = h;
-                // the hero cannot be lower than the general mark panel on its right; when even that does not fit (laptop screen),
-                // the test descriptions under the bars step out (they stay as tooltips) so the page fits without scrolling
-                double need = Math.Max(240, (_benchHeroRight?.ActualHeight ?? 0) + 24);
+                // the drawing comes first: it wants at least ~380 px (and never less than the general mark panel on its right);
+                // when that does not fit (laptop screen), the test descriptions under the bars step out (they stay as tooltips)
+                // so the drawing grows and the page fits without scrolling — before and after the test
+                double need = Math.Max(380, (_benchHeroRight?.ActualHeight ?? 0) + 24);
                 if (!_benchTipsHidden && free < need && _benchTips.Count > 0)
                 {
                     _benchCardsFullH = _benchCards.ActualHeight;
@@ -106,6 +107,7 @@ namespace SMDWin.Views
             {
                 tip.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
                 key.ToolTip = on ? null : tip.Text;
+                if (tip.Parent is Grid row) row.Margin = new Thickness(0, 0, 0, on ? 12 : 9);
             }
         }
         private CancellationTokenSource? _benchCts;
@@ -208,8 +210,8 @@ namespace SMDWin.Views
             top.Padding = new Thickness(12, 10, 20, 10);
             Grid.SetRow(top, 1);
             var hero = new Grid();
-            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.5, GridUnitType.Star) });
-            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 330 });
+            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.9, GridUnitType.Star) });
+            hero.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 300 });
             _benchSketch = new DeviceSketch { MaxHeight = 500, Format = v => BNum(v), VerticalAlignment = VAlign.Center };
             // the drawing follows the real readings: fans by load, glow by temperature, the disk LED by activity
             _benchSketch.LiveSource = () =>
@@ -230,7 +232,7 @@ namespace SMDWin.Views
             _benchHeroRight = right;
             var allSp = new StackPanel { VerticalAlignment = VAlign.Center };
             allSp.Children.Add(BenchCaption(PT("General mark"), HAlign.Center));
-            _benchAllDial = new ScoreDial { Width = 160, Height = 140, Segments = 20, CountUpDelay = 1.1, Format = v => BNum(v), Margin = new Thickness(0, 6, 0, 12), HorizontalAlignment = HAlign.Center };
+            _benchAllDial = new ScoreDial { Width = 140, Height = 122, Segments = 20, CountUpDelay = 1.1, Format = v => BNum(v), Margin = new Thickness(0, 4, 0, 8), HorizontalAlignment = HAlign.Center };
             allSp.Children.Add(_benchAllDial);
             allSp.Children.Add(BuildBenchClassPanel());
             right.Child = allSp;
@@ -1035,7 +1037,7 @@ namespace SMDWin.Views
                     Grid.SetRow(tip, 2); Grid.SetColumnSpan(tip, 3);
                     row.Children.Add(tip);
                     _benchTips.Add((tip, keyLine));
-                    if (_benchTipsHidden) { tip.Visibility = Visibility.Collapsed; keyLine.ToolTip = tip.Text; }
+                    if (_benchTipsHidden) { tip.Visibility = Visibility.Collapsed; keyLine.ToolTip = tip.Text; row.Margin = new Thickness(0, 0, 0, 9); }
                 }
                 var v = new TextBlock { Text = "—", FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VAlign.Center };
                 v.SetResourceReference(TextBlock.FontFamilyProperty, "NumFont");
