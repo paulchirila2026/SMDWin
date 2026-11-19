@@ -268,7 +268,7 @@ namespace SMDWin.Views
                                               TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis, MaxHeight = 56, ToolTip = modelText });
             string style = d.Partitions.Count > 0 ? "" : " · no volumes";
             info.Children.Add(Txt2($"{d.Size}{style}", "TextSecondaryBrush", Ui.FontM));
-            var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Watch"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
+            var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Needs attention"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
             var stRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
             var dot = new Ellipse { Width = 8, Height = 8, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VAlign.Center };
             dot.SetResourceReference(Shape.FillProperty, stKey);
@@ -429,7 +429,7 @@ namespace SMDWin.Views
                 }
                 else
                 {
-                    status = hp < 60 ? "Failing" : "Watch"; key = hp < 60 ? "StatusCritBrush" : "StatusWarnBrush";
+                    status = hp < 60 ? "Failing" : "Needs attention"; key = hp < 60 ? "StatusCritBrush" : "StatusWarnBrush";
                     text = warnNames.Count > 0 ? PT("Values that need attention: {0}. Back up important data.", string.Join(", ", warnNames.Take(3)) + (warnNames.Count > 3 ? "…" : ""))
                                                : PT("The drive reports reduced health. Back up important data.");
                 }

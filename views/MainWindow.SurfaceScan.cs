@@ -509,12 +509,18 @@ namespace SMDWin.Views
 
         private bool _surfaceDiskHooked;
 
+        private bool _surfaceComboStale;
+
         private void PopulateSurfaceDiskCombo()
         {
+            // during a scan the list stays as it is: a USB disk plugged in or pulled out refreshes the disk list, and the selection
+            // used to jump to the first disk (the SSD) — the list is refreshed when the scan ends
+            if (_surfaceScanCts != null) { _surfaceComboStale = true; return; }
+            string? prev = CbSurfaceDisk.SelectedItem as string;
             CbSurfaceDisk.Items.Clear();
             foreach (var d in _allDisks)
                 CbSurfaceDisk.Items.Add(DiskComboName(d));
-            if (CbSurfaceDisk.Items.Count > 0) CbSurfaceDisk.SelectedIndex = 0;
+            if (CbSurfaceDisk.Items.Count > 0) RestoreComboSelection(CbSurfaceDisk, prev);
             if (!_surfaceDiskHooked)
             {
                 _surfaceDiskHooked = true;
@@ -574,6 +580,8 @@ namespace SMDWin.Views
 
             _surfaceScanCts?.Dispose();
             _surfaceScanCts = new CancellationTokenSource();
+            _surfaceDisconnected = false;
+            CbSurfaceDisk.IsEnabled = false;   // the scanned disk cannot change in the middle of the scan
             SetNavTaskBadge("TaskBadgeDisk", true);
 
             BtnSurfaceStart.IsEnabled  = true;
@@ -673,10 +681,33 @@ namespace SMDWin.Views
                 // finished scan) and only the second click would start a new one
                 _surfaceScanCts?.Dispose();
                 _surfaceScanCts = null;
+                CbSurfaceDisk.IsEnabled = true;
+                if (_surfaceComboStale) { _surfaceComboStale = false; PopulateSurfaceDiskCombo(); }
             }
         }
 
         private enum SurfaceScanState { Running, Stopped, Complete }
+
+        private volatile bool _surfaceDisconnected;
+
+        /// <summary>Win32 errors that mean "the device is not there any more" (unplugged, powered off, USB reset).</summary>
+        private static bool IsDeviceGoneError(int err) =>
+            err is 1167   // ERROR_DEVICE_NOT_CONNECTED
+                or 433    // ERROR_NO_SUCH_DEVICE
+                or 55     // ERROR_DEV_NOT_EXIST
+                or 21     // ERROR_NOT_READY
+                or 6      // ERROR_INVALID_HANDLE
+                or 1617;  // ERROR_DEVICE_REMOVED
+
+        /// <summary>Opens the disk again without reading: false when Windows no longer has it.</summary>
+        private static bool SurfaceDeviceStillThere(string devicePath)
+        {
+            var h = NativeMethods.CreateFile(devicePath, 0, NativeMethods.FILE_SHARE_READ | NativeMethods.FILE_SHARE_WRITE,
+                                             IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
+            if (h == NativeMethods.INVALID_HANDLE_VALUE) return false;
+            NativeMethods.CloseHandle(h);
+            return true;
+        }
 
         /// <summary>The width + colour of the progress strip (accent; red if bad sectors were found) and the large percentage
         /// next to it. A single place, used both during the scan and at the end.</summary>
@@ -814,10 +845,15 @@ namespace SMDWin.Views
             var nonMediaCodes = new System.Collections.Generic.Dictionary<int, long>();
             long processedReal = 0, processedRealAtLastUi = 0;   // only the blocks actually read (without the skipped ones) — for the speed
 
+            int lastErr = 0, consecutiveSkipped = 0;
+            bool disconnected = false;
             bool TryRead(IntPtr buf, uint bytes, out uint bytesReadOut, out bool wasNonMediaError)
             {
+                // the disk is gone: no retries, no waiting — the loop stops right after
+                if (disconnected) { bytesReadOut = bytes; wasNonMediaError = true; return true; }
                 bool okLocal = NativeMethods.ReadFile(handle, buf, bytes, out bytesReadOut, IntPtr.Zero);
                 int  err     = okLocal ? 0 : Marshal.GetLastWin32Error();
+                if (!okLocal && IsDeviceGoneError(err)) { lastErr = err; disconnected = true; wasNonMediaError = true; bytesReadOut = bytes; return true; }
                 wasNonMediaError = false;
 
                 int extraAttempts = looksLikeSpinningHdd ? 2 : 1; // total retries, IN ADDITION to the first read
@@ -829,6 +865,7 @@ namespace SMDWin.Views
                     err     = okLocal ? 0 : Marshal.GetLastWin32Error();
                 }
 
+                lastErr = okLocal ? 0 : err;
                 if (!okLocal && !isRealMediaError(err))
                 {
                     nonMediaCodes[err] = nonMediaCodes.TryGetValue(err, out long c0) ? c0 + 1 : 1;
@@ -861,10 +898,20 @@ namespace SMDWin.Views
 
                     if (wasNonMedia)
                     {
+                        // a disk that was pulled out (or lost power) answers every read with an error at once: the scan used to "skip"
+                        // the rest of the disk in seconds and report it clean. Many skipped blocks in a row → is the disk still there?
+                        consecutiveSkipped++;
+                        if (!disconnected && consecutiveSkipped >= 24 && !SurfaceDeviceStillThere(devicePath)) disconnected = true;
+                        if (disconnected)
+                        {
+                            AppLogger.Warning($"Surface Scan: the drive stopped answering at LBA {sector} (Win32 {lastErr}) — disconnected or lost power; scan stopped");
+                            break;
+                        }
                         Interlocked.Increment(ref nonMediaIoErrors);
                         if (nonMediaIoErrors <= 20 || nonMediaIoErrors % 500 == 0)
                             AppLogger.Warning($"Surface Scan: non-media I/O error at LBA {sector} — skipped, NOT counted as a bad sector");
                     }
+                    else consecutiveSkipped = 0;
 
                     double ms = sw.Elapsed.TotalMilliseconds;
                     byte blockSeverity;
@@ -1105,6 +1152,7 @@ namespace SMDWin.Views
             if (nonMediaCodes.Count > 0)
                 AppLogger.Warning($"Surface Scan: non-media errors by Win32 code — {string.Join(", ", nonMediaCodes.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key}×{kv.Value}"))}");
             var applyFinalVisuals = SnapshotSurfaceVisuals(processed, totalSectors, processed, final: true);
+            _surfaceDisconnected = disconnected;
             Dispatcher.InvokeAsync(() =>
             {
                 applyFinalVisuals();
@@ -1113,11 +1161,11 @@ namespace SMDWin.Views
                 if (TxtSurfacePct != null) TxtSurfacePct.Text = "100%";
                 TxtSurfaceBad.Text  = finalBad.ToString();
                 TxtSurfaceSlow.Text = finalSlow.ToString();
-                bool stopped = ct.IsCancellationRequested;
+                bool stopped = ct.IsCancellationRequested || disconnected;
                 double finalPct = totalSectors > 0 ? Math.Min(100.0, processed * 100.0 / totalSectors) : 0;
                 SetSurfaceProgress(stopped ? finalPct : 100.0, finalBad > 0);
                 SetTaskbarProgress(null);   // back to the moving band while something else runs, otherwise nothing
-                TxtSurfacePhase.Text = stopped ? "Stopped" : "Complete";
+                TxtSurfacePhase.Text = disconnected ? PT("Drive disconnected") : stopped ? "Stopped" : "Complete";
                 TxtSurfaceEta.Text   = stopped ? $"stopped at {finalPct:F0}%" : "done";   // stopped: how much was scanned, not an empty box
                 SetSurfaceVerdict(finalBad, finalSlow, stopped ? SurfaceScanState.Stopped : SurfaceScanState.Complete);
                 if (TxtSurfaceScanned != null)
@@ -1129,13 +1177,16 @@ namespace SMDWin.Views
                 string nonMediaNote = finalNonMediaErrors > 0
                     ? $" ({finalNonMediaErrors} non-media I/O anomal{(finalNonMediaErrors == 1 ? "y" : "ies")} skipped, not counted as bad)"
                     : "";
-                TxtSurfaceStatus.Text = ct.IsCancellationRequested
+                TxtSurfaceStatus.Text = disconnected
+                    ? PT("✕ The drive stopped answering at {0} GB (unplugged or lost power) — the scan was stopped. Only the part read before is shown.",
+                         (processed * (double)bytesPerSector / 1_073_741_824.0).ToString("F1"))
+                    : ct.IsCancellationRequested
                     ? $"Stopped at {processed:N0} sectors. Bad: {finalBad}, Slow: {finalSlow}{nonMediaNote}"
                     : finalBad == 0
                         ? $"✓ Scan complete — no bad sectors found! ({finalSlow} slow){nonMediaNote}"
                         : $"⚠ Scan complete — {finalBad} bad sector(s), {finalSlow} slow{nonMediaNote}";
 
-                if (!ct.IsCancellationRequested && disk != null)
+                if (!stopped && disk != null)
                 {
                     // 1) Reconciliation with SMART — an automatic cross-check between the scan and the SMART attributes
                     // (catches false positives).

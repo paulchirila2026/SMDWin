@@ -682,7 +682,7 @@ namespace SMDWin.Views
 
             if (minHealth < 60) { r.Status = string.Format(SI("StatusHealth", "Health {0}%"), minHealth); r.StatusBrush = "StatusProblemBrush"; }
             else if (worst >= StatusRules.DiskCritPct) { r.Status = string.Format(SI("StatusFull", "{0} full"), worstLetter); r.StatusBrush = "StatusProblemBrush"; }
-            else if (worst >= StatusRules.DiskWarnPct || minHealth < 90) { r.Status = SI("StatusWatch", "Watch"); r.StatusBrush = "StatusCheckBrush"; }
+            else if (worst >= StatusRules.DiskWarnPct || minHealth < 90) { r.Status = SI("StatusWatch", "Needs attention"); r.StatusBrush = "StatusCheckBrush"; }
             else r.Status = SI("StatusOk", "OK");
             return r;
         }

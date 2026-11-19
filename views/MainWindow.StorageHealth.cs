@@ -198,7 +198,7 @@ namespace SMDWin.Views
             string statusKey = hp >= 90 ? "StatusGoodBrush" : hp >= 60 ? "StatusCheckBrush" : "StatusProblemBrush";
             // the life left is in the dial; next to it, the state in one word
             right.Children.Add(BandKey(DS("StatusWord", "Status")));
-            right.Children.Add(BandBig(hp >= 90 ? DS("Healthy", "Healthy") : hp >= 60 ? DS("Watch", "Watch") : DS("Failing", "Failing"), statusKey));
+            right.Children.Add(BandBig(hp >= 90 ? DS("Healthy", "Healthy") : hp >= 60 ? DS("Watch", "Needs attention") : DS("Failing", "Failing"), statusKey));
             string verdict = f.WarnNames.Count == 0
                 ? string.Format(DS("AllWithinLimits", "All {0} SMART values within limits"), f.SmartCount)
                 : string.Format(DS("ValuesNeedAttention", "{0} of {1} values need attention"), f.WarnNames.Count, f.SmartCount);

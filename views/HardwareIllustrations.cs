@@ -12,6 +12,9 @@ using Ellipse     = System.Windows.Shapes.Ellipse;
 using Path        = System.Windows.Shapes.Path;
 using WColor      = System.Windows.Media.Color;
 using Brush       = System.Windows.Media.Brush;
+using Brushes     = System.Windows.Media.Brushes;
+using Point       = System.Windows.Point;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace SMDWin.Views
 {
@@ -118,6 +121,37 @@ namespace SMDWin.Views
         private static readonly SolidColorBrush CaseEdgeBr = Frz(WColor.FromRgb(0x5A, 0x66, 0x7A));  // a slightly lit edge
         private static SolidColorBrush Frz(WColor c) { var b = new SolidColorBrush(c); b.Freeze(); return b; }
 
+        // ── the materials of the drive drawings (the same in both themes, like a photo): brushed metal, the platter, the board ──
+        private static LinearGradientBrush Lin(string a, string b, bool diagonal = false)
+        {
+            var g = new LinearGradientBrush((WColor)ColorConverter.ConvertFromString(a), (WColor)ColorConverter.ConvertFromString(b),
+                                            new Point(0, 0), diagonal ? new Point(1, 1) : new Point(0, 1));
+            g.Freeze(); return g;
+        }
+        private static readonly LinearGradientBrush MetalBr = Lin("#8D97A8", "#5F6879");
+        private static readonly LinearGradientBrush InnerBr = Lin("#4A5262", "#3A414F", true);
+        private static readonly LinearGradientBrush ShellBr = Lin("#3F4756", "#262C37");
+        private static readonly LinearGradientBrush ArmBr   = Lin("#D8DEE7", "#8F99A8", true);
+        private static readonly LinearGradientBrush PcbBr   = Lin("#21403A", "#16292A");
+        private static readonly LinearGradientBrush ChipGr  = Lin("#2D333D", "#14181E", true);
+        private static readonly LinearGradientBrush AluBr   = Lin("#B9C1CC", "#7D8796");
+        private static readonly LinearGradientBrush Alu2Br  = Lin("#C7CED8", "#97A1AF", true);
+        private static readonly RadialGradientBrush PlatterBr = MakePlatter();
+        private static RadialGradientBrush MakePlatter()
+        {
+            var g = new RadialGradientBrush { Center = new Point(0.45, 0.40), GradientOrigin = new Point(0.45, 0.40), RadiusX = 0.62, RadiusY = 0.62 };
+            g.GradientStops.Add(new GradientStop(WColor.FromRgb(0xF3, 0xF6, 0xFA), 0));
+            g.GradientStops.Add(new GradientStop(WColor.FromRgb(0xCF, 0xD6, 0xE0), 0.55));
+            g.GradientStops.Add(new GradientStop(WColor.FromRgb(0x9E, 0xA8, 0xB6), 1));
+            g.Freeze(); return g;
+        }
+        private static SolidColorBrush Hex(string h) => Frz((WColor)ColorConverter.ConvertFromString(h));
+        private static readonly SolidColorBrush HubBr = Hex("#C3CAD5"), HubEdgeBr = Hex("#8A94A3"), ScrewBr = Hex("#6C7686"),
+            MagnetBr = Hex("#232831"), MagnetTopBr = Hex("#2F3540"), PlatEdgeBr = Hex("#2F3541"), PivotBr = Hex("#CFD5DE"),
+            PortBr = Hex("#1D222B"), CableBr = Hex("#55606F"), LabelBr = Hex("#E8ECF2"), LabelInkBr = Hex("#1B2230"),
+            DarkPcbBr = Hex("#1B2230"), TraceBr = Frz(WColor.FromArgb(0x1F, 0x3F, 0xD0, 0xA0)), SmdBr = Hex("#8A6D3A"),
+            GreyInkBr = Hex("#8D97A8"), GreyInk2Br = Hex("#5D6878"), CaseScrewBr = Hex("#9EA7B4"), StickBodyBr = Hex("#232A36");
+
         /// <summary>
         /// Disk icon (110 × 76), by type: "NVMe SSD", "M.2 SATA SSD", "SATA SSD" / "SSD", "HDD", "HDD 2.5", "External HDD",
         /// "External SSD", "External drive", "USB stick", "SD card"; anything else = a generic SSD.
@@ -153,14 +187,76 @@ namespace SMDWin.Views
                 E(x, y, 5.6, key: "BgCardBrush");
                 E(x, y, 3.8, key: healthKey);
             }
-            // M.2 board (80 × 22 mm): the outline has the notches at the contacts (left) and the round screw cut-out (right)
+            // shapes from path data (the drawings were designed as SVG, 110 × 76)
+            void P(string data, Brush? fill = null, string? key = null, double op = 1)
+            {
+                var e = new Path { Data = Geometry.Parse(data), Opacity = op };
+                if (key != null) e.SetResourceReference(Shape.FillProperty, key); else e.Fill = fill;
+                c.Children.Add(e);
+            }
+            void S(string data, Brush stroke, double th, double op = 1)
+            {
+                c.Children.Add(new Path { Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = th, Opacity = op,
+                                          StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round });
+            }
+            void Ring(double cx, double cy, double rr, Brush stroke, double th, double op)
+            {
+                var e = new Ellipse { Width = rr * 2, Height = rr * 2, Stroke = stroke, StrokeThickness = th, Opacity = op };
+                Canvas.SetLeft(e, cx - rr); Canvas.SetTop(e, cy - rr); c.Children.Add(e);
+            }
+            // the platter: dark rim, silver disc with a few tracks and two reflections, the hub with its screws
+            void Platter(double cx, double cy, double r, double hub, bool screws)
+            {
+                E(cx, cy, r + 1.4, PlatEdgeBr);
+                E(cx, cy, r, PlatterBr);
+                foreach (double k in new[] { 0.82, 0.66, 0.5 }) if (r * k > hub + 3) Ring(cx, cy, r * k, ScrewBr, 0.6, 0.22);
+                // the light wedge (upper left) and a fainter one opposite
+                double a1 = -128 * Math.PI / 180, a2 = -90 * Math.PI / 180;
+                string Wedge(double from, double to) => FormattableString.Invariant(
+                    $"M{cx},{cy} L{cx + r * Math.Cos(from):0.##},{cy + r * Math.Sin(from):0.##} A{r},{r} 0 0 1 {cx + r * Math.Cos(to):0.##},{cy + r * Math.Sin(to):0.##} Z");
+                P(Wedge(a1, a2), Brushes.White, op: 0.45);
+                P(Wedge(a1 + Math.PI, a2 + Math.PI), Brushes.White, op: 0.16);
+                var h = new Ellipse { Width = hub * 2, Height = hub * 2, Fill = HubBr, Stroke = HubEdgeBr, StrokeThickness = 0.8 };
+                Canvas.SetLeft(h, cx - hub); Canvas.SetTop(h, cy - hub); c.Children.Add(h);
+                if (screws)
+                    for (int i = 0; i < 6; i++)
+                    {
+                        double a = (i * 60 - 90) * Math.PI / 180;
+                        E(cx + hub * 0.6 * Math.Cos(a), cy + hub * 0.6 * Math.Sin(a), hub * 0.125, ScrewBr);
+                    }
+                E(cx, cy, hub * 0.28, HubEdgeBr);
+            }
+            // the head arm: from the pivot to the head over the platter, the pivot cap
+            void Arm(string body, double px, double py, double pr)
+            {
+                P(body, ArmBr);
+                var piv = new Ellipse { Width = pr * 2, Height = pr * 2, Fill = PivotBr, Stroke = HubEdgeBr, StrokeThickness = 0.8 };
+                Canvas.SetLeft(piv, px - pr); Canvas.SetTop(piv, py - pr); c.Children.Add(piv);
+                E(px, py, pr * 0.33, ScrewBr);
+            }
+            void SataPins(double x, double y1, double y2)
+            {
+                for (int i = 0; i < 6; i++) R(x, y1 + i * 2.1, 3, 1.1, 0.3, GoldBr);
+                for (int i = 0; i < 15; i++) R(x, y2 + i * 2.1, 3, 1.1, 0.3, GoldBr);
+            }
+            // a black chip with a faint sheen and the orientation dot
+            void Chip(double x, double y, double w, double h)
+            {
+                R(x, y, w, h, 1.4, ChipGr);
+                R(x + 2, y + 2, w - 4, 1.3, 0.5, Brushes.White, op: 0.09);
+                E(x + 2.8, y + h - 2.8, 0.8, Brushes.White, op: 0.22);
+            }
+
+            // M.2 board (80 × 22 mm): the outline            // M.2 board (80 × 22 mm): the outline has the notches at the contacts (left) and the round screw cut-out (right)
             const string NvmeOutline = "M7,25 H102 A2,2 0 0 1 104,27 V34.6 A3.4,3.4 0 0 0 104,41.4 V49 A2,2 0 0 1 102,51 H7 A1,1 0 0 1 6,50 V47.4 H10 V44 H6 V26 A1,1 0 0 1 7,25 Z";
             const string SataM2Outline = "M7,25 H102 A2,2 0 0 1 104,27 V34.6 A3.4,3.4 0 0 0 104,41.4 V49 A2,2 0 0 1 102,51 H7 A1,1 0 0 1 6,50 V47.4 H10 V44 H6 V32.4 H10 V29 H6 V26 A1,1 0 0 1 7,25 Z";
             void M2Board(string outline, string brushKey)
             {
-                var board = new Path { Data = Geometry.Parse(outline) };
-                board.SetResourceReference(Shape.FillProperty, brushKey); c.Children.Add(board);
-                R(8, 25.6, 94, 1.4, 0.7, White85, op: 0.22);   // the reflection of the top edge
+                var board = new Path { Data = Geometry.Parse(outline), Fill = PcbBr };
+                c.Children.Add(board);
+                R(8, 24.6, 93, 0.8, 0.4, Brushes.White, op: 0.16);   // the reflection of the top edge
+                S("M16,49 H40 L43,46 H96 M16,27 H30", TraceBr, 0.5);   // fine traces
+                R(56, 48, 30, 2.5, 1, key: brushKey, op: 0.95);        // the label stripe: accent, or the state colour
             }
             // the gold contact fingers along the edge; missing where the notches are (start y of each one)
             void M2Fingers(double[] skipNotches)
@@ -180,92 +276,109 @@ namespace SMDWin.Views
             }
             switch (kind)
             {
-                case "NVMe SSD":   // M.2 2280: one notch at the contacts (M key), the opposite end straight with a round screw cut-out
+                case "NVMe SSD":   // M.2 2280: the controller, a DRAM chip, two flash packages, small parts; one notch (M key), the screw
                     M2Board(NvmeOutline, tint);
                     M2Fingers(skipNotches: new[] { 44.0 });
-                    R(16, 29, 16, 18, 1.5, ChipBr); R(40, 29, 20, 18, 1.5, ChipBr); R(66, 29, 20, 18, 1.5, ChipBr);
-                    R(43, 32, 14, 2.6, 1, White85, op: 0.35); R(69, 32, 14, 2.6, 1, White85, op: 0.35);
-                    R(34.5, 31, 2.4, 4, 0.6, ChipBr); R(34.5, 41, 2.4, 4, 0.6, ChipBr); R(61, 31, 2.4, 4, 0.6, ChipBr); R(61, 41, 2.4, 4, 0.6, ChipBr);
+                    Chip(17, 28, 16, 16); R(19, 30, 12, 12, 1, Brushes.Transparent);
+                    Chip(37, 30, 8, 12);
+                    Chip(49, 27.5, 20, 19); Chip(73, 27.5, 20, 19);
+                    foreach (var (sx, sy) in new[] { (35.0, 46.0), (38.0, 46.0), (41.0, 46.0), (47.0, 28.0), (47.0, 31.0), (47.0, 44.0), (95.0, 29.0), (95.0, 32.0), (95.0, 45.0) })
+                        R(sx, sy, 1.6, 0.9, 0.2, SmdBr);
                     M2Screw();
                     Led(92, 62);
                     break;
-                case "M.2 SATA SSD":   // M.2 SATA: two notches at the contacts (B+M key), a "SATA" label, a round cut-out at the other end
+                case "M.2 SATA SSD":   // M.2 SATA: two notches (B+M key), the controller, one flash package, a "SATA" label
                     M2Board(SataM2Outline, tint);
                     M2Fingers(skipNotches: new[] { 29.0, 44.0 });
-                    R(16, 29, 14, 18, 1.5, ChipBr); R(76, 29, 14, 18, 1.5, ChipBr);
-                    R(34, 30, 38, 16, 2, White85);
-                    var sataTxt = new TextBlock { Text = "SATA", FontSize = 9, FontWeight = FontWeights.Bold, Foreground = ChipBr };
-                    Canvas.SetLeft(sataTxt, 42); Canvas.SetTop(sataTxt, 32); c.Children.Add(sataTxt);
+                    Chip(17, 29, 14, 14); Chip(38, 28, 22, 19);
+                    R(66, 30, 28, 13, 2, LabelBr, op: 0.92);
+                    var sataTxt = new TextBlock { Text = "SATA", FontSize = 6.5, FontWeight = FontWeights.Bold, Foreground = LabelInkBr };
+                    Canvas.SetLeft(sataTxt, 71.5); Canvas.SetTop(sataTxt, 32.2); c.Children.Add(sataTxt);
                     M2Screw();
                     Led(92, 62);
                     break;
-                case "HDD":   // 3.5" HDD: the case, the platter, the arm, the label in the state colour
-                    R(10, 3, 90, 70, 6, key: "TextSecondaryBrush");
-                    E(52, 36, 25, White85); E(52, 36, 5, key: "TextSecondaryBrush");
-                    var arm = new Line { X1 = 88, Y1 = 62, X2 = 64, Y2 = 30, StrokeThickness = 4, Stroke = ChipBr, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round };
-                    c.Children.Add(arm); E(88, 62, 5, ChipBr);
-                    R(70, 8, 26, 8, 2, key: tint, op: healthKey == null ? 0.0 : 1);
-                    Led(19, 63);
+                case "HDD":   // 3.5" HDD, cover off: the case, the platter with the hub, the head arm, the voice-coil magnet, the flex cable
+                    R(7, 2, 96, 72, 6, MetalBr);
+                    var rim35 = new Rectangle { Width = 94, Height = 70, RadiusX = 5.5, RadiusY = 5.5, Stroke = CaseScrewBr, StrokeThickness = 1, Opacity = 0.35 };
+                    Canvas.SetLeft(rim35, 8); Canvas.SetTop(rim35, 3); c.Children.Add(rim35);
+                    P("M14,8 H96 A3,3 0 0 1 99,11 V48 L90,52 V70 H14 A3,3 0 0 1 11,67 V11 A3,3 0 0 1 14,8 Z", InnerBr);
+                    Platter(44, 38, 27.5, 8, screws: true);
+                    P("M84,50 L99,46 A3,3 0 0 1 102.6,48.6 L104,66 A3,3 0 0 1 101,69.2 L86,70 A3,3 0 0 1 83,67 Z", MagnetBr);
+                    P("M86,52 L98,49 L99.5,64 L87,66 Z", MagnetTopBr);
+                    Arm("M88,57 L60,25.5 L57.5,27.5 L84,61 Z", 87, 59, 5.4);
+                    P("M55.2,25.6 L58.1,22.4 L60.6,24.6 L57.7,27.8 Z", ChipBr);   // the head
+                    S("M83,64 C78,68 72,69 66,70", GoldBr, 2.2);
+                    foreach (var (sx, sy) in new[] { (12.0, 6.5), (98.0, 6.5), (12.0, 69.5), (98.0, 69.5) }) E(sx, sy, 1.6, CaseScrewBr);
+                    Led(18, 63);
                     break;
-                case "HDD 2.5":   // 2.5" HDD (laptop): a smaller metal case, the platter, the SATA connector
-                    R(8, 8, 94, 60, 6, CaseBr);
-                    R(9, 9, 92, 58, 5.5, CaseEdgeBr, op: 0.5);
-                    R(11, 11, 88, 54, 4.5, CaseBr);
-                    E(40, 38, 20, White85); E(40, 38, 4, CaseBr);
-                    var arm25 = new Line { X1 = 76, Y1 = 56, X2 = 54, Y2 = 32, StrokeThickness = 3.4, Stroke = ChipBr, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round };
-                    c.Children.Add(arm25); E(76, 56, 4, ChipBr);
-                    R(66, 14, 28, 9, 2, key: tint);
-                    R(100, 14, 6, 14, 1.5, ChipBr); R(100, 31, 6, 32, 1.5, ChipBr);
-                    for (int i = 0; i < 6; i++) R(102, 16 + i * 2.1, 3, 1.1, 0.3, GoldBr);
-                    for (int i = 0; i < 14; i++) R(102, 33 + i * 2.1, 3, 1.1, 0.3, GoldBr);
-                    Led(18, 58);
+                case "HDD 2.5":   // 2.5" HDD (laptop), cover off: a smaller case, platter, arm, magnet, the SATA connector
+                    R(5, 9, 94, 58, 5, MetalBr);
+                    var rim25 = new Rectangle { Width = 92, Height = 56, RadiusX = 4.5, RadiusY = 4.5, Stroke = CaseScrewBr, StrokeThickness = 1, Opacity = 0.35 };
+                    Canvas.SetLeft(rim25, 6); Canvas.SetTop(rim25, 10); c.Children.Add(rim25);
+                    R(9, 13, 86, 50, 3.5, InnerBr);
+                    Platter(37, 38, 21.7, 6.2, screws: true);
+                    P("M73,46 L86,43 A2.5,2.5 0 0 1 89,45.2 L90,58 A2.5,2.5 0 0 1 87.4,60.6 L75,61 A2.5,2.5 0 0 1 72.5,58.5 Z", MagnetBr);
+                    Arm("M77,52 L52,26 L50,27.8 L73.5,55 Z", 76, 54, 4.6);
+                    P("M47.9,26.1 L50.5,23.2 L52.8,25.2 L50.2,28.1 Z", ChipBr);
+                    R(99, 15, 6, 13, 1.4, PortBr); R(99, 31, 6, 30, 1.4, PortBr);
+                    SataPins(101, 17, 33);
+                    Led(16, 59);
                     break;
-                case "External HDD":   // portable external drive: a thick housing with the platter visible and the USB cable
-                    R(6, 10, 88, 56, 10, CaseBr);
-                    R(7, 11, 86, 14, 9, CaseEdgeBr, op: 0.4);
-                    E(38, 40, 17, White85); E(38, 40, 4, CaseBr);
-                    R(62, 33, 26, 7, 3, key: tint);
-                    R(62, 46, 18, 4, 2, White85, op: 0.5);
-                    R(94, 34, 8, 8, 1, ChipBr); R(102, 31, 8, 14, 2, key: "TextSecondaryBrush");
-                    Led(84, 20);
+                case "External HDD":   // portable drive: the 2.5" mechanism inside a rounded shell, the USB cable
+                    R(3, 6, 88, 64, 11, ShellBr);
+                    var rimExt = new Rectangle { Width = 86, Height = 62, RadiusX = 10, RadiusY = 10, Stroke = Brushes.White, StrokeThickness = 1, Opacity = 0.10 };
+                    Canvas.SetLeft(rimExt, 4); Canvas.SetTop(rimExt, 7); c.Children.Add(rimExt);
+                    R(9, 12, 76, 52, 6, InnerBr);
+                    Platter(35, 38, 19.8, 5.6, screws: false);
+                    P("M65,46 L76,43.5 A2.4,2.4 0 0 1 78.8,45.5 L80,57 A2.4,2.4 0 0 1 77.6,59.5 L67,60 A2.4,2.4 0 0 1 64.6,57.6 Z", MagnetBr);
+                    Arm("M69,52 L48,27.5 L46.2,29 L66,55 Z", 68, 54, 4.2);
+                    R(90, 33, 7, 10, 1.5, PortBr);
+                    S("M97,38 C102,38 103,34 107,34", CableBr, 3);
+                    Led(80, 16);
                     break;
                 case "USB stick":
-                case "SD card":
-                    var plug = new Rectangle { Width = 26, Height = 24, RadiusX = 2, RadiusY = 2, StrokeThickness = 2.5 };
-                    plug.SetResourceReference(Shape.StrokeProperty, "TextSecondaryBrush");
-                    Canvas.SetLeft(plug, 4); Canvas.SetTop(plug, 26); c.Children.Add(plug);
-                    R(11, 32, 5, 4, 0, key: "TextSecondaryBrush"); R(11, 41, 5, 4, 0, key: "TextSecondaryBrush");
-                    R(30, 20, 72, 36, 8, key: tint); R(44, 30, 36, 16, 3, White85); E(92, 30, 3, White85);
-                    Led(92, 46);
+                case "SD card":   // the metal USB plug with its two windows, the body with a label in the accent / state colour, the lanyard hole
+                    R(4, 27, 26, 22, 1.5, AluBr);
+                    var plugRim = new Rectangle { Width = 24, Height = 20, RadiusX = 1, RadiusY = 1, Stroke = Brushes.White, StrokeThickness = 1, Opacity = 0.3 };
+                    Canvas.SetLeft(plugRim, 5); Canvas.SetTop(plugRim, 28); c.Children.Add(plugRim);
+                    R(11, 33, 5, 4, 0, InnerBr); R(11, 40, 5, 4, 0, InnerBr);
+                    R(30, 22, 72, 32, 7, StickBodyBr);
+                    R(31, 23, 70, 8, 6, Brushes.White, op: 0.07);
+                    R(44, 33, 34, 10, 3, key: tint);
+                    Ring(92, 38, 3.5, GreyInk2Br, 1.6, 1);
+                    Led(92, 26);
                     break;
                 case "External SSD":
-                case "External drive":   // a small case + the USB cable
-                    R(6, 12, 80, 52, 8, key: tint); R(18, 24, 44, 22, 3, White85);
-                    Led(72, 24);
-                    R(86, 34, 12, 8, 1, ChipBr); R(98, 32, 8, 12, 2, key: "TextSecondaryBrush");
+                case "External drive":   // a small aluminium case, a label stripe, the USB cable
+                    R(8, 10, 80, 56, 12, AluBr);
+                    var extRim = new Rectangle { Width = 78, Height = 54, RadiusX = 11, RadiusY = 11, Stroke = Brushes.White, StrokeThickness = 1, Opacity = 0.3 };
+                    Canvas.SetLeft(extRim, 9); Canvas.SetTop(extRim, 11); c.Children.Add(extRim);
+                    R(14, 16, 68, 44, 8, Alu2Br);
+                    var extTxt = new TextBlock { Text = kind == "External SSD" ? "SSD" : "USB", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = LabelInkBr, Opacity = 0.75 };
+                    Canvas.SetLeft(extTxt, 22); Canvas.SetTop(extTxt, 27); c.Children.Add(extTxt);
+                    R(22, 46, 30, 3, 1.5, key: tint);
+                    R(88, 33, 5, 10, 2, PortBr);
+                    S("M93,38 C99,38 100,33 106,33", CableBr, 3);
+                    Led(74, 22);
                     break;
-                default:           // 2.5" SATA SSD (and "SSD" / unknown): the metal case, the label, the screws, the SATA connector
-                    R(6, 6, 92, 64, 6, CaseBr);
-                    R(7, 7, 90, 62, 5.5, CaseEdgeBr, op: 0.55);
-                    R(9, 9, 86, 58, 4.5, CaseBr);
-                    R(9, 62, 86, 5, 3, CaseEdgeBr, op: 0.35);                 // the bottom edge, slightly lit
-                    R(14, 10.5, 76, 1.2, 0.6, White85, op: 0.18);             // the top reflection
-                    R(15, 14, 62, 48, 3.5, key: kind == "Unknown" ? "TextSecondaryBrush" : tint);
-                    R(15, 14, 62, 7, 3.5, White85, op: 0.14);
-                    Led(86, 56);
-                    R(21, 24, 26, 4, 1, White85); R(21, 31, 42, 2.5, 1, White85, op: 0.55); R(21, 36, 34, 2.5, 1, White85, op: 0.55);
+                default:           // 2.5" SATA SSD (and "SSD" / unknown): brushed aluminium, the label with a coloured band, screws, the connector
+                    R(4, 5, 94, 66, 6, AluBr);
+                    var ssdRim = new Rectangle { Width = 92, Height = 64, RadiusX = 5.5, RadiusY = 5.5, Stroke = Brushes.White, StrokeThickness = 1, Opacity = 0.25 };
+                    Canvas.SetLeft(ssdRim, 5); Canvas.SetTop(ssdRim, 6); c.Children.Add(ssdRim);
+                    R(10, 11, 82, 54, 4, Alu2Br);
+                    for (int y = 13; y < 65; y += 2) R(10, y, 82, 0.5, 0, Brushes.White, op: 0.05);   // the brushing
+                    R(16, 17, 64, 42, 3, DarkPcbBr);
+                    R(16, 17, 64, 9, 3, key: kind == "Unknown" ? "TextSecondaryBrush" : tint);
+                    R(16, 23, 64, 3, 0, key: kind == "Unknown" ? "TextSecondaryBrush" : tint);
                     // an unknown type gets "?" instead of "SSD": a laptop HDD that Windows could not classify was drawn as an SSD
-                    var ssdTxt = new TextBlock { Text = kind == "Unknown" ? "?" : "SSD", FontSize = 11, FontWeight = FontWeights.Bold, Foreground = White85 };
-                    Canvas.SetLeft(ssdTxt, 21); Canvas.SetTop(ssdTxt, 43); c.Children.Add(ssdTxt);
-                    for (int i = 0; i < 9; i++) R(52 + i * 2.6, 46, i % 3 == 0 ? 1.8 : 1, 10, 0.2, White85, op: 0.6);   // barcode
-                    foreach (var (sx, sy) in new[] { (12.5, 12.5), (91.5, 12.5), (12.5, 63.5), (91.5, 63.5) })
-                    {
-                        E(sx, sy, 2.2, ChipBr);
-                        R(sx - 1.6, sy - 0.35, 3.2, 0.7, 0.3, CaseEdgeBr);   // the screw slot
-                    }
-                    R(97, 13, 7, 15, 1.5, ChipBr); R(97, 31, 7, 32, 1.5, ChipBr);       // the connector: data (7 pins) and power (15), with the key between them
-                    for (int i = 0; i < 6; i++) R(99, 15 + i * 2.1, 4, 1.1, 0.3, GoldBr);
-                    for (int i = 0; i < 14; i++) R(99, 33 + i * 2.1, 4, 1.1, 0.3, GoldBr);
+                    var ssdTxt = new TextBlock { Text = kind == "Unknown" ? "?" : "SSD", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = LabelBr };
+                    Canvas.SetLeft(ssdTxt, 20.5); Canvas.SetTop(ssdTxt, 30); c.Children.Add(ssdTxt);
+                    R(21, 49, 30, 2.2, 1, GreyInkBr); R(21, 53, 20, 2.2, 1, GreyInk2Br);
+                    for (int i = 0; i < 9; i++) R(56 + i * 2.4, 44, i % 3 == 0 ? 1.6 : 0.9, 11, 0, LabelBr, op: 0.7);   // barcode
+                    foreach (var (sx, sy) in new[] { (9.5, 10.5), (92.5, 10.5), (9.5, 65.5), (92.5, 65.5) }) E(sx, sy, 2, ScrewBr);
+                    R(98, 12, 7, 15, 1.4, PortBr); R(98, 30, 7, 33, 1.4, PortBr);   // the connector: data (7 pins) and power (15)
+                    SataPins(100, 14, 32);
+                    Led(86, 59);
                     break;
             }
             return c;

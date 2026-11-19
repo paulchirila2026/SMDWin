@@ -397,11 +397,9 @@ namespace SMDWin.Views
                     break;
 
                 case "CLEARTEMP":
-                    if (!AppDialog.Confirm(_LS("Tools", "ClearTempConfirm"), "Clear Temp")) return;
-                    cmd = "del /f /s /q \"%TEMP%\\*\" & " +
-"del /f /s /q \"C:\\Windows\\Temp\\*\" & " +
-"echo. & echo Temp files cleared. & pause";
-                    break;
+                    // first what would be deleted (folders, sizes, the largest items), then the deletion after the confirmation
+                    new TempCleanDialog { Owner = this }.ShowDialog();
+                    return;
 
                 default:
                     // SFC / DISM: long operations (10–30 min), confirmation with the estimated duration

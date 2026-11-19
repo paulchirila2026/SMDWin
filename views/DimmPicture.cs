@@ -9,6 +9,7 @@ using Color   = System.Windows.Media.Color;
 using Point   = System.Windows.Point;
 using Size    = System.Windows.Size;
 using Pen     = System.Windows.Media.Pen;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace SMDWin.Views
 {
@@ -104,38 +105,48 @@ namespace SMDWin.Views
         internal static void DrawModule(DrawingContext dc, FrameworkElement host, double W, double H, string memoryType, bool soDimm)
         {
             Brush Res(string key, Brush fallback) => host.TryFindResource(key) as Brush ?? fallback;
-            var pcb   = Res("DimmPcbBrush", Brushes.SeaGreen);
-            var edge  = Res("DimmPcbEdgeBrush", Brushes.DarkGreen);
-            var chip  = Res("DimmChipBrush", Brushes.Black);
-            var mark  = Res("DimmChipMarkBrush", Brushes.Gray);
             var pin   = Res("DimmPinBrush", Brushes.Goldenrod);
             var card  = Res("BgCardBrush", Brushes.White);
 
             const double margin = 9, pinArea = 11, traces = 4;
             double pinTop = H - pinArea + 1, tracesTop = H - pinArea - traces;
 
-            // the board
-            dc.DrawRoundedRectangle(pcb, null, new Rect(0, 0, W, H), 3, 3);
+            // the board: dark green, a light top edge, a few fine traces (the same look as the drive drawings)
+            dc.DrawRoundedRectangle(PcbBrush, null, new Rect(0, 0, W, H), 3, 3);
+            dc.DrawRectangle(TopEdge, null, new Rect(3, 0.4, W - 6, 0.8));
+            var tracePen = new Pen(TraceBrush, 0.6); tracePen.Freeze();
+            double ty = tracesTop - 3;
+            dc.DrawLine(tracePen, new Point(margin, ty), new Point(W * 0.28, ty));
+            dc.DrawLine(tracePen, new Point(W * 0.28, ty), new Point(W * 0.28 + 5, ty - 4));
+            dc.DrawLine(tracePen, new Point(W * 0.28 + 5, ty - 4), new Point(W * 0.46, ty - 4));
+            dc.DrawLine(tracePen, new Point(W * 0.6, ty), new Point(W - margin, ty));
 
-            // the chips: two groups, with the SPD chip and the memory type between them
-            double chipTop = 7, chipBottom = tracesTop - 5, mid = W / 2, midHalf = 15;
+            // the chips: two groups; between them a white sticker with the memory type (DDR5: the power chip above it)
+            bool ddr5 = memoryType.Contains("DDR5", StringComparison.OrdinalIgnoreCase);
+            double chipTop = 7, chipBottom = tracesTop - 5, mid = W / 2, midHalf = soDimm ? 15 : 19;
             int perGroup = soDimm ? 2 : 4;
             foreach (var (from, to) in new[] { (margin, mid - midHalf), (mid + midHalf, W - margin) })
             {
                 const double gap = 3;
                 double cw = (to - from - gap * (perGroup - 1)) / perGroup;
                 for (int i = 0; i < perGroup; i++)
-                    DrawChip(dc, new Rect(from + i * (cw + gap), chipTop, cw, chipBottom - chipTop), chip, mark);
+                    DrawChip(dc, new Rect(from + i * (cw + gap), chipTop, cw, chipBottom - chipTop));
             }
             var label = new FormattedText(string.IsNullOrWhiteSpace(memoryType) ? "RAM" : memoryType.Trim(),
                 CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight,
                 new Typeface(System.Windows.Documents.TextElement.GetFontFamily(host), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal),
-                8.5, LabelBrush, VisualTreeHelper.GetDpi(host).PixelsPerDip);
-            dc.DrawText(label, new Point(mid - label.Width / 2, chipTop - 1));
-            dc.DrawRoundedRectangle(chip, null, new Rect(mid - 4.5, chipBottom - 7, 9, 7), 1, 1);
+                7.5, StickerInk, VisualTreeHelper.GetDpi(host).PixelsPerDip);
+            double sw = Math.Min(midHalf * 2 - 4, Math.Max(label.Width + 6, 22)), sh = 11;
+            double sy = chipBottom - sh;
+            if (ddr5)
+                dc.DrawRoundedRectangle(ChipFace, null, new Rect(mid - 7, chipTop + 1, 14, 9), 1.5, 1.5);   // the PMIC
+            else
+                dc.DrawRoundedRectangle(ChipFace, null, new Rect(mid - 4.5, chipTop + 2, 9, 6), 1, 1);       // the SPD chip
+            dc.DrawRoundedRectangle(Sticker, null, new Rect(mid - sw / 2, sy, sw, sh), 1.5, 1.5);
+            dc.DrawText(label, new Point(mid - label.Width / 2, sy + (sh - label.Height) / 2));
 
-            // the traces above the contacts
-            dc.DrawRectangle(edge, null, new Rect(0, tracesTop, W, traces));
+            // the darker band above the contacts
+            dc.DrawRectangle(Band, null, new Rect(0, tracesTop, W, traces));
 
             // the contacts: computed in physical pixels, so they all have exactly the same width at any scaling
             double s = VisualTreeHelper.GetDpi(host).DpiScaleX;
@@ -158,15 +169,30 @@ namespace SMDWin.Views
             dc.DrawRoundedRectangle(card, null, new Rect(W - 4, cutY, 8, cutH), 4, 4);
         }
 
-        /// <summary>A memory chip: dark body, the orientation dot in a corner and two rows of engraved "text".</summary>
-        private static void DrawChip(DrawingContext dc, Rect r, Brush body, Brush mark)
+        // the materials (the same in both themes): board, chips, sticker
+        private static readonly Brush PcbBrush   = Gradient("#21403A", "#16292A", false);
+        private static readonly Brush ChipFace   = Gradient("#2D333D", "#14181E", true);
+        private static readonly Brush TopEdge    = Frozen(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF));
+        private static readonly Brush TraceBrush = Frozen(Color.FromArgb(0x24, 0x3F, 0xD0, 0xA0));
+        private static readonly Brush Band       = Frozen(Color.FromArgb(0x40, 0x00, 0x00, 0x00));
+        private static readonly Brush Sticker    = Frozen(Color.FromArgb(0xE0, 0xE8, 0xEC, 0xF2));
+        private static readonly Brush StickerInk = Frozen(Color.FromRgb(0x1B, 0x22, 0x30));
+        private static readonly Brush Sheen      = Frozen(Color.FromArgb(0x17, 0xFF, 0xFF, 0xFF));
+        private static readonly Brush Dot        = Frozen(Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF));
+        private static Brush Gradient(string a, string b, bool diagonal)
+        {
+            var g = new LinearGradientBrush((Color)ColorConverter.ConvertFromString(a), (Color)ColorConverter.ConvertFromString(b),
+                                            new Point(0, 0), diagonal ? new Point(1, 1) : new Point(0, 1));
+            g.Freeze(); return g;
+        }
+
+        /// <summary>A memory chip: black body with a faint sheen along the top and the orientation dot.</summary>
+        private static void DrawChip(DrawingContext dc, Rect r)
         {
             if (r.Width < 4 || r.Height < 6) return;
-            dc.DrawRoundedRectangle(body, null, r, 1.5, 1.5);
-            dc.DrawEllipse(mark, null, new Point(r.X + 4.3, r.Y + 4.3), 1.3, 1.3);
-            double lineW = Math.Max(2, r.Width - 8), y = r.Y + r.Height / 2 + 1;
-            dc.DrawRoundedRectangle(mark, null, new Rect(r.X + 4, y, lineW, 1.4), 0.7, 0.7);
-            dc.DrawRoundedRectangle(mark, null, new Rect(r.X + 4, y + 3.8, lineW * 0.7, 1.4), 0.7, 0.7);
+            dc.DrawRoundedRectangle(ChipFace, null, r, 1.5, 1.5);
+            dc.DrawRoundedRectangle(Sheen, null, new Rect(r.X + 2, r.Y + 2, Math.Max(1, r.Width - 4), 1.4), 0.6, 0.6);
+            dc.DrawEllipse(Dot, null, new Point(r.X + 3.2, r.Bottom - 3.2), 1, 1);
         }
     }
 

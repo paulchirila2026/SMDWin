@@ -65,7 +65,11 @@ namespace SMDWin.Views
                 // ── Clean up: old Windows components ──
                 if (_toolsCleanStack != null)
                     _toolsCleanStack.Children.Insert(Math.Min(_toolsCleanStack.Children.Count, 3),
-                        ToolsRow("\uE74D", PT("Old Windows components"), PT("left behind by updates · usually frees 1–5 GB · 5–20 min"), PT("Clean"), async (b) => await RunRepairAsync(RepairKind.Components, b)));
+                        ToolsRow("\uE74D", PT("Old Windows components"), PT("left behind by updates · usually frees 1–5 GB · 5–20 min"), PT("Clean"), async (b) =>
+                        {
+                            // first: how big, recommended or not, what the clean-up does — then DISM only after "Clean"
+                            if (new ComponentCleanDialog { Owner = this }.ShowDialog() == true) await RunRepairAsync(RepairKind.Components, b);
+                        }));
 
                 // ── Before a reinstall or repair: restore point, drivers, BitLocker, then the diagnostic package ──
                 Border? usbRow = null;

@@ -781,7 +781,7 @@ namespace SMDWin.Views
             else if (warn > 0)
             {
                 _txtVerdictName.Text = warn == 1 ? P("Mostly healthy · 1 thing to check") : P("Mostly healthy · {0} things to check", warn);
-                SetStatus(_verdictDot, _txtVerdictStatus, P("Watch"), "StatusWarnBrush");
+                SetStatus(_verdictDot, _txtVerdictStatus, P("Needs attention"), "StatusWarnBrush");
                 _txtVerdictText.Text = P("Nothing is broken; a few things are worth a look when you have time.");
             }
             else

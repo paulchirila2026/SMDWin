@@ -6,6 +6,9 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- New drive and memory drawings: hard disks drawn open (platter, hub, head arm, voice-coil magnet), SSDs with brushed aluminium and a real board (controller, flash, small parts), USB stick and external drives with their cable, memory modules with a dark board, chips with a sheen and a label sticker (DDR5 shows its power chip). The state shows as an LED or a coloured label band.
+- Drive status: "Watch" is now "Needs attention".
+- Tools → Clear temporary files: first shows the folders, their size and the largest items (with "only files older than 1 day", on by default), and deletes only after confirmation, in the app; SMD Win's own folder is never touched. Old Windows components: first asks Windows how much can be freed and whether a clean-up is recommended, and explains what happens (updates older than about 30 days can no longer be uninstalled).
 - Settings: on a wide window the card lines up with the tabs on the left (it sat centered); the Close button and Language rows have their own icons.
 - Self-test: the speed test runs to the end and the finished Benchmark is captured after its final count-up, so the pictures show real results.
 - README: new screenshots (Benchmark, SMART, surface scan, Applications, Services, Tools).
@@ -31,6 +34,7 @@ Dates are in day.month.year format.
 - Benchmark: a line drawing of this computer (desktop, laptop, all-in-one or mini PC) replaces the four big dials. Each component has a callout with its mark ring, hardware and value; the part being tested lights up while it runs (fans speed up, memory and disk activity blink), and after the test each part takes the colour of its mark. The general mark and the performance class sit next to the drawing; the component cards keep their values and tests, with a small mark ring in the header. Before the first run the page shows the same layout with Start in the top bar. The drawing grows with the window, each test shows what it measures under its bar, and the large cards no longer light up under the mouse. The warnings before a test are small chips on one row (the full advice in the tooltip), and the drawing shrinks to fit so the whole page fits on a laptop screen.
 
 ### Fixed
+- Surface scan: when the drive was unplugged or lost power, the scan raced through the rest in seconds, called the drive clean, and the drive list jumped to the first disk. Now the scan stops with "Drive disconnected" and shows only the part read, and the drive list does not change during a scan.
 - Applications: programs installed long ago (Edge, Chrome, other browsers, VS Code) showed as "New" because their updates rewrite the install date. The date now comes from the program's folder when it is older; the details card shows "updated …" next to it.
 - Startup Manager: entries from places Windows does not let a switch control (Active Setup, Winlogon, shell extensions) no longer have a switch that jumped back on (reported with Edge); Active Setup entries, which run once per new user and not at every start, are listed only in the advanced view. When a program turns its start back on by itself, SMD Win now says so — for Edge with the setting to change.
 - Startup Manager: the boot time no longer counts the time the sign-in screen waited for the password (a PC left at the sign-in screen showed boots of several minutes); the wait is shown in the tooltip.

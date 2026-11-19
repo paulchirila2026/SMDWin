@@ -66,7 +66,7 @@ namespace SMDWin.Services
             ["1 thing to fix"] = "1 lucru de rezolvat",
             ["Nothing is changed on the PC. Right-click a row to copy it."] = "Nu se modifică nimic pe calculator. Clic dreapta pe un rând îl copiază.",
             ["Start with the first item on the right — it is the most important."] = "Cel mai important este primul element din dreapta.",
-            ["Mostly healthy · 1 thing to check"] = "În mare parte sănătos · 1 lucru de verificat", ["Watch"] = "Atenție",
+            ["Mostly healthy · 1 thing to check"] = "În mare parte sănătos · 1 lucru de verificat", ["Watch"] = "Necesită atenție", ["Needs attention"] = "Necesită atenție",
             ["Nothing is broken; a few things are worth a look when you have time."] = "Nimic nu este stricat; câteva lucruri merită verificate când există timp.",
             ["Healthy · nothing to fix"] = "Sănătos · nimic de reparat", ["Healthy"] = "Sănătos",
             ["Everything checked looks good. Run the missing tests for a complete picture."] = "Tot ce s-a verificat arată bine. Testele lipsă trebuie rulate pentru o imagine completă.",
