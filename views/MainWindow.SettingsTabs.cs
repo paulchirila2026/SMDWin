@@ -38,18 +38,27 @@ namespace SMDWin.Views
             if (sender is RadioButton rb && rb.Tag is string tag) ShowSettingsTab(tag);
         }
 
+        /// <summary>
+        /// Settings has two pages: all the categories at once (General … Data & reports) and, apart, Advanced + About.
+        /// A category tag shows the first page and scrolls to that card; "Advanced" / "About" open the second page.
+        /// </summary>
         private void ShowSettingsTab(string tag)
         {
+            bool adv = tag is "Advanced" or "About";
+            if (FindName("SetOverview") is FrameworkElement ov) ov.Visibility = adv ? Visibility.Collapsed : Visibility.Visible;
+            if (FindName("SetPageAdvanced") is FrameworkElement pa) pa.Visibility = adv ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var n in new[] { "BtnSetBack", "TxtSettingsAdvSep", "TxtSettingsAdvTitle" })
+                if (FindName(n) is FrameworkElement fe) fe.Visibility = adv ? Visibility.Visible : Visibility.Collapsed;
+            if (FindName("TxtSettingsAdvTitle") is TextBlock at)
+                at.Text = LiteralTexts.Translate(tag == "About" ? "About" : "Advanced");
             foreach (var t in SettingsTabTags)
-                if (FindName("SetPanel" + t) is FrameworkElement p)
-                    p.Visibility = t == tag ? Visibility.Visible : Visibility.Collapsed;
-            foreach (var t in SettingsTabTags)
-                if (FindName("BtnSetTab" + t) is Wpf.Ui.Controls.Button b)
-                    SetTabButtonActive(b, t == tag);
+                if (FindName("SetPanel" + t) is FrameworkElement p) p.Visibility = Visibility.Visible;
             if (FindName("PanelSettings") is ScrollViewer sv) sv.ScrollToTop();
+            if (FindName("SetPanel" + tag) is FrameworkElement target && tag is not ("General" or "Advanced"))
+                Dispatcher.BeginInvoke(new Action(() => target.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
             DecorateSettingsRows();
             if (TxtSettingsSearchHint != null) TxtSettingsSearchHint.Text = PT("Search settings…");
-            if (tag == "About") BuildSettingsAbout();
+            if (adv) BuildSettingsAbout();
             ScheduleFitSettingsPage();
         }
 
@@ -82,7 +91,9 @@ namespace SMDWin.Views
                 }
             }
             if (q.Length < 2 || first == null || firstTab == null) return;
-            ShowSettingsTab(firstTab);
+            bool wantAdv = firstTab is "Advanced" or "About";
+            bool onAdv = FindName("SetOverview") is FrameworkElement ov && ov.Visibility != Visibility.Visible;
+            if (wantAdv != onAdv) ShowSettingsTab(wantAdv ? firstTab : "General");
             var target = first;
             Dispatcher.BeginInvoke(new Action(() => target.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
         }
@@ -338,20 +349,20 @@ namespace SMDWin.Views
 
         // ── The page columns ────────────────────────────────────────────────────
 
-        /// <summary>Settings shows one category at a time. On a wide window the card stays at most 1180 px wide and lines up
-        /// on the left with the tabs (with MaxWidth alone it sat centered, away from the tabs). Called on size / visibility.</summary>
+        /// <summary>Two columns of cards on a wide page; below 1000 px the right column moves under the left one (one column).
+        /// Called on size / visibility.</summary>
         private void LayoutSettingsColumns()
         {
             try
             {
                 if (FindName("SettingsPageContent") is not FrameworkElement content || content.ActualWidth <= 0) return;
-                double w = Math.Min(content.ActualWidth, 1180);
-                foreach (var t in SettingsTabTags)
-                    if (FindName("SetPanel" + t) is FrameworkElement p)
-                    {
-                        p.HorizontalAlignment = System.Windows.HorizontalAlignment.Left;
-                        p.Width = w;
-                    }
+                if (FindName("SetOverview") is not Grid ov || FindName("SetColRight") is not FrameworkElement right) return;
+                bool one = content.ActualWidth < 1000;
+                ov.ColumnDefinitions[1].Width = new GridLength(one ? 0 : 14);
+                ov.ColumnDefinitions[2].Width = one ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+                Grid.SetColumn(right, one ? 0 : 2);
+                Grid.SetRow(right, one ? 1 : 0);
+                if (FindName("SetLinksRow") is FrameworkElement links) Grid.SetRow(links, one ? 2 : 1);
             }
             catch (Exception ex) { AppLogger.Warning(ex, "LayoutSettingsColumns"); }
         }

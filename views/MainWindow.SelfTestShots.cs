@@ -144,13 +144,9 @@ namespace SMDWin.Views
                         }
                         else if (page == "Settings")
                         {
-                            // every Settings tab gets its own picture (used for the README gallery)
-                            foreach (var tab in new[] { "Appearance", "Alerts", "Widget", "Sensors", "Data", "Advanced", "About" })
-                            {
-                                string t = tab;
-                                await Step("Settings-" + t, 900, () => { ClickNamed("BtnSetTab" + t); return Task.CompletedTask; });
-                            }
-                            ClickNamed("BtnSetTabGeneral");
+                            // the second Settings page (Advanced + About) gets its own picture (used for the README gallery)
+                            await Step("Settings-Advanced", 900, () => { ShowSettingsTab("Advanced"); return Task.CompletedTask; });
+                            ShowSettingsTab("General");
                         }
                     }
 

@@ -120,12 +120,18 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Warning(ex, "DecorateSettingsRows"); }
         }
 
+        /// <summary>The coloured icon tile in front of each row (the earlier look); off in the compact card layout.</summary>
+        private static readonly bool ShowSettingsRowIcons = false;
+
         private void DecorateRow(Border row, SetDefault? spec, string? tabIcon, Style? iconStyle, Style? titleStyle, Style? controlStyle)
         {
             var dock = row.Child as DockPanel ?? (row.Child as StackPanel)?.Children.OfType<DockPanel>().FirstOrDefault();
 
-            // ① the icon tile: the row's own icon when it has one, otherwise one for the option, otherwise the tab's icon
-            if (dock != null && !dock.Children.OfType<System.Windows.Shapes.Ellipse>().Any())
+            // ① no icon per row any more: the compact cards carry one icon in their title (a row's own old icon is removed)
+            if (dock != null)
+                foreach (var old in dock.Children.OfType<Viewbox>().Where(v => iconStyle != null && v.Style == iconStyle).ToList())
+                    dock.Children.Remove(old);
+            if (ShowSettingsRowIcons && dock != null && !dock.Children.OfType<System.Windows.Shapes.Ellipse>().Any())
             {
                 string? data = null;
                 var old = dock.Children.OfType<Viewbox>().FirstOrDefault(v => iconStyle != null && v.Style == iconStyle);

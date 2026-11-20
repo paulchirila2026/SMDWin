@@ -50,6 +50,7 @@ namespace SMDWin.Views.Pages
         private void TxtWorkshopName_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (_ready) Main?.TxtWorkshopName_TextChanged(sender, e); }
         private void WidgetAlertOnly_Changed(object s, System.Windows.RoutedEventArgs e) { if (_ready) Main?.WidgetAlertOnly_Changed(s, e); }
         private void SettingsTabBtn_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.SettingsTabBtn_Click(sender, e); }
+        private void SettingsLink_Click(object sender, System.Windows.Input.MouseButtonEventArgs e) { if (_ready) Main?.SettingsTabBtn_Click(sender, e); }
         private void ThemeSeg_Checked(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.ThemeSeg_Checked(sender, e); }
         private void DensitySeg_Checked(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.DensitySeg_Checked(sender, e); }
         private void WorkshopMode_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.WorkshopMode_Click(sender, e); }
