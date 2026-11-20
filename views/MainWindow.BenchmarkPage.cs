@@ -1106,6 +1106,7 @@ namespace SMDWin.Views
             double? all = _benchRunning ? null : BenchmarkScore.Mean(_benchComps.Select(c => c?.Mark));
             _benchAllDial.Score = all;
             _benchAllDial.Caption = all != null ? PT("of 10") : _benchRunning ? PT("running…") : PT("not tested yet");
+            _benchAllDial.Busy = _benchRunning && all == null;
             int weakest = -1;
             if (!_benchRunning && _benchComps.Count(c => c?.Mark != null) >= 2)
             {

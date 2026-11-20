@@ -40,14 +40,36 @@ namespace SMDWin.Views
         private string _caption = "";
         public string Caption { get => _caption; set { _caption = value; InvalidateVisual(); } }
         public int Segments { get; set; } = 14;
+        private bool _busy;
+        private System.Windows.Threading.DispatcherTimer? _busyTimer;
+        private readonly System.Diagnostics.Stopwatch _busyClock = System.Diagnostics.Stopwatch.StartNew();
+        /// <summary>While the test runs and there is no mark yet: a bright comet goes round the dial.</summary>
+        public bool Busy
+        {
+            get => _busy;
+            set
+            {
+                if (_busy == value) return;
+                _busy = value;
+                if (value && SettingsService.Current?.EnableAnimations != false)
+                {
+                    _busyTimer ??= new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(40) };
+                    _busyTimer.Tick -= BusyTick; _busyTimer.Tick += BusyTick;
+                    _busyTimer.Start();
+                }
+                else _busyTimer?.Stop();
+                InvalidateVisual();
+            }
+        }
+        private void BusyTick(object? s, EventArgs e) { if (IsVisible) InvalidateVisual(); }
         /// <summary>Formats the mark in the app language (decimal comma in ro / de / fr).</summary>
         public Func<double, string> Format { get; set; } = v => v.ToString("0.0", CultureInfo.InvariantCulture);
 
         public ScoreDial()
         {
             _count = new CountUp(this);
-            Loaded   += (_, _) => ThemeManager.ThemeChanged += OnTheme;
-            Unloaded += (_, _) => ThemeManager.ThemeChanged -= OnTheme;
+            Loaded   += (_, _) => { ThemeManager.ThemeChanged += OnTheme; if (_busy) _busyTimer?.Start(); };
+            Unloaded += (_, _) => { ThemeManager.ThemeChanged -= OnTheme; _busyTimer?.Stop(); };
         }
         private void OnTheme() => Dispatcher.BeginInvoke(new Action(InvalidateVisual));
 
@@ -69,7 +91,16 @@ namespace SMDWin.Views
             {
                 double a0 = GaugeArc.StartDeg + i * seg + gap / 2, a1 = GaugeArc.StartDeg + (i + 1) * seg - gap / 2;
                 Brush fill = track;
-                if (lit >= i + 1) fill = on;
+                if (_busy && score == null)
+                {
+                    // the comet travels a full circle: after the last segment it passes the gap at the bottom (unseen) and comes
+                    // back at the first one after the same time — it does not jump from the end straight to the start
+                    double N = n * 360.0 / GaugeArc.SweepDeg;
+                    double head = (_busyClock.Elapsed.TotalSeconds * n * 0.55) % N;
+                    double dist = (head - i + N) % N;
+                    if (dist < 5) { var bb = on.CloneCurrentValue(); bb.Opacity = 1.0 - dist / 5 * 0.85; fill = bb; }
+                }
+                else if (lit >= i + 1) fill = on;
                 else if (lit > i) { var b = on.CloneCurrentValue(); b.Opacity = 0.3 + 0.7 * (lit - i); fill = b; }
                 dc.DrawGeometry(fill, null, GaugeArc.Segment(cx, cy, R, rIn, a0, a1));
             }

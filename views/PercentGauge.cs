@@ -231,9 +231,12 @@ namespace SMDWin.Views
                 if (_busy)
                 {
                     // the comet head moves along the arc; behind it the segments fade gradually
+                    // a full circle: after the last segment the head passes the gap at the bottom and comes back at the first one
+                    // after the same time, instead of jumping from the end straight to the start
                     const int Tail = 8;
-                    double head = _phase % n;
-                    double dist = (head - i + n) % n;
+                    double N = n * 360.0 / SweepDeg;
+                    double head = _phase % N;
+                    double dist = (head - i + N) % N;
                     if (dist < Tail)
                     {
                         var b = ((TryFindResource("DataBrush") as Brush) ?? (TryFindResource("AccentBrush") as Brush) ?? Brushes.DodgerBlue).CloneCurrentValue();

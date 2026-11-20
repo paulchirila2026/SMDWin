@@ -44,6 +44,17 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Warning(ex, "DetectBenchDeviceKindAsync"); }
         }
 
+        private static readonly System.Text.RegularExpressions.Regex LiveRx = new(
+            @"(\d+(?:[.,]\d+)?)\s*(GHz|FPS|fps|MB/s|GB/s|MT/s|pts|Mpx/s|GFLOPS)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+        /// <summary>The number the small chart of the tested part follows: the first value with a unit (GHz, FPS, MB/s…) in its live text.</summary>
+        private static double? LiveNumber(string text)
+        {
+            var m = LiveRx.Match(text ?? "");
+            if (!m.Success) return null;
+            return double.TryParse(m.Groups[1].Value.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double v) ? v : null;
+        }
+
         private static bool BenchHasBattery()
         {
             try
@@ -88,6 +99,7 @@ namespace SMDWin.Views
                     co.Value = $"{main} · {c.Tests[c.MainTest]}";
                 else
                     co.Value = "";
+                co.Live = now ? LiveNumber(co.Value) : null;
             }
             sk.Refresh();
         }

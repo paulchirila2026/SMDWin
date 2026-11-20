@@ -39,6 +39,8 @@ namespace SMDWin.Views
             public string Title = "", Hardware = "", Value = "";
             public PartState State;
             public double? Mark;
+            /// <summary>While tested: the live number of the test (GHz, FPS, MB/s…), drawn as a small chart after the value.</summary>
+            public double? Live;
         }
 
         public readonly Callout[] Parts = { new(), new(), new(), new() };
@@ -100,6 +102,9 @@ namespace SMDWin.Views
         private bool _prevInit;
         private readonly double[] _doneAt = { -99, -99, -99, -99 };
         private double _finaleAt = -99;
+        // the live numbers of the tested part, a few per second, for the small chart in its callout
+        private readonly List<double>[] _hist = { new(), new(), new(), new() };
+        private double _histAt;
         // the last layout, for the mouse
         private double _k = 1, _offY;
 
@@ -197,8 +202,8 @@ namespace SMDWin.Views
 
         // ══ the drawing as data ════════════════════════════════════════════════════════════════════════════════════════
 
-        private enum OpT { Shape, Fan, Edge, Air, Heat, Glow, Pipe, Trace, Led, Dot }
-        private enum Sty { Ln, Ln2, LnFill, Faint, Shadow }
+        private enum OpT { Shape, Fan, Edge, Air, Heat, Glow, Pipe, Trace, Led, Dot, Sheen }
+        private enum Sty { Ln, Ln2, LnFill, Faint, Shadow, Case }
 
         private sealed class Op
         {
@@ -248,6 +253,17 @@ namespace SMDWin.Views
             public void Led(double x, double y) => Add(new Op { T = OpT.Led, X = x, Y = y, Part = 2 });
             public void Dot(double x, double y, double r) => Add(new Op { T = OpT.Dot, X = x, Y = y, R = r });
             public void Fins(double x0, double step, int n, double y1, double y2) { for (int i = 0; i < n; i++) Line(x0 + i * step, y1, x0 + i * step, y2, Sty.Faint); }
+            /// <summary>A still, very faint diagonal reflection (the glass panel, the screen, the cover): gives the drawing depth.</summary>
+            public void Sheen(string d) => Add(new Op { T = OpT.Sheen, G = Fz(Geometry.Parse(d)) });
+            /// <summary>The memory chips on a module (vertical module: chips down its length; horizontal: along it).</summary>
+            public void Chips(double x, double y, double w, double h, int n, bool vertical)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (vertical) Rect(x + w * 0.22, y + 6 + i * (h - 12) / n, w * 0.56, (h - 12) / n - 4, 0.8, Sty.Faint);
+                    else Rect(x + 5 + i * (w - 10) / n, y + h * 0.25, (w - 10) / n - 4, h * 0.5, 0.8, Sty.Faint);
+                }
+            }
         }
 
         private Model? _model;
@@ -268,17 +284,19 @@ namespace SMDWin.Views
             var b = new Builder();
             var m = b.M; m.Dx = -30; m.CanDGpu = true;
             b.Shadow(270, 414, 175, 7);
-            b.Rect(120, 22, 300, 378, 12, Sty.Ln, -1, 2.2); b.Rect(132, 34, 268, 354, 7, Sty.Ln2);
+            b.Rect(120, 22, 300, 378, 12, Sty.Case, -1, 2.2); b.Rect(132, 34, 268, 354, 7, Sty.Ln2);
+            b.Sheen("M176 34 H246 L166 388 H132 V246 Z");
             b.Rect(120, 400, 34, 8, 2); b.Rect(386, 400, 34, 8, 2);
             b.Line(408, 34, 408, 388); b.Rect(372, 17, 22, 5, 2); b.Dot(383, 19.5, 1.6);
             b.Rect(124, 64, 6, 56, 1, Sty.Ln2);
             b.Rect(134, 44, 12, 80, 2); b.Edge(140, 47, 140, 121, FanCase);
             b.Air("M132 60 C110 58 96 54 80 48", true); b.Air("M132 84 C108 84 94 86 76 88", true); b.Air("M132 108 C110 112 96 118 80 126", true);
             b.Rect(152, 44, 204, 252, 4, Sty.Ln2); b.Path("M162 54 h80 v12 h-66 v52 h-14 z");
-            foreach (var x in new[] { 270, 282, 294, 306 }) b.Rect(x, 68, 7, 104, 1.5, Sty.Ln, 1);
+            foreach (var x in new[] { 270, 282, 294, 306 }) { b.Rect(x, 68, 7, 104, 1.5, Sty.Ln, 1); b.Chips(x, 68, 7, 104, 6, true); }
             b.Rect(338, 110, 9, 40, 1.5, Sty.Ln2);
             b.Glow(214, 128, 72, 0);
             b.Rect(178, 92, 72, 72, 6, Sty.Ln, 0); b.Fan(214, 128, 28, FanCpu);
+            foreach (var (sx, sy) in new[] { (184, 98), (244, 98), (184, 158), (244, 158) }) b.Circ(sx, sy, 1.6, Sty.Faint);
             b.Heat(214, 86, 0);
             b.Trace("M250 112 L268 112"); b.Trace("M250 140 L268 140");
             b.Line(162, 200, 336, 200); b.Line(162, 246, 300, 246);
@@ -288,8 +306,8 @@ namespace SMDWin.Views
             b.Line(158, 207, 250, 207);
             b.Edge(170, 228, 236, 228, FanGpu); b.Edge(262, 228, 328, 228, FanGpu);
             b.DGpu = false;
-            b.Rect(290, 254, 40, 30, 4, Sty.Ln2); b.Rect(176, 258, 88, 12, 2, Sty.Ln, 2); b.Led(258, 264);
-            b.Path("M132 304 H400"); b.Rect(136, 318, 128, 58, 4);
+            b.Rect(290, 254, 40, 30, 4, Sty.Ln2); b.Rect(176, 258, 88, 12, 2, Sty.Ln, 2); b.Chips(176, 258, 70, 12, 3, false); b.Led(258, 264);
+            b.Path("M132 304 H400"); b.Rect(136, 318, 128, 58, 4); b.Fins(150, 8, 13, 326, 368);
             b.Edge(154, 380, 246, 380, FanPsu); b.Rect(150, 376, 100, 8, 2, Sty.Ln2);
             b.Air("M132 334 C112 334 100 336 86 340", true); b.Air("M132 356 C112 358 100 362 86 368", true);
             b.Rect(300, 318, 92, 24, 3); b.Rect(300, 348, 92, 24, 3);
@@ -309,7 +327,8 @@ namespace SMDWin.Views
             var m = b.M; m.S = 0.85; m.Dx = -40; m.Dy = 39; m.CanDGpu = true;
             b.Shadow(300, 372, 225, 8);
             b.Rect(90, 46, 420, 16, 6, Sty.Ln2);
-            b.Rect(90, 62, 420, 292, 16, Sty.Ln, -1, 2.2); b.Rect(98, 70, 404, 276, 11, Sty.Ln2);
+            b.Rect(90, 62, 420, 292, 16, Sty.Case, -1, 2.2); b.Rect(98, 70, 404, 276, 11, Sty.Ln2);
+            b.Sheen("M150 70 H226 L156 346 H98 V250 Z");
             b.Rect(122, 60, 38, 16, 3); b.Rect(440, 60, 38, 16, 3);
             b.Rect(114, 72, 72, 12, 2, Sty.Ln2); b.Fins(120, 8, 8, 73, 83);
             b.Air("M128 64 C124 50 120 40 114 30", true); b.Air("M150 64 C150 50 150 40 150 30", true); b.Air("M172 64 C176 50 180 40 186 30", true);
@@ -333,7 +352,7 @@ namespace SMDWin.Views
             b.DGpu = true;
             b.Pipe("M362 128 C392 128 402 86 430 84", 3); b.Pipe("M362 142 C400 142 406 88 450 84", 3);
             b.DGpu = false;
-            b.Rect(206, 176, 82, 35, 2, Sty.Ln, 1); b.Rect(206, 186, 82, 35, 2, Sty.Ln, 1);
+            b.Rect(206, 176, 82, 35, 2, Sty.Ln, 1); b.Rect(206, 186, 82, 35, 2, Sty.Ln, 1); b.Chips(206, 186, 82, 35, 4, false);
             b.Trace("M253 150 L253 176");
             b.Rect(300, 196, 94, 26, 2, Sty.Ln, 2); b.Rect(306, 203, 22, 12, 1, Sty.Ln2); b.Rect(334, 203, 22, 12, 1, Sty.Ln2); b.Led(388, 209);
             b.Rect(168, 176, 26, 30, 2, Sty.Ln2);
@@ -352,8 +371,9 @@ namespace SMDWin.Views
             var m = b.M; m.S = 0.82; m.Dx = -26; m.Dy = 41;
             b.Shadow(300, 414, 140, 8);
             b.Path("M282 300 L268 400 H332 L318 300 Z", Sty.Ln); b.Rect(216, 398, 168, 10, 5);
-            b.Rect(80, 24, 440, 300, 12, Sty.LnFill, -1, 2.2);
+            b.Rect(80, 24, 440, 300, 12, Sty.Case, -1, 2.2);
             b.Rect(90, 34, 420, 246, 3, Sty.Ln2);
+            b.Sheen("M160 34 H262 L176 280 H90 V196 Z");
             b.Circ(300, 29, 2); b.Dot(490, 302, 2);
             for (int i = 0; i < 22; i++) { b.Circ(112 + i * 4, 302, 0.9); b.Circ(400 + i * 4, 302, 0.9); }
             b.Rect(300, 38, 96, 10, 2, Sty.Ln2);
@@ -364,7 +384,7 @@ namespace SMDWin.Views
             b.Glow(276, 196, 62, 0);
             b.Rect(260, 180, 32, 32, 2, Sty.Ln, 0); b.Rect(268, 188, 16, 16, 1, Sty.Ln2);
             b.Heat(276, 170, 0); b.Trace("M292 196 L314 196");
-            b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1);
+            b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false);
             b.Rect(204, 236, 94, 26, 2, Sty.Ln, 2); b.Rect(210, 243, 22, 12, 1, Sty.Ln2); b.Led(292, 249);
             b.Rect(318, 244, 26, 22, 2, Sty.Ln2);
             b.Rect(104, 140, 72, 128, 4);
@@ -382,6 +402,7 @@ namespace SMDWin.Views
             b.Shadow(300, 372, 160, 9);
             b.Path("M180 92 Q180 80 192 80 H408 Q420 80 420 92 V300 H180 Z", Sty.Ln, -1, 2.2);
             b.Rect(190, 90, 220, 204, 8, Sty.Ln2);
+            b.Sheen("M214 90 H262 L222 294 H190 V210 Z");
             b.Path("M180 300 H420 V348 Q420 358 410 358 H190 Q180 358 180 348 Z", Sty.LnFill, -1, 2.2);
             b.Rect(204, 322, 22, 10, 2); b.Rect(234, 322, 22, 10, 2);
             b.Rect(266, 323, 14, 7, 3.5); b.Circ(294, 327, 4, Sty.Ln);
@@ -396,7 +417,7 @@ namespace SMDWin.Views
             b.Glow(306, 186, 58, 0);
             b.Rect(288, 168, 36, 36, 2, Sty.Ln, 0); b.Rect(297, 177, 18, 18, 1, Sty.Ln2);
             b.Heat(306, 160, 0); b.Trace("M300 204 L284 224");
-            b.Rect(202, 224, 110, 46, 2, Sty.Ln, 1); b.Rect(202, 234, 110, 46, 2, Sty.Ln, 1);
+            b.Rect(202, 224, 110, 46, 2, Sty.Ln, 1); b.Rect(202, 234, 110, 46, 2, Sty.Ln, 1); b.Chips(202, 234, 110, 46, 4, false);
             b.Rect(352, 130, 34, 150, 2, Sty.Ln, 2); b.Rect(359, 140, 20, 28, 1, Sty.Ln2); b.Rect(359, 176, 20, 28, 1, Sty.Ln2); b.Led(369, 270);
             m.Anchor[0] = new Point(324, 186); m.Anchor[1] = new Point(312, 252); m.Anchor[2] = new Point(386, 210); m.Anchor[3] = m.Anchor[0];
             return m;
@@ -406,7 +427,8 @@ namespace SMDWin.Views
 
         private static readonly Color Hot = Color.FromRgb(0xFF, 0x8A, 0x3D), HotText = Color.FromRgb(0xFF, 0xB4, 0x6B), HotTextLight = Color.FromRgb(0xC2, 0x41, 0x0C),
                                       Cold = Color.FromRgb(0x6F, 0xA3, 0xFF), ColdLight = Color.FromRgb(0x3B, 0x6F, 0xD8), Copper = Color.FromRgb(0x8A, 0x6A, 0x52),
-                                      Led = Color.FromRgb(0x3C, 0xCF, 0x7A), Power = Color.FromRgb(0x4F, 0x86, 0xFF);
+                                      Led = Color.FromRgb(0x3C, 0xCF, 0x7A), Power = Color.FromRgb(0x4F, 0x86, 0xFF),
+                                      SoftHeat = Color.FromRgb(0xF6, 0xB9, 0x8A);
 
         private static SolidColorBrush B(Color c, double o = 1) { var x = new SolidColorBrush(c) { Opacity = Math.Clamp(o, 0, 1) }; x.Freeze(); return x; }
         private static Pen P(Brush b, double w, double[]? dash = null, double offset = 0, bool round = false)
@@ -464,7 +486,7 @@ namespace SMDWin.Views
             if (anim && now - _liveAt > 0.5) { _liveAt = now; try { _live = LiveSource?.Invoke() ?? _live; } catch { } }
             double cpuTempF = _live.CpuTemp is float ctc ? Math.Clamp((ctc - 50) / 40.0, 0, 1) : 0;
             double gpuTempF = _live.GpuTemp is float gtc ? Math.Clamp((gtc - 50) / 40.0, 0, 1) : 0;
-            Color GlowColor(int part) => Lerp(Hot, Color.FromRgb(0xFF, 0x4D, 0x3D), part == 3 && gpuShown
+            Color GlowColor(int part) => Lerp(SoftHeat, Color.FromRgb(0xFF, 0x7A, 0x5C), part == 3 && gpuShown
                 ? (_live.GpuTemp is float g2 ? (g2 - 78) / 15.0 : 0) : (_live.CpuTemp is float c2 ? (c2 - 78) / 15.0 : 0));
 
             // fan loads follow the test and the real load, smoothly (the fan spins up, it does not jump)
@@ -485,6 +507,18 @@ namespace SMDWin.Views
             _air = (_air + dt * 32 / (2.2 - 1.5 * _load[FanCase])) % 32;
             _trace = (_trace + dt * 9 / 0.7) % 9;
             _ringSpin = (_ringSpin + dt * 300) % 360;
+            for (int i = 0; i < 4; i++)
+                if (Parts[i].State != PartState.Active) _hist[i].Clear();
+            if (anim && now - _histAt > 0.2)
+            {
+                _histAt = now;
+                for (int i = 0; i < 4; i++)
+                    if (Parts[i].State == PartState.Active && Parts[i].Live is double lv)
+                    {
+                        _hist[i].Add(lv);
+                        if (_hist[i].Count > HistMax) _hist[i].RemoveAt(0);
+                    }
+            }
 
             // colours from the theme
             bool light = LightTheme;
@@ -492,9 +526,24 @@ namespace SMDWin.Views
             var sub = TryFindResource("TextSecondaryBrush") as SolidColorBrush;
             Color inkC = ink?.Color ?? Colors.White, subC = sub?.Color ?? Colors.Gray;
             var lnPen = P(B(subC, light ? 0.75 : 0.62), 1.5);
-            var ln2Pen = P(B(subC, light ? 0.45 : 0.38), 1.1);
-            var faintPen = P(B(subC, light ? 0.32 : 0.27), 1.1);
+            var ln2Pen = P(B(subC, light ? 0.45 : 0.38), 0.95);
+            var faintPen = P(B(subC, light ? 0.32 : 0.27), 0.8);
             var fill = TryFindResource("CardSurfaceBrush") as Brush ?? TryFindResource("BgCardBrush") as Brush ?? Brushes.Transparent;
+            // the case: a soft vertical gradient (a touch lighter at the top) so it has volume, not a flat outline
+            Color fillC = (fill as SolidColorBrush)?.Color ?? (light ? Colors.White : Color.FromRgb(0x15, 0x1E, 0x31));
+            var caseFill = new LinearGradientBrush(Lerp(fillC, inkC, light ? 0.025 : 0.06), Lerp(fillC, Colors.Black, light ? 0.02 : 0.10), 90);
+            caseFill.Freeze();
+            var sheen = new LinearGradientBrush(new GradientStopCollection
+            {
+                new GradientStop(Color.FromArgb(0, 255, 255, 255), 0), new GradientStop(Color.FromArgb((byte)(light ? 0 : 14), 255, 255, 255), 0.5),
+                new GradientStop(Color.FromArgb(0, 255, 255, 255), 1),
+            }, 0);
+            if (light) sheen = new LinearGradientBrush(new GradientStopCollection
+            {
+                new GradientStop(Color.FromArgb(0, 0x30, 0x50, 0x80), 0), new GradientStop(Color.FromArgb(10, 0x30, 0x50, 0x80), 0.5),
+                new GradientStop(Color.FromArgb(0, 0x30, 0x50, 0x80), 1),
+            }, 0);
+            sheen.Freeze();
             var edgeBrush = B(subC, light ? 0.55 : 0.5);
             var bladeBrush = B(subC, light ? 0.95 : 0.85);
             var trackBrush = TryFindResource("BorderBrush2") as Brush ?? B(subC, 0.3);
@@ -541,6 +590,26 @@ namespace SMDWin.Views
                 bool emphRow = _highlight == p || _hover == p;
                 dc.DrawGeometry(null, isHot ? P(B(Hot), 1.2) : emphRow ? P(B(accentC, 0.9), 1.2) : P(B(subC, light ? 0.5 : 0.42), 1), lead);
                 dc.DrawEllipse(B(Hot), null, a, 2.2, 2.2);
+                var path = new[] { a, dy > 3 ? new Point(bx, y) : a, new Point(LeadEndX, y) };
+                double len1 = (path[1] - path[0]).Length, len2 = (path[2] - path[1]).Length;
+                Point Along(double f)
+                {
+                    double at = Math.Clamp(f, 0, 1) * (len1 + len2);
+                    return at <= len1 || len2 <= 0 ? path[0] + (path[1] - path[0]) * (len1 > 0 ? at / len1 : 0) : path[1] + (path[2] - path[1]) * ((at - len1) / len2);
+                }
+                // while tested: small dots flow from the part to its callout (the results going out)
+                if (isHot && anim)
+                    for (int kd = 0; kd < 3; kd++)
+                    {
+                        double f = (t * 0.45 + kd / 3.0) % 1.0;
+                        dc.DrawEllipse(B(Hot, 0.85 * Math.Sin(f * Math.PI) + 0.1), null, Along(f), 2, 2);
+                    }
+                // just finished: a ring spreads from the part, in the colour of its mark
+                if (c.State == PartState.Done && c.Mark is double mkR && anim)
+                {
+                    double rf = (now - _doneAt[p]) / 0.7;
+                    if (rf >= 0 && rf < 1) dc.DrawEllipse(null, P(B(Mark(mkR), 0.6 * (1 - rf)), 1.5), a, 4 + 26 * Ease(rf), 4 + 26 * Ease(rf));
+                }
                 // just finished: a dot runs from the part to the ring, in the colour of the mark
                 double bl = Blend(p);
                 if (c.State == PartState.Done && c.Mark is double mk0 && bl > 0 && bl < 1)
@@ -560,7 +629,29 @@ namespace SMDWin.Views
                 Text(dc, c.Title, TextX, tb, 13 * tk, titleBrush, FontWeights.SemiBold, dpi);
                 Text(dc, c.Hardware, TextX, tb + 16 * tk, 11.5 * tk, B(subC), FontWeights.Normal, dpi);
                 if (c.Value.Length > 0)
-                    Text(dc, c.Value, TextX, tb + 32 * tk, 12 * tk, isHot ? B(light ? HotTextLight : HotText) : B(inkC, 0.85), FontWeights.Normal, dpi);
+                {
+                    double vw = Text(dc, c.Value, TextX, tb + 32 * tk, 12 * tk, isHot ? B(light ? HotTextLight : HotText) : B(inkC, 0.85), FontWeights.Normal, dpi);
+                    // the small live chart after the value, while tested
+                    var hs = _hist[p];
+                    if (isHot && hs.Count >= 3 && TextX + vw + 12 + 64 <= _textRight)
+                    {
+                        double mx = double.MinValue, mn = double.MaxValue;
+                        foreach (var v in hs) { mx = Math.Max(mx, v); mn = Math.Min(mn, v); }
+                        if (mx - mn < Math.Abs(mx) * 0.04) { double mid = (mx + mn) / 2; mx = mid + Math.Abs(mid) * 0.02 + 0.01; mn = mid - Math.Abs(mid) * 0.02 - 0.01; }
+                        double x0 = TextX + vw + 12, ch = 12 * tk, yb = tb + 32 * tk + 2;
+                        var sg = new StreamGeometry();
+                        using (var g = sg.Open())
+                        {
+                            for (int j = 0; j < hs.Count; j++)
+                            {
+                                var pt = new Point(x0 + j * 64.0 / (HistMax - 1), yb - (hs[j] - mn) / (mx - mn) * ch);
+                                if (j == 0) g.BeginFigure(pt, false, false); else g.LineTo(pt, true, true);
+                            }
+                        }
+                        sg.Freeze();
+                        dc.DrawGeometry(null, P(B(light ? HotTextLight : HotText, 0.9), 1.3, null, 0, true), sg);
+                    }
+                }
             }
 
             dc.PushTransform(new MatrixTransform(model.S, 0, 0, model.S, model.Dx, model.Dy));
@@ -582,7 +673,7 @@ namespace SMDWin.Views
                             if (op.S == Sty.Shadow) { d.DrawGeometry(shadow, null, op.G); break; }
                             Pen pen = op.S switch { Sty.Ln2 => ln2Pen, Sty.Faint => faintPen, _ => lnPen };
                             if (op.W > 0) pen = P(pen.Brush, op.W);
-                            Brush? f = op.S == Sty.LnFill ? fill : null;
+                            Brush? f = op.S == Sty.LnFill ? fill : op.S == Sty.Case ? caseFill : null;
                             int part = op.Part;
                             bool blink = false;
                             if (part >= 0)
@@ -593,7 +684,9 @@ namespace SMDWin.Views
                                     // from orange to the mark colour; at the finale a short pulse, part after part
                                     var mc = Lerp(Hot, Mark(mk), Ease(Blend(part)));
                                     double fp = Finale(part);
-                                    pen = P(B(mc), 1.8 + 1.0 * fp); f = B(mc, 0.10 + 0.22 * fp);
+                                    double settle = anim ? Math.Clamp((now - _doneAt[part] - 1.0) / 0.8, 0, 1) : 1;
+                                    double tone = Math.Max(fp, 1 - settle);   // 1 = bright, 0 = the quieter tone it keeps
+                                    pen = P(B(mc, 0.62 + 0.38 * tone), 1.6 + 0.2 * tone + 1.0 * fp); f = B(mc, 0.05 + 0.05 * tone + 0.22 * fp);
                                 }
                                 if (part == emph && !hot[part]) { pen = P(B(accentC), 2.2); f = B(accentC, light ? 0.10 : 0.14); }
                             }
@@ -643,7 +736,7 @@ namespace SMDWin.Views
                                 double ph = ((t + i * 0.6) / 1.8) % 1.0;
                                 double o = ph < 0.3 ? ph / 0.3 * 0.9 : 0.9 * (1 - (ph - 0.3) / 0.7);
                                 d.PushTransform(new TranslateTransform(op.X - 18 + i * 18, op.Y + 6 - 22 * ph));
-                                d.DrawGeometry(null, P(B(HotText, o), 1.5, null, 0, true), hp);
+                                d.DrawGeometry(null, P(B(SoftHeat, o * 0.45), 1.1, null, 0, true), hp);
                                 d.Pop();
                             }
                             break;
@@ -653,7 +746,7 @@ namespace SMDWin.Views
                             double lvl = _glow[op.Part];
                             if (lvl < 0.01) break;
                             var gc = GlowColor(op.Part);
-                            var g = new RadialGradientBrush(Color.FromArgb((byte)(255 * 0.7 * lvl * (light ? 0.6 : 1)), gc.R, gc.G, gc.B), Color.FromArgb(0, gc.R, gc.G, gc.B));
+                            var g = new RadialGradientBrush(Color.FromArgb((byte)(255 * 0.32 * lvl * (light ? 0.7 : 1)), gc.R, gc.G, gc.B), Color.FromArgb(0, gc.R, gc.G, gc.B));
                             g.Freeze();
                             d.DrawEllipse(g, null, new Point(op.X, op.Y), op.R, op.R);
                             break;
@@ -675,6 +768,9 @@ namespace SMDWin.Views
                         }
                         case OpT.Dot:
                             d.DrawEllipse(B(Power), null, new Point(op.X, op.Y), op.R, op.R);
+                            break;
+                        case OpT.Sheen:
+                            d.DrawGeometry(sheen, null, op.G);
                             break;
                     }
                 }
@@ -744,14 +840,17 @@ namespace SMDWin.Views
         }
 
         private double _textRight = SceneW - 4;
+        private const int HistMax = 26;
 
-        private void Text(DrawingContext dc, string s, double x, double baseline, double size, Brush brush, FontWeight weight, double dpi)
+        /// <summary>Draws one line of text (trimmed to the room left); returns its width.</summary>
+        private double Text(DrawingContext dc, string s, double x, double baseline, double size, Brush brush, FontWeight weight, double dpi)
         {
-            if (string.IsNullOrEmpty(s)) return;
+            if (string.IsNullOrEmpty(s)) return 0;
             var tf = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, weight, FontStretches.Normal);
             var ft = new FormattedText(s, CultureInfo.CurrentUICulture, System.Windows.FlowDirection.LeftToRight, tf, size, brush, dpi)
             { MaxTextWidth = Math.Max(40, _textRight - x), MaxLineCount = 1, Trimming = TextTrimming.CharacterEllipsis };
             dc.DrawText(ft, new Point(x, baseline - ft.Baseline));
+            return ft.WidthIncludingTrailingWhitespace;
         }
     }
 }

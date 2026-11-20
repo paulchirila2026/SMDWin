@@ -387,12 +387,21 @@ namespace SMDWin.Views
             {
                 HorizontalAlignment = WpfHAlign.Center, VerticalAlignment = WpfVAlign.Center,
             };
+            // [0] the error text (hidden until a load fails), [1] the scan: the drawing with the lens and the list of readings
             loadingPanel.Children.Add(new TextBlock
             {
                 Text = L("Loading hardware information…", "Se încarcă informațiile hardware…", "Hardwareinformationen werden geladen…", "Chargement des informations matérielles…"),
                 FontSize = Ui.FontL, Foreground = new SolidColorBrush(_textSecondary),
-                HorizontalAlignment = WpfHAlign.Center,
+                HorizontalAlignment = WpfHAlign.Center, Visibility = Visibility.Collapsed,
             });
+            _scan = new SysInfoScan
+            {
+                Heading = L("Reading the hardware…", "Se citește hardware-ul…", "Hardware wird gelesen…", "Lecture du matériel…"),
+                StillReading = L("still reading…", "încă se citește…", "wird noch gelesen…", "lecture en cours…"),
+            };
+            _scan.Start(ScanItems());
+            loadingPanel.Children.Add(_scan);
+            _ = SetScanKindAsync();
             Grid.SetRow(loadingPanel, 1);
             outerGrid.Children.Add(loadingPanel);
             _loadingOverlay = loadingPanel;
@@ -426,10 +435,40 @@ namespace SMDWin.Views
         private static DateTime _bundleAt = DateTime.MinValue;
         private const int BundleTtlSeconds = 300;
 
+        private SysInfoScan? _scan;
+
+        private string[] ScanItems() => new[]
+        {
+            L("Processor and board", "Procesor și placă de bază", "Prozessor und Mainboard", "Processeur et carte mère"),
+            L("Memory", "Memorie", "Arbeitsspeicher", "Mémoire"),
+            L("Storage", "Stocare", "Speicher", "Stockage"),
+            L("Graphics", "Placă video", "Grafik", "Graphisme"),
+            L("Displays", "Monitoare", "Bildschirme", "Écrans"),
+            L("Network", "Rețea", "Netzwerk", "Réseau"),
+            L("Audio", "Audio", "Audio", "Audio"),
+            L("USB and Bluetooth", "USB și Bluetooth", "USB und Bluetooth", "USB et Bluetooth"),
+            L("Windows", "Windows", "Windows", "Windows"),
+        };
+
+        private async Task SetScanKindAsync()
+        {
+            try { var k = await SysInfoScan.DetectKindAsync(); if (_scan != null) _scan.DeviceKind = k; }
+            catch (Exception ex) { AppLogger.Debug($"SysInfoScan kind: {ex.Message}"); }
+        }
+
+        /// <summary>Ticks one row of the scan list when its readings finish (whatever the outcome).</summary>
+        private void ScanTick(int i, params Task?[] tasks)
+        {
+            var real = tasks.Where(x => x != null).Cast<Task>().ToArray();
+            if (real.Length == 0) { _scan?.MarkDone(i); return; }
+            _ = Task.WhenAll(real).ContinueWith(_ => Dispatcher.BeginInvoke(new Action(() => _scan?.MarkDone(i))), TaskScheduler.Default);
+        }
+
         private async Task LoadDataAsync()
         {
             try
             {
+                if (_scan != null && !_hardwareReady) _scan.Start(ScanItems());
                 // The hardware data is read only once and kept for 5 minutes, shared by all page rebuilds (theme change, reopening).
                 // Only the battery is always read again (the percentage changes).
                 var batTask = _bat.GetBatteryInfoAsync();
@@ -450,6 +489,8 @@ namespace SMDWin.Views
                     var monitorPhysicalTask = Task.Run(SystemProbes.ReadMonitors);
                     var audioRowsTask = Task.Run(FetchAudioRows);
                     var usbBtTask = Task.Run(FetchUsbAndBluetooth);
+                    ScanTick(0, summaryTask, enclosureTask); ScanTick(1, ramTask); ScanTick(2, diskTask); ScanTick(3, gpuObjsTask);
+                    ScanTick(4, monitorNamesTask, monitorPhysicalTask); ScanTick(5, netTask); ScanTick(6, audioRowsTask); ScanTick(7, usbBtTask);
 
                     await Task.WhenAll(summaryTask, netTask, ramTask, diskTask, gpuObjsTask, enclosureTask, monitorNamesTask, monitorPhysicalTask, audioRowsTask, usbBtTask);
                     var (usbs0, bts0) = usbBtTask.Result;
@@ -458,6 +499,8 @@ namespace SMDWin.Views
                         audioRowsTask.Result, usbs0, bts0);
                     _bundle = b; _bundleAt = DateTime.UtcNow;
                 }
+                else _scan?.MarkAllDone(8);   // the hardware data was already read (kept for 5 minutes)
+                ScanTick(8, winTask);
                 var bat = await batTask;
                 if (winTask != null)
                 {
@@ -480,6 +523,8 @@ namespace SMDWin.Views
                 {
                     if (_loadingOverlay is StackPanel lp && lp.Children.Count > 0 && lp.Children[0] is TextBlock tb)
                     {
+                        tb.Visibility = Visibility.Visible;
+                        if (_scan != null) _scan.Visibility = Visibility.Collapsed;
                         tb.Text = L($"Failed to load hardware data: {ex.Message}",
                             $"Nu s-au putut încărca datele hardware: {ex.Message}",
                             $"Hardwaredaten konnten nicht geladen werden: {ex.Message}",
