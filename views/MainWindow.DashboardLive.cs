@@ -814,6 +814,7 @@ namespace SMDWin.Views
 
         private void DrawDashCharts()
         {
+            EnsureDashChartFrames();
 
             _cCpu     = _arrCpu;     _cGpu     = _arrGpu;
             _cRam     = _arrRam;     _cDiskR   = _arrDiskR;
