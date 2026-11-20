@@ -2974,6 +2974,8 @@
     "the_storage_test_could_not_run": "The storage test could not run.",
     "storage_test_skipped": "Storage test skipped",
     "welcome_to_smd_win": "Welcome to SMD Win",
+    "0_read_write_errors_in_the_windows_log": "{0} read / write errors in the Windows log",
+    "in_the_last_30_days_windows_logged_0_failed_reads_or_writes": "In the last 30 days Windows logged {0} failed reads or writes on the USB drive with this number. On USB drives they usually come from removing the drive without \"Eject\", a loose connection, or another USB drive that had the same number earlier. Run a Surface scan to check this drive itself.",
     "about_smd_win": "About SMD Win",
     "for_technicians_read_rate_driver_search_administrator_rights": "For technicians: read rate, driver search, administrator rights",
     "back_to_settings": "Back to Settings",

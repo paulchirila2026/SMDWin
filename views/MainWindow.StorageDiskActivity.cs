@@ -109,10 +109,13 @@ namespace SMDWin.Views
 
         /// <summary>The activity block of one disk card: the chart on the left, the values on the right (as in the "All drives"
         /// card). <paramref name="compact"/> = the card is half width (2 disks per row): a narrower value column, no peak row.</summary>
+        /// <summary>The height of the activity chart on every disk card.</summary>
+        private const double DiskChartHeight = 96;
+
         private FrameworkElement BuildDiskActivityBlock(DiskHealthEntry d, out DiskActivityUi ui)
         {
             ui = new DiskActivityUi();
-            var grid = new Grid { Margin = new Thickness(0, 0, 0, 14), MinHeight = 110 };
+            var grid = new Grid { Margin = new Thickness(0, 0, 0, 14) };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
@@ -121,7 +124,7 @@ namespace SMDWin.Views
             left.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             ui.Caption = new TextBlock { Text = PT("Activity"), Style = TryFindResource("CompFootKey") as Style, Margin = new Thickness(0, 0, 0, 4) };
             left.Children.Add(ui.Caption);
-            var chart = new MiniLineChart { MinHeight = 64, VerticalAlignment = VAlign.Stretch };
+            var chart = new MiniLineChart { Height = DiskChartHeight, VerticalAlignment = VAlign.Top };   // the same height on every disk card
             chart.NiceMax = peak => ChartScale.NiceRateMaxKBs(peak, 1024);   // at least 1 MB/s: background noise does not fill the chart
             chart.ScaleText = ChartScale.FormatRateKBs;
             ChartRangeMenu.Attach(chart, StActWindows, StActWindow, SetStActWindow);
@@ -183,14 +186,12 @@ namespace SMDWin.Views
         }
 
         /// <summary>The disks one under the other, full width (mockup v2: two per row cut "Healthy", the
-        /// temperature and the power-on time). The UniformGrid shares the free height: one disk gets a tall chart, several
-        /// disks share it (the page scrolls when the cards need more).</summary>
+        /// temperature and the power-on time). Each card is as tall as its content (the charts have one fixed height).</summary>
         private void ApplyDriveRowsColumns()
         {
-            if (FindName("StorageDriveRows") is not System.Windows.Controls.Primitives.UniformGrid host) return;
+            if (FindName("StorageDriveRows") is not System.Windows.Controls.Panel host) return;
             int n = host.Children.Count;
             int cols = 1;
-            host.Columns = cols;
             for (int i = 0; i < n; i++)
                 if (host.Children[i] is Border card)
                 {

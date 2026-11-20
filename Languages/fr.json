@@ -3166,6 +3166,8 @@
     "the_storage_test_could_not_run": "Le test de stockage n'a pas pu s'exécuter.",
     "storage_test_skipped": "Test de stockage ignoré",
     "welcome_to_smd_win": "Bienvenue dans SMD Win",
+    "0_read_write_errors_in_the_windows_log": "{0} erreurs de lecture / écriture dans le journal Windows",
+    "in_the_last_30_days_windows_logged_0_failed_reads_or_writes": "Au cours des 30 derniers jours, Windows a enregistré {0} lectures ou écritures échouées sur le lecteur USB portant ce numéro. Sur les lecteurs USB, elles viennent le plus souvent d'un retrait sans « Éjecter », d'une mauvaise connexion ou d'un autre lecteur USB qui avait le même numéro auparavant. Une analyse de surface vérifie le lecteur lui-même.",
     "about_smd_win": "À propos de SMD Win",
     "for_technicians_read_rate_driver_search_administrator_rights": "Pour les techniciens : fréquence de lecture, recherche de pilotes, droits d'administrateur",
     "back_to_settings": "Retour aux paramètres",

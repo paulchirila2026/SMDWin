@@ -2974,6 +2974,8 @@
     "the_storage_test_could_not_run": "Testul de stocare nu a putut rula.",
     "storage_test_skipped": "Test de stocare sărit",
     "welcome_to_smd_win": "Bun venit în SMD Win",
+    "0_read_write_errors_in_the_windows_log": "{0} erori de citire / scriere în jurnalul Windows",
+    "in_the_last_30_days_windows_logged_0_failed_reads_or_writes": "În ultimele 30 de zile Windows a înregistrat {0} citiri sau scrieri eșuate pe unitatea USB cu acest număr. La unitățile USB ele vin de obicei din scoaterea fără „Eject”, dintr-o conexiune slabă sau de la altă unitate USB care a avut același număr mai devreme. O scanare de suprafață verifică unitatea în sine.",
     "about_smd_win": "Despre SMD Win",
     "for_technicians_read_rate_driver_search_administrator_rights": "Pentru tehnicieni: frecvența citirii, căutarea driverelor, drepturi de administrator",
     "back_to_settings": "Înapoi la Setări",

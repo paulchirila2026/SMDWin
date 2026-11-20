@@ -1533,7 +1533,7 @@ namespace SMDWin.Models
         /// <summary>Time window of the charts in a process's details, in seconds (60 / 300 / 900 / 3600).</summary>
         public int ProcessChartWindowSec { get; set; } = 60;
         /// <summary>Time window of the "Disk activity" chart on the Storage page, in seconds (60 / 300 / 900 / 3600).</summary>
-        public int StorageActWindowSec { get; set; } = 300;
+        public int StorageActWindowSec { get; set; } = 60;   // the Storage activity charts: 1 minute fills quickly
         /// <summary>Surface Scan, read speed chart: −1 = the whole disk (default), 0 = what has been scanned so far,
         /// N = the last N minutes.</summary>
         public int SurfaceChartWindowMin { get; set; } = -1;

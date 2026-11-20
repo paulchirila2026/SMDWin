@@ -61,7 +61,7 @@ namespace SMDWin.Services
               // legacy — accepted but migrated automatically
               "Dark Navy", "Dark Slate", "Dark Midnight", "Light Clean", "Light Warm", "Light Refined" };
 
-        private const int CurrentSettingsVersion = 28;
+        private const int CurrentSettingsVersion = 29;
 
         /// <summary>All settings back to their defaults (Settings › Advanced › Reset); saved immediately.</summary>
         public static void ResetToDefaults()
@@ -351,6 +351,13 @@ namespace SMDWin.Services
                 // mostly empty charts) stay available through "Gridlines" in the chart menu
                 Current.ShowChartGridlines = false;
                 Current.SettingsVersion = 28;
+                Save();
+            }
+            if (Current.SettingsVersion < 29)
+            {
+                // v28 → v29: the Storage activity charts start at 1 minute (5 minutes stayed mostly empty for a long time)
+                if (Current.StorageActWindowSec == 300) Current.StorageActWindowSec = 60;
+                Current.SettingsVersion = 29;
                 Save();
             }
             if (Current.UpdateSpeed is not ("Saver" or "Normal" or "Fast")) Current.UpdateSpeed = "Normal";

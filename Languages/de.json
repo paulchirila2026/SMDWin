@@ -3166,6 +3166,8 @@
     "the_storage_test_could_not_run": "Der Speichertest konnte nicht laufen.",
     "storage_test_skipped": "Speichertest übersprungen",
     "welcome_to_smd_win": "Willkommen bei SMD Win",
+    "0_read_write_errors_in_the_windows_log": "{0} Lese-/Schreibfehler im Windows-Protokoll",
+    "in_the_last_30_days_windows_logged_0_failed_reads_or_writes": "In den letzten 30 Tagen hat Windows {0} fehlgeschlagene Lese- oder Schreibvorgänge auf dem USB-Laufwerk mit dieser Nummer protokolliert. Bei USB-Laufwerken kommen sie meist vom Abziehen ohne „Auswerfen“, einem Wackelkontakt oder einem anderen USB-Laufwerk, das früher dieselbe Nummer hatte. Ein Oberflächenscan prüft das Laufwerk selbst.",
     "about_smd_win": "Über SMD Win",
     "for_technicians_read_rate_driver_search_administrator_rights": "Für Techniker: Leserate, Treibersuche, Administratorrechte",
     "back_to_settings": "Zurück zu den Einstellungen",

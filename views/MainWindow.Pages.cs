@@ -759,7 +759,7 @@ namespace SMDWin.Views
         internal System.Windows.Controls.TextBlock TxtStTotalsOf => PageStorage?.TxtStTotalsOf!;
         internal System.Windows.Controls.Primitives.UniformGrid StTotalsBar => PageStorage?.StTotalsBar!;
         internal System.Windows.Controls.Primitives.UniformGrid StTotalsKinds => PageStorage?.StTotalsKinds!;
-        internal System.Windows.Controls.Primitives.UniformGrid StorageDriveRows => PageStorage?.StorageDriveRows!;
+        internal System.Windows.Controls.StackPanel StorageDriveRows => PageStorage?.StorageDriveRows!;
         internal System.Windows.Controls.StackPanel DiskPanel => PageStorage?.DiskPanel!;
         internal System.Windows.Controls.Border TrimPanel => PageStorage?.TrimPanel!;
         internal System.Windows.Controls.ItemsControl TrimList => PageStorage?.TrimList!;

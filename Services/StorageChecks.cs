@@ -202,7 +202,14 @@ namespace SMDWin.Services
             LoadEvents();
             if (_events != null && _events.TryGetValue(d.DiskIndex, out var ev))
             {
-                if (ev.BadBlock + ev.HardFail > 0)
+                // USB / SD drives: Windows numbers the disks in the order they are connected, so "Harddisk1" in last month's log may
+                // have been another stick or card reader; and a stick pulled out without "Eject" also leaves "bad block" entries.
+                // So for them it is a warning about read / write errors in the log, not a count of the drive's bad blocks.
+                bool removable = (d.Bus ?? "") is "USB" or "SD" || d.Kind is "USB stick" or "SD card" or "External HDD" or "External SSD" or "External drive";
+                if (ev.BadBlock + ev.HardFail > 0 && removable)
+                    list.Add(new(DiskFinding.Level.Warn, PT("{0} read / write errors in the Windows log", ev.BadBlock + ev.HardFail),
+                        PT("In the last 30 days Windows logged {0} failed reads or writes on the USB drive with this number. On USB drives they usually come from removing the drive without \"Eject\", a loose connection, or another USB drive that had the same number earlier. Run a Surface scan to check this drive itself.", ev.BadBlock + ev.HardFail)));
+                else if (ev.BadBlock + ev.HardFail > 0)
                     list.Add(new(DiskFinding.Level.Crit, PT("{0} bad-block errors", ev.BadBlock + ev.HardFail),
                         PT("Windows could not read or write some blocks of this drive in the last 30 days ({0} times). Back up the important data and run a Surface scan.", ev.BadBlock + ev.HardFail)));
                 if (ev.Controller > 0)

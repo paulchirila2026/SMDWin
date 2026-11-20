@@ -116,7 +116,8 @@
                 <StackPanel Orientation="Horizontal"><Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Canvas></Viewbox><TextBlock x:Name="TxtStorageTabFilesLbl" Text="Space usage" VerticalAlignment="Center"/></StackPanel>
               </ui:Button>
             </WrapPanel></Border>
-            <Grid x:Name="StorageTopRow" Margin="0,10,0,0">
+            <!-- hidden on Overview (each disk card has its own activity chart there) and on Space usage; shown on SMART, Surface scan, Benchmark -->
+            <Grid x:Name="StorageTopRow" Margin="0,10,0,0" Visibility="Collapsed">
               <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <Border x:Name="StorageActivityCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,10,18,10">
                 <Grid>
@@ -301,8 +302,9 @@
                 </Grid>
               </Border>
             </StackPanel>
-              <!-- one card per drive (MainWindow.StoragePage.cs → BuildStorageDriveRows); one column, the rows share the height -->
-              <UniformGrid x:Name="StorageDriveRows" Grid.Row="1" Columns="1"/>
+              <!-- one card per drive (MainWindow.StoragePage.cs → BuildStorageDriveRows), one under the other, each as tall as its
+                   content: the activity charts all have the same height -->
+              <StackPanel x:Name="StorageDriveRows" Grid.Row="1"/>
             <StackPanel Grid.Row="2">
               <StackPanel x:Name="DiskPanel" Margin="0,0,0,0" Visibility="Collapsed"/>
               <!-- ── Disk Tools — TRIM / Partition Health / APM compact ── -->

@@ -43,7 +43,7 @@ namespace SMDWin.Views
         private static int StActWindow()
         {
             int w = SettingsService.Current.StorageActWindowSec;
-            return Array.IndexOf(StActWindows, w) >= 0 ? w : 300;
+            return Array.IndexOf(StActWindows, w) >= 0 ? w : 60;
         }
 
         private void SetStActWindow(int sec)
@@ -123,7 +123,7 @@ namespace SMDWin.Views
         /// <summary>What shows under the tabs, depending on the tab (called from StorageTab_Click).</summary>
         private void UpdateStorageTopRow(string tag)
         {
-            if (FindName("StorageTopRow") is FrameworkElement row) row.Visibility = tag == "Files" ? Visibility.Collapsed : Visibility.Visible;
+            if (FindName("StorageTopRow") is FrameworkElement row) row.Visibility = tag is "Files" or "Overview" ? Visibility.Collapsed : Visibility.Visible;   // Overview: each disk has its own chart
             // the "All drives" card no longer appears (the free space is on each disk's row) — kept only for code
             if (FindName("StorageTotalsCard") is FrameworkElement tot) tot.Visibility = Visibility.Collapsed;
             if (FindName("StActScanStats") is FrameworkElement ss) ss.Visibility = tag == "Surface" ? Visibility.Visible : Visibility.Collapsed;
@@ -275,12 +275,11 @@ namespace SMDWin.Views
         {
             var card = new Border { Style = TryFindResource("CompCardStyle") as Style, Cursor = System.Windows.Input.Cursors.Arrow,
                                     Margin = new Thickness(0, 0, 0, 12), Padding = new Thickness(18, 14, 18, 0) };
-            // the cards share the free height of the page (StorageDriveRows is a UniformGrid, 1 or 2 columns): the extra height
-            // goes to the activity chart of the disk (row 1); the health strip and the footer keep their size. A disk without
-            // activity counters gets the old layout back: the top part takes the extra height, its content centred.
+            // every card is as tall as its content and the activity chart of every disk has the same fixed height
+            // (BuildDiskActivityBlock), so two disks look alike whether or not they have a health strip
             var root = new Grid();
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             card.Child = root;
@@ -342,8 +341,8 @@ namespace SMDWin.Views
             actUi.ShowChart = on =>
             {
                 activity.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-                root.RowDefinitions[0].Height = on ? GridLength.Auto : new GridLength(1, GridUnitType.Star);
-                root.RowDefinitions[1].Height = on ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+                root.RowDefinitions[0].Height = GridLength.Auto;
+                root.RowDefinitions[1].Height = GridLength.Auto;
                 body.VerticalAlignment = on ? VAlign.Top : VAlign.Center;
                 body.Margin = new Thickness(0, 0, 0, on ? 14 : 22);
             };
