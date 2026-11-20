@@ -60,7 +60,7 @@ namespace SMDWin.Views
             // the shared chart grid as the canvas background (thin lines fading towards their ends, no frame)
             void PaintGrid() { try { _canvas.Background = ChartGrid.Background(_canvas.ActualWidth, _canvas.ActualHeight, ChartGrid.LineColor(_canvas), 4, 0, ChartGrid.Scale(_canvas)) ?? (System.Windows.Media.Brush)WpfBrushes.Transparent; } catch { } }
             _canvas.SizeChanged += (_, _) => PaintGrid();
-            SMDWin.Services.ThemeManager.ThemeChanged += () => _canvas.Dispatcher.BeginInvoke(new Action(PaintGrid));
+            _canvas.Loaded += (_, _) => PaintGrid();   // also after a theme change (the page is rebuilt / reloaded)
             PaintGrid();
         }
 
