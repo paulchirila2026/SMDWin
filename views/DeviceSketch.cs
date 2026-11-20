@@ -414,7 +414,8 @@ namespace SMDWin.Views
             b.Glow(276, 196, 62, 0);
             b.Rect(260, 180, 32, 32, 2, Sty.Ln, 0); b.Rect(268, 188, 16, 16, 1, Sty.Ln2);
             b.Heat(276, 170, 0); b.Trace("M292 196 L314 196");
-            b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false);
+            b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 160, 82, 35, 4, false);
+            b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false);
             b.Rect(204, 236, 94, 26, 2, Sty.Ln, 2); b.Rect(210, 243, 22, 12, 1, Sty.Ln2); b.Led(292, 249);
             b.Rect(318, 244, 26, 22, 2, Sty.Ln2);
             b.Rect(104, 140, 72, 128, 4);
@@ -447,11 +448,13 @@ namespace SMDWin.Views
             b.Pipe("M300 170 C300 146 306 126 312 110", 0); b.Pipe("M312 170 C314 148 322 128 328 110", 0);
             b.Glow(306, 186, 58, 0);
             b.Rect(288, 168, 36, 36, 2, Sty.Ln, 0); b.Rect(297, 177, 18, 18, 1, Sty.Ln2);
-            b.Heat(306, 160, 0); b.Trace("M300 204 L284 224");
-            b.Rect(202, 224, 110, 46, 2, Sty.Ln, 1); b.Rect(202, 234, 110, 46, 2, Sty.Ln, 1); b.Chips(202, 234, 110, 46, 4, false);
+            b.Heat(306, 160, 0); b.Trace("M300 204 L284 212");
+            // two SO-DIMMs side by side, each with its chips (stacked ones hid the chips of the one underneath)
+            b.Rect(202, 212, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 212, 110, 30, 4, false);
+            b.Rect(202, 248, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 248, 110, 30, 4, false);
             b.Rect(352, 130, 34, 150, 2, Sty.Ln, 2); b.Rect(359, 140, 20, 28, 1, Sty.Ln2); b.Rect(359, 176, 20, 28, 1, Sty.Ln2); b.Led(369, 270);
             m.Anchor[0] = new Point(306, 168); m.Lane[0] = 121;
-            m.Anchor[1] = new Point(312, 262); m.Lane[1] = 287;
+            m.Anchor[1] = new Point(312, 263); m.Lane[1] = 287;
             m.Anchor[2] = new Point(386, 210); m.Anchor[3] = m.Anchor[0];
             return m;
         }
