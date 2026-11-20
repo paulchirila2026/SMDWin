@@ -689,13 +689,13 @@ namespace SMDWin.Views
                         double mx = double.MinValue, mn = double.MaxValue;
                         foreach (var v in hs) { mx = Math.Max(mx, v); mn = Math.Min(mn, v); }
                         if (mx - mn < Math.Abs(mx) * 0.04) { double mid = (mx + mn) / 2; mx = mid + Math.Abs(mid) * 0.02 + 0.01; mn = mid - Math.Abs(mid) * 0.02 - 0.01; }
-                        double x0 = TextX + vw + 12, ch = 12 * tk, yb = tb + 32 * tk + 2;
+                        double sx0 = TextX + vw + 12, ch = 12 * tk, yb = tb + 32 * tk + 2;
                         var sg = new StreamGeometry();
                         using (var g = sg.Open())
                         {
                             for (int j = 0; j < hs.Count; j++)
                             {
-                                var pt = new Point(x0 + j * 64.0 / (HistMax - 1), yb - (hs[j] - mn) / (mx - mn) * ch);
+                                var pt = new Point(sx0 + j * 64.0 / (HistMax - 1), yb - (hs[j] - mn) / (mx - mn) * ch);
                                 if (j == 0) g.BeginFigure(pt, false, false); else g.LineTo(pt, true, true);
                             }
                         }
