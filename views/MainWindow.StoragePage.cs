@@ -249,13 +249,15 @@ namespace SMDWin.Views
                 foreach (var f in sorted.Take(4))
                 {
                     string key = f.Severity switch { DiskFinding.Level.Crit => "StatusCritBrush", DiskFinding.Level.Warn => "StatusWarnBrush", _ => "TextSecondaryBrush" };
-                    var chip = new Border { CornerRadius = new CornerRadius(6), Padding = new Thickness(7, 2, 8, 3), Margin = new Thickness(0, 4, 6, 0),
-                                            Background = BenchTint(f.Severity == DiskFinding.Level.Info ? "TextSecondaryBrush" : key, 28),
-                                            ToolTip = f.Detail, Cursor = System.Windows.Input.Cursors.Help };
+                    // the Windows way: a small mark (! / i in a filled circle) and the coloured words, no tinted box
+                    var chip = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, Margin = new Thickness(0, 4, 14, 0),
+                                                Background = System.Windows.Media.Brushes.Transparent, ToolTip = f.Detail, Cursor = System.Windows.Input.Cursors.Help };
                     ToolTipService.SetInitialShowDelay(chip, 150);
-                    var t = new TextBlock { Text = (f.Severity == DiskFinding.Level.Info ? "" : "⚠ ") + f.Short, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold };
-                    t.SetResourceReference(TextBlock.ForegroundProperty, key);
-                    chip.Child = t;
+                    var mark = new StatusMark { Width = 13, Height = 13, Margin = new Thickness(0, 0, 5, 0), VerticalAlignment = VerticalAlignment.Center };
+                    mark.SetResourceReference(StatusMark.FillProperty, f.Severity == DiskFinding.Level.Info ? "AccentBrush" : key);
+                    var t = new TextBlock { Text = f.Short, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+                    t.SetResourceReference(TextBlock.ForegroundProperty, f.Severity == DiskFinding.Level.Info ? "TextPrimaryBrush" : key);
+                    chip.Children.Add(mark); chip.Children.Add(t);
                     host.Children.Add(chip);
                 }
                 if (sorted.Count > 4)

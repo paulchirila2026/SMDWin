@@ -288,7 +288,7 @@ namespace SMDWin.Views
                                         : ("Impact unknown", "TextSecondaryBrush");
             TxtStDetPill.Text = pill;
             TxtStDetPill.SetResourceReference(TextBlock.ForegroundProperty, brush);
-            StDetPillBg.SetResourceReference(Border.BackgroundProperty, brush);
+            StDetPillBg.SetResourceReference(StatusMark.FillProperty, brush);
 
             TxtStDetAbout.Text = en.IsBroken
                 ? "The program this entry starts no longer exists — it was probably uninstalled or moved. The entry does nothing and can be removed."

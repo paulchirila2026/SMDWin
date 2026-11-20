@@ -2490,22 +2490,22 @@
                                 <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
                                   <Style.Triggers><DataTrigger Binding="{Binding IsRecent}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style></Grid.Style>
-                                <Border CornerRadius="6" Background="{DynamicResource AccentBrush}" Opacity="0.14"/>
-                                <TextBlock Text="New" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
+                                <local:StatusMark Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource AccentBrush}"/>
+                                <TextBlock Text="New" Margin="17,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
                               </Grid>
                               <Grid Margin="6,0,0,0" VerticalAlignment="Center" ToolTip="Commonly preinstalled or promotional software — check whether the user needs it">
                                 <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
                                   <Style.Triggers><DataTrigger Binding="{Binding IsBloat}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style></Grid.Style>
-                                <Border CornerRadius="6" Background="{DynamicResource StatusWarningBrush}" Opacity="0.14"/>
-                                <TextBlock Text="Possibly unwanted" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource StatusWarningBrush}"/>
+                                <local:StatusMark Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource StatusWarningBrush}"/>
+                                <TextBlock Text="Possibly unwanted" Margin="17,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource StatusWarningBrush}"/>
                               </Grid>
                               <Grid Margin="6,0,0,0" VerticalAlignment="Center" ToolTip="A note was left for this program — see the Selected card">
                                 <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
                                   <Style.Triggers><DataTrigger Binding="{Binding HasNote}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style></Grid.Style>
-                                <Border CornerRadius="6" Background="{DynamicResource TextSecondaryBrush}" Opacity="0.14"/>
-                                <TextBlock Text="Note" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <local:StatusMark Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="Note" Margin="17,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
                               </Grid>
                             </StackPanel>
                           </Grid>
@@ -2574,8 +2574,8 @@
                         </StackPanel>
                       </DockPanel>
                       <Grid x:Name="AppDetPill" HorizontalAlignment="Left" Margin="0,0,0,8" Visibility="Collapsed">
-                        <Border x:Name="AppDetPillBg" CornerRadius="6" Opacity="0.14"/>
-                        <TextBlock x:Name="TxtAppDetPill" Margin="8,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
+                        <local:StatusMark x:Name="AppDetPillBg" Width="13" Height="13" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtAppDetPill" Margin="19,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
                       </Grid>
                       <TextBlock x:Name="TxtAppDetAbout" Text="" TextWrapping="Wrap" Style="{StaticResource CompSub}" Margin="0,0,0,12"/>
                       <Grid TextElement.FontSize="{StaticResource FontSizeM}" Margin="0,0,0,10">
@@ -2883,8 +2883,8 @@
                       <TextBlock x:Name="TxtSvcDetailName" Text="—" Style="{StaticResource DashRowName}" TextWrapping="Wrap" TextTrimming="None"/>
                       <TextBlock x:Name="TxtSvcDetailId" Text="" Style="{StaticResource DashRowSub}" Margin="0,0,0,8"/>
                       <Grid x:Name="SvcDetRiskPill" HorizontalAlignment="Left" Margin="0,0,0,8">
-                        <Border x:Name="SvcDetRiskPillBg" CornerRadius="6" Opacity="0.14"/>
-                        <TextBlock x:Name="TxtSvcDetRisk" Margin="8,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
+                        <local:StatusMark x:Name="SvcDetRiskPillBg" Width="13" Height="13" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtSvcDetRisk" Margin="19,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
                       </Grid>
                       <TextBlock x:Name="TxtSvcDetailDesc" TextWrapping="Wrap" Style="{StaticResource CompSub}" Margin="0,0,0,12"/>
                       <Grid Margin="0,0,0,10">
@@ -3353,16 +3353,16 @@
                                 <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
                                   <Style.Triggers><DataTrigger Binding="{Binding IsBroken}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
                                 </Style></Grid.Style>
-                                <Border CornerRadius="6" Background="{DynamicResource StatusErrorBrush}" Opacity="0.14"/>
-                                <TextBlock Text="File not found" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource StatusErrorBrush}"/>
+                                <local:StatusMark Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource StatusErrorBrush}"/>
+                                <TextBlock Text="File not found" Margin="17,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource StatusErrorBrush}"/>
                               </Grid>
                               <Grid Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" ToolTip="The program's file appeared in the last 14 days">
                                 <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
                                   <Style.Triggers><DataTrigger Binding="{Binding AddedRecently}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
                                                   <DataTrigger Binding="{Binding IsBroken}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
                                 </Style></Grid.Style>
-                                <Border CornerRadius="6" Background="{DynamicResource AccentBrush}" Opacity="0.14"/>
-                                <TextBlock Text="New" Margin="7,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
+                                <local:StatusMark Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource AccentBrush}"/>
+                                <TextBlock Text="New" Margin="17,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
                               </Grid>
                             </Grid>
                           </DataTemplate>
@@ -3427,8 +3427,8 @@
                     <StackPanel Margin="0,0,0,14">
                       <TextBlock x:Name="TxtStDetName" Text="—" Style="{StaticResource DashRowName}" TextWrapping="Wrap" TextTrimming="None" Margin="0,0,0,8"/>
                       <Grid x:Name="StDetPill" HorizontalAlignment="Left" Margin="0,0,0,8">
-                        <Border x:Name="StDetPillBg" CornerRadius="6" Opacity="0.14"/>
-                        <TextBlock x:Name="TxtStDetPill" Margin="8,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
+                        <local:StatusMark x:Name="StDetPillBg" Width="13" Height="13" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtStDetPill" Margin="19,2,0,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold"/>
                       </Grid>
                       <TextBlock x:Name="TxtStDetAbout" TextWrapping="Wrap" Style="{StaticResource CompSub}" Margin="0,0,0,12"/>
                       <TextBlock Text="Command" Style="{StaticResource CompFootKey}"/>

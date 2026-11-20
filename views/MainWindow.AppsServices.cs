@@ -67,7 +67,7 @@ namespace SMDWin.Views
             TxtSvcDetailAdvice.Text = advice;
             TxtSvcDetRisk.Text = svc.RiskLabel;
             TxtSvcDetRisk.SetResourceReference(TextBlock.ForegroundProperty, brush);
-            SvcDetRiskPillBg.SetResourceReference(Border.BackgroundProperty, brush);
+            SvcDetRiskPillBg.SetResourceReference(StatusMark.FillProperty, brush);
 
             bool running = svc.Status == "Running";
             TxtSvcDetStatus.Text = svc.Status;
@@ -270,7 +270,7 @@ namespace SMDWin.Views
         {
             TxtAppDetPill.Text = text;
             TxtAppDetPill.SetResourceReference(TextBlock.ForegroundProperty, brushKey);
-            AppDetPillBg.SetResourceReference(Border.BackgroundProperty, brushKey);
+            AppDetPillBg.SetResourceReference(StatusMark.FillProperty, brushKey);
             AppDetPill.Visibility = Visibility.Visible;
         }
 

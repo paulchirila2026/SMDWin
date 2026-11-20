@@ -16,7 +16,8 @@ using Button      = System.Windows.Controls.Button;
 using Orientation = System.Windows.Controls.Orientation;
 using HAlign      = System.Windows.HorizontalAlignment;
 using VAlign      = System.Windows.VerticalAlignment;
-using Ellipse     = System.Windows.Shapes.Ellipse;
+// the state dots are Windows-style marks (tick / ! / i in a filled circle)
+using Ellipse     = SMDWin.Views.StatusMark;
 using WPath       = System.Windows.Shapes.Path;
 using UGrid       = System.Windows.Controls.Primitives.UniformGrid;
 using Phase       = SMDWin.Services.DiagnosticPhase;
@@ -94,7 +95,7 @@ namespace SMDWin.Views
             public Ellipse Dot = null!;
             public TextBlock Result = null!;
             public Grid Pill = null!;
-            public Border PillBg = null!;
+            public StatusMark PillBg = null!;
             public TextBlock PillText = null!;
             public Sev? Severity;
             public bool Skip, NotTested, Info;
@@ -226,8 +227,8 @@ namespace SMDWin.Views
 
         private static Ellipse Dot(string brush)
         {
-            var e = new Ellipse { Width = 8, Height = 8, VerticalAlignment = VAlign.Center };
-            e.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, brush);
+            var e = new Ellipse { Width = 14, Height = 14, VerticalAlignment = VAlign.Center };
+            e.SetResourceReference(StatusMark.FillProperty, brush);
             return e;
         }
 
@@ -296,7 +297,7 @@ namespace SMDWin.Views
         {
             text.Text = label;
             text.SetResourceReference(TextBlock.ForegroundProperty, brush);
-            dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, brush);
+            dot.SetResourceReference(StatusMark.FillProperty, brush);
         }
 
         private static string BrushOf(Sev s) => s switch { Sev.Critical => "StatusCritBrush", Sev.Warning => "StatusWarnBrush", _ => "StatusOkBrush" };
@@ -494,8 +495,9 @@ namespace SMDWin.Views
 
             // the CHECK / WARNING pill (only when not OK) or the "Run test" button (test not run)
             row.Pill = new Grid { VerticalAlignment = VAlign.Center, Visibility = Visibility.Collapsed };
-            row.PillBg = new Border { CornerRadius = new CornerRadius(6), Opacity = 0.14 };
-            row.PillText = new TextBlock { FontSize = Ui.FontXS, FontWeight = FontWeights.Bold, Margin = new Thickness(8, 3, 8, 3) };
+            // the Windows way: a small mark (! / i in a filled circle) and the coloured word, no tinted box
+            row.PillBg = new StatusMark { Width = 13, Height = 13, HorizontalAlignment = System.Windows.HorizontalAlignment.Left, VerticalAlignment = VAlign.Center };
+            row.PillText = new TextBlock { FontSize = Ui.FontXS, FontWeight = FontWeights.Bold, Margin = new Thickness(19, 3, 0, 3) };
             row.Pill.Children.Add(row.PillBg); row.Pill.Children.Add(row.PillText);
             Grid.SetColumn(row.Pill, 2); g.Children.Add(row.Pill);
             // (no "Run test" buttons: a test that has not run just says so; clicking the row opens its page)
@@ -604,7 +606,7 @@ namespace SMDWin.Views
                 r.Severity = null; r.Skip = false; r.NotTested = false; r.Info = false; r.Summary = "";
                 r.Container.Visibility = Visibility.Visible;
                 r.Result.Text = P("Checking…");
-                r.Dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "BorderBrush2");
+                r.Dot.SetResourceReference(StatusMark.FillProperty, "BorderBrush2");
                 r.Pill.Visibility = Visibility.Collapsed;
                 r.Container.ToolTip = null;
             }
@@ -668,7 +670,7 @@ namespace SMDWin.Views
             row.Result.ToolTip = r.Summary;
             row.Info = !row.NotTested && r.Severity == Sev.Ok && r.Details.ContainsKey("Info");
             string brush = row.NotTested ? "TextSecondaryBrush" : row.Info ? "AccentBrush" : BrushOf(r.Severity);
-            row.Dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, brush);
+            row.Dot.SetResourceReference(StatusMark.FillProperty, brush);
             // the state shows through the dot and the result colour; the pill stays only for "OLD TEST" (extra information)
             bool problem = !row.NotTested && r.Severity != Sev.Ok;
             row.Result.SetResourceReference(TextBlock.ForegroundProperty, problem ? brush : "TextSecondaryBrush");
@@ -677,7 +679,7 @@ namespace SMDWin.Views
             {
                 row.PillText.Text = P("Old test").ToUpper(System.Globalization.CultureInfo.CurrentUICulture);
                 row.PillText.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                row.PillBg.SetResourceReference(Border.BackgroundProperty, "TextSecondaryBrush");
+                row.PillBg.SetResourceReference(StatusMark.FillProperty, "TextSecondaryBrush");
                 row.Pill.Visibility = Visibility.Visible;
             }
             row.Container.ToolTip = Details(r);
