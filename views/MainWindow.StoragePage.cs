@@ -123,7 +123,7 @@ namespace SMDWin.Views
         /// <summary>What shows under the tabs, depending on the tab (called from StorageTab_Click).</summary>
         private void UpdateStorageTopRow(string tag)
         {
-            if (FindName("StorageTopRow") is FrameworkElement row) row.Visibility = tag is "Files" or "Overview" ? Visibility.Collapsed : Visibility.Visible;   // Overview: each disk has its own chart
+            if (FindName("StorageTopRow") is FrameworkElement row) row.Visibility = Visibility.Collapsed;   // the shared card is no longer shown on any tab
             // the "All drives" card no longer appears (the free space is on each disk's row) — kept only for code
             if (FindName("StorageTotalsCard") is FrameworkElement tot) tot.Visibility = Visibility.Collapsed;
             if (FindName("StActScanStats") is FrameworkElement ss) ss.Visibility = tag == "Surface" ? Visibility.Visible : Visibility.Collapsed;
@@ -313,11 +313,12 @@ namespace SMDWin.Views
             info.Children.Add(Txt2($"{d.Size}{style}", "TextSecondaryBrush", Ui.FontM));
             var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Needs attention"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
             var stRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
-            var dot = new Ellipse { Width = 8, Height = 8, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VAlign.Center };
-            dot.SetResourceReference(Shape.FillProperty, stKey);
+            // the Windows-style mark (tick / ! / i in a filled circle); the word stays in the text colour unless it is a warning
+            var dot = new StatusMark { Width = 14, Height = 14, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VAlign.Center };
+            dot.SetResourceReference(StatusMark.FillProperty, stKey);
             // the state in words; the figure is in the dial of the health strip below (life left or health)
             var stT = new TextBlock { Text = stTxt, ToolTip = string.IsNullOrWhiteSpace(d.Status) ? null : $"Windows status: {d.Status}", Style = TryFindResource("CompStatusText") as Style };
-            stT.SetResourceReference(TextBlock.ForegroundProperty, stKey);
+            stT.SetResourceReference(TextBlock.ForegroundProperty, stKey == "StatusOkBrush" ? "TextPrimaryBrush" : stKey);
             stRow.Children.Add(dot); stRow.Children.Add(stT);
             info.Children.Add(stRow);
             // what else is worth knowing: the link, Windows disk errors, alignment, TRIM, SMR, firmware (StorageChecks)

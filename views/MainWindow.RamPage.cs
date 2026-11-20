@@ -149,14 +149,14 @@ namespace SMDWin.Views
                 {
                     c1.Max = total;
                     if (_ramHist.Count >= 2) c1.ShowHistory(_ramHist, 60, 0); else c1.Push(used);
-                    if (FindName("TxtRamLiveInUseNote") is TextBlock n1) n1.Text = PT("last minute · max {0}", G(c1.Peak));
+                    if (FindName("TxtRamLiveInUseNote") is TextBlock n1) n1.Text = T4($"Last minute · highest {G(c1.Peak)}", $"Ultimul minut · maxim {G(c1.Peak)}", $"Letzte Minute · Spitze {G(c1.Peak)}", $"Dernière minute · maximum {G(c1.Peak)}");
                 }
                 if (FindName("TxtRamLiveInUse") is TextBlock v1) v1.Text = G(used);
                 if (FindName("RamChartCommit") is MiniLineChart c2)
                 {
                     c2.Max = limit;
                     if (_ramHist.Count >= 2) c2.ShowHistory(_ramHist, 60, 1); else c2.Push(commit);
-                    if (FindName("TxtRamLiveCommitNote") is TextBlock n2) n2.Text = PT("RAM + page file · peak {0}", G(peak));
+                    if (FindName("TxtRamLiveCommitNote") is TextBlock n2) n2.Text = T4($"RAM + page file · highest {G(peak)}", $"RAM + fișier de paginare · maxim {G(peak)}", $"RAM + Auslagerungsdatei · Spitze {G(peak)}", $"RAM + fichier d'échange · maximum {G(peak)}");
                 }
                 if (FindName("TxtRamLiveCommit") is TextBlock v2) v2.Text = $"{commit:F1} / {limit:F1} GB";
 

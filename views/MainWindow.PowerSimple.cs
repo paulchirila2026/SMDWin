@@ -591,8 +591,8 @@ namespace SMDWin.Views
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(18) });
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var dot = new Ellipse { Width = 8, Height = 8, VerticalAlignment = VAlign.Center };
-            dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, dotKey);
+            var dot = new StatusMark { Width = 13, Height = 13, VerticalAlignment = VAlign.Center, HorizontalAlignment = System.Windows.HorizontalAlignment.Left };
+            dot.SetResourceReference(StatusMark.FillProperty, dotKey);
             g.Children.Add(dot);
             var t = new TextBlock { FontSize = Ui.FontS, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VAlign.Center, ToolTip = $"{name}\n{detail}".Trim() };
             var n = new Run(name) { FontWeight = FontWeights.SemiBold };
@@ -842,8 +842,8 @@ namespace SMDWin.Views
                 g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(18) });
                 g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                var dot = new Ellipse { Width = 8, Height = 8, VerticalAlignment = VAlign.Center };
-                dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, f.Level == "warn" ? "StatusWarnBrush" : f.Level == "info" ? "AccentBrush" : "StatusOkBrush");
+                var dot = new StatusMark { Width = 13, Height = 13, VerticalAlignment = VAlign.Center, HorizontalAlignment = System.Windows.HorizontalAlignment.Left };
+                dot.SetResourceReference(StatusMark.FillProperty, f.Level == "warn" ? "StatusWarnBrush" : f.Level == "info" ? "AccentBrush" : "StatusOkBrush");
                 g.Children.Add(dot);
                 var sp = new StackPanel { Margin = new Thickness(0, 0, 10, 0) };
                 var t = new TextBlock { Text = f.Title, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap };

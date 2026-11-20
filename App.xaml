@@ -12,6 +12,7 @@
       <local:EmptyStringToCollapsedConverter x:Key="EmptyStringToCollapsed"/>
       <local:ForegroundToPillBgConverter x:Key="ForegroundToPillBg"/>
       <local:NeutralUnlessAlertConverter x:Key="NeutralUnlessAlert"/>
+        <local:DashFactVisibilityConverter x:Key="HasTextVis"/>
       <local:ThemeStatusBrushConverter x:Key="ThemeStatusBrush"/>
     </ResourceDictionary>
   </Application.Resources>
