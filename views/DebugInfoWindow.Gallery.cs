@@ -11,7 +11,7 @@ namespace SMDWin.Views
         /// <summary>
         /// The Benchmark drawing (DeviceSketch) for each kind of computer, in four moments: before the test, processor in test,
         /// graphics in test, after the test with sample marks; desktop and laptop also without a dedicated graphics card.
-        /// The pictures animate like on the page.
+        /// The pictures are still (24 animated drawings made the page crawl); the page itself shows the animation.
         /// </summary>
         private static void AddBenchmarkSketchGallery(System.Windows.Controls.StackPanel panel,
             Func<string, double, System.Windows.Controls.TextBlock> heading,
@@ -39,7 +39,7 @@ namespace SMDWin.Views
                 {
                     try
                     {
-                        var sk = new DeviceSketch { DeviceKind = r.Kind, DedicatedGpu = r.DGpu, Width = 440, Height = 243 };
+                        var sk = new DeviceSketch { DeviceKind = r.Kind, DedicatedGpu = r.DGpu, Width = 440, Height = 243, Animate = false };
                         for (int i = 0; i < 4; i++)
                         {
                             var c = sk.Parts[i];

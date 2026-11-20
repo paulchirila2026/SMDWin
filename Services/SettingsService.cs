@@ -359,6 +359,11 @@ namespace SMDWin.Services
             // Blue is fixed; the setting stays in the file only for compatibility.
             Current.AccentName = "Blue";
             Current.CustomAccentHex = "";
+            // the design variants removed from the Developer window: the decided ones only
+            Current.DesignExperimentSysInfoLayout = "";
+            Current.DesignExperimentPowerMap = false;
+            Current.DesignExperimentMonoNumbers = false;
+            Current.HwInfoPdfTemplate = "OnePage";
 
             // Validate AutoDark / AutoLight sub-themes
             var validDark = new[] { "Dark", "Dark Navy", "Dark Slate", "Dark Midnight" };

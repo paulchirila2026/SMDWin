@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -82,8 +83,9 @@ namespace SMDWin.Views
 
         private const double SceneW = 760, SceneH = 420;
         private const double RingX = 474, TextX = 504, LeadEndX = 450;
-        // the callout rows from the top, in the order of the parts in the drawing: processor, memory, graphics, storage
-        private static readonly int[] RowOrder = { 0, 1, 3, 2 };
+        // the callout rows from the top: in the order in which the lines leave the drawing (worked out per drawing), so the
+        // lines never cross each other
+        private int[] _rowOrder = { 0, 1, 3, 2 };
         // the four rows centred on the middle of the scene, where every drawing is centred too
         private static readonly double[] RowY = { 84, 164, 244, 324 };
 
@@ -130,9 +132,12 @@ namespace SMDWin.Views
         /// The animation follows the screen refresh (a timer at 15–30 frames per second made the fans jerk). While the
         /// graphics card is tested only every third refresh is drawn, so the drawing takes almost nothing from the test.
         /// </summary>
+        /// <summary>False = a still picture (the galleries of the Developer window).</summary>
+        public bool Animate { get; set; } = true;
+
         private void UpdateTimer()
         {
-            bool animate = IsVisible && IsLoaded && Animations;
+            bool animate = Animate && IsVisible && IsLoaded && Animations;
             if (animate && !_hooked) { _last = _clock.Elapsed.TotalSeconds; CompositionTarget.Rendering += OnFrame; _hooked = true; }
             else if (!animate) Unhook();
         }
@@ -163,7 +168,7 @@ namespace SMDWin.Views
             var p = new Point(pt.X / _k, (pt.Y - _offY) / _k);
             if (p.X >= RingX - 26)
             {
-                for (int r = 0; r < 4; r++) if (Math.Abs(p.Y - RowY[r]) <= 36) return RowOrder[r];
+                for (int r = 0; r < 4; r++) if (Math.Abs(p.Y - RowY[r]) <= 36) return _rowOrder[r];
                 return -1;
             }
             var m = Current;
@@ -221,6 +226,24 @@ namespace SMDWin.Views
             public bool CanDGpu;
             public readonly List<Op> Ops = new();
             public readonly Point[] Anchor = new Point[4];
+            /// <summary>
+            /// Optional lanes (drawing units): the line of a part first goes up / down to this height and then right, through a
+            /// free gap, instead of right across other parts. NaN = straight right from the anchor.
+            /// </summary>
+            public readonly double[] Lane = { double.NaN, double.NaN, double.NaN, double.NaN };
+            private double? _right;
+            /// <summary>The right edge of the drawing in scene units: where the lines turn towards the callouts.</summary>
+            public double Right
+            {
+                get
+                {
+                    if (_right is double r) return r;
+                    double mx = 0;
+                    foreach (var op in Ops) if (op.T == OpT.Shape && op.S != Sty.Shadow && op.G != null) mx = Math.Max(mx, op.G.Bounds.Right);
+                    _right = mx * S + Dx;
+                    return _right.Value;
+                }
+            }
             public Point Map(Point p) => new(p.X * S + Dx, p.Y * S + Dy);
         }
 
@@ -316,7 +339,8 @@ namespace SMDWin.Views
             b.Rect(390, 56, 12, 80, 2, Sty.LnFill); b.Rect(390, 150, 12, 80, 2, Sty.LnFill);
             b.Edge(396, 59, 396, 133, FanCase); b.Edge(396, 153, 396, 227, FanCase);
             b.Air("M430 84 C424 86 418 90 410 96", false); b.Air("M432 140 C424 140 418 140 410 140", false); b.Air("M430 196 C424 194 418 190 410 186", false);
-            m.Anchor[0] = new Point(250, 100); m.Anchor[1] = new Point(313, 120); m.Anchor[2] = new Point(264, 264); m.Anchor[3] = new Point(374, 207);
+            m.Anchor[0] = new Point(214, 92); m.Lane[0] = 49;
+            m.Anchor[1] = new Point(313, 120); m.Anchor[2] = new Point(264, 264); m.Anchor[3] = new Point(374, 207);
             return m;
         }
 
@@ -337,8 +361,8 @@ namespace SMDWin.Views
             b.Air("M428 64 C424 50 420 40 414 30", true); b.Air("M450 64 C450 50 450 40 450 30", true); b.Air("M472 64 C476 50 480 40 486 30", true);
             b.DGpu = false;
             b.Path("M104 92 H496 V214 H404 V232 H196 V214 H104 Z");
-            b.Fan(150, 128, 36, FanCpu);
-            b.DGpu = true; b.Fan(450, 128, 36, FanGpu); b.DGpu = false;
+            b.Fan(150, 124, 32, FanCpu);
+            b.DGpu = true; b.Fan(450, 124, 32, FanGpu); b.DGpu = false;
             b.Glow(252, 134, 58, 0);
             b.Rect(238, 120, 30, 30, 2, Sty.Ln, 0); b.Rect(246, 128, 14, 14, 1, Sty.Ln2);
             b.Heat(253, 112, 0);
@@ -352,15 +376,21 @@ namespace SMDWin.Views
             b.DGpu = true;
             b.Pipe("M362 128 C392 128 402 86 430 84", 3); b.Pipe("M362 142 C400 142 406 88 450 84", 3);
             b.DGpu = false;
-            b.Rect(206, 176, 82, 35, 2, Sty.Ln, 1); b.Rect(206, 186, 82, 35, 2, Sty.Ln, 1); b.Chips(206, 186, 82, 35, 4, false);
-            b.Trace("M253 150 L253 176");
+            // two SO-DIMMs side by side (as in many laptops), not stacked
+            b.Rect(206, 158, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 158, 82, 30, 4, false);
+            b.Rect(206, 192, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 192, 82, 30, 4, false);
+            b.Trace("M253 150 L253 158");
             b.Rect(300, 196, 94, 26, 2, Sty.Ln, 2); b.Rect(306, 203, 22, 12, 1, Sty.Ln2); b.Rect(334, 203, 22, 12, 1, Sty.Ln2); b.Led(388, 209);
             b.Rect(168, 176, 26, 30, 2, Sty.Ln2);
             b.Rect(138, 246, 324, 92, 7);
             foreach (var x in new[] { 219, 300, 381 }) b.Line(x, 250, x, 334);
             b.Rect(282, 232, 36, 14, 2, Sty.Ln2);
             b.Rect(104, 250, 26, 80, 6, Sty.Ln2); b.Rect(470, 250, 26, 80, 6, Sty.Ln2);
-            m.Anchor[0] = new Point(268, 128); m.Anchor[1] = new Point(288, 200); m.Anchor[2] = new Point(394, 209); m.Anchor[3] = new Point(364, 140);
+            // the processor line leaves above the chips, the graphics line under its chip (above the memory), memory and storage
+            // straight right — four separate heights, so the lines do not cross
+            m.Anchor[0] = new Point(253, 116); m.Lane[0] = 101;
+            m.Anchor[1] = new Point(288, 173); m.Anchor[2] = new Point(394, 209);
+            m.Anchor[3] = new Point(346, 152); m.Lane[3] = 161;
             return m;
         }
 
@@ -390,7 +420,8 @@ namespace SMDWin.Views
             b.Rect(104, 140, 72, 128, 4);
             b.Circ(124, 166, 9); b.Circ(150, 166, 9); b.Rect(116, 190, 42, 30, 3, Sty.Ln2); b.Circ(126, 240, 6); b.Circ(148, 240, 6);
             b.Air("M226 336 C226 326 226 318 226 308", false); b.Air("M374 336 C374 326 374 318 374 308", false);
-            m.Anchor[0] = new Point(292, 186); m.Anchor[1] = new Point(400, 178); m.Anchor[2] = new Point(298, 249); m.Anchor[3] = m.Anchor[0];
+            m.Anchor[0] = new Point(276, 180); m.Lane[0] = 144;
+            m.Anchor[1] = new Point(400, 178); m.Anchor[2] = new Point(298, 249); m.Anchor[3] = m.Anchor[0];
             return m;
         }
 
@@ -419,7 +450,9 @@ namespace SMDWin.Views
             b.Heat(306, 160, 0); b.Trace("M300 204 L284 224");
             b.Rect(202, 224, 110, 46, 2, Sty.Ln, 1); b.Rect(202, 234, 110, 46, 2, Sty.Ln, 1); b.Chips(202, 234, 110, 46, 4, false);
             b.Rect(352, 130, 34, 150, 2, Sty.Ln, 2); b.Rect(359, 140, 20, 28, 1, Sty.Ln2); b.Rect(359, 176, 20, 28, 1, Sty.Ln2); b.Led(369, 270);
-            m.Anchor[0] = new Point(324, 186); m.Anchor[1] = new Point(312, 252); m.Anchor[2] = new Point(386, 210); m.Anchor[3] = m.Anchor[0];
+            m.Anchor[0] = new Point(306, 168); m.Lane[0] = 121;
+            m.Anchor[1] = new Point(312, 262); m.Lane[1] = 287;
+            m.Anchor[2] = new Point(386, 210); m.Anchor[3] = m.Anchor[0];
             return m;
         }
 
@@ -476,7 +509,7 @@ namespace SMDWin.Views
             double Finale(int i)
             {
                 if (!anim) return 0;
-                double tt = now - _finaleAt - Array.IndexOf(RowOrder, i) * 0.16;
+                double tt = now - _finaleAt - Array.IndexOf(_rowOrder, i) * 0.16;
                 return tt < 0 || tt > 0.5 ? 0 : Math.Sin(tt / 0.5 * Math.PI);
             }
             int emph = _highlight >= 0 ? _highlight : _hover;
@@ -568,34 +601,54 @@ namespace SMDWin.Views
 
             // ── the callouts ──
             double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            // each line: from the part (up / down to its lane), right to just past the drawing, then to its row. The rows follow
+            // the heights of the lanes, so the lines keep their order and never cross.
+            int AnchorOf(int part) => part == 3 && !gpuShown ? 0 : part;
+            double LaneY(int part)
+            {
+                int ap = AnchorOf(part);
+                double ly = double.IsNaN(model.Lane[ap]) ? model.Anchor[ap].Y : model.Lane[ap];
+                return ly * model.S + model.Dy;
+            }
+            _rowOrder = new[] { 0, 1, 2, 3 }.OrderBy(LaneY).ThenBy(i => i == 3 ? 0.5 : i).ToArray();
+            double x0 = Math.Min(model.Right + 10, LeadEndX - 34);
             for (int row = 0; row < 4; row++)
             {
-                int p = RowOrder[row];
+                int p = _rowOrder[row];
                 double y = RowY[row];
                 var c = Parts[p];
                 bool isHot = c.State == PartState.Active;
-                var a = model.Map(p == 3 && !gpuShown ? model.Anchor[0] : model.Anchor[p]);
+                int ap = AnchorOf(p);
+                var a = model.Map(model.Anchor[ap]);
                 if (_highlight == p || _hover == p)
                     dc.DrawRoundedRectangle(B(accentC, light ? 0.07 : 0.10), null, new Rect(RingX - 28, y - 28, _textRight - RingX + 30, 62 + 26 * (tk - 1)), 10, 10);
-                double dy = Math.Abs(y - a.Y);
-                double bx = Math.Min(LeadEndX - 10, Math.Max(a.X + dy * 0.7, a.X + 12));
+                double ly = LaneY(p);
+                var route = new List<Point> { a };
+                if (Math.Abs(ly - a.Y) > 0.5) route.Add(new Point(a.X, ly));
+                if (Math.Abs(ly - y) > 3) { route.Add(new Point(x0, ly)); route.Add(new Point(LeadEndX - 6, y)); }
+                route.Add(new Point(LeadEndX, y));
                 var lead = new StreamGeometry();
                 using (var g = lead.Open())
                 {
                     g.BeginFigure(a, false, false);
-                    if (dy > 3) g.LineTo(new Point(bx, y), true, true);
-                    g.LineTo(new Point(LeadEndX, y), true, true);
+                    for (int ri = 1; ri < route.Count; ri++) g.LineTo(route[ri], true, true);
                 }
                 lead.Freeze();
                 bool emphRow = _highlight == p || _hover == p;
                 dc.DrawGeometry(null, isHot ? P(B(Hot), 1.2) : emphRow ? P(B(accentC, 0.9), 1.2) : P(B(subC, light ? 0.5 : 0.42), 1), lead);
                 dc.DrawEllipse(B(Hot), null, a, 2.2, 2.2);
-                var path = new[] { a, dy > 3 ? new Point(bx, y) : a, new Point(LeadEndX, y) };
-                double len1 = (path[1] - path[0]).Length, len2 = (path[2] - path[1]).Length;
+                double total = 0;
+                for (int ri = 1; ri < route.Count; ri++) total += (route[ri] - route[ri - 1]).Length;
                 Point Along(double f)
                 {
-                    double at = Math.Clamp(f, 0, 1) * (len1 + len2);
-                    return at <= len1 || len2 <= 0 ? path[0] + (path[1] - path[0]) * (len1 > 0 ? at / len1 : 0) : path[1] + (path[2] - path[1]) * ((at - len1) / len2);
+                    double at = Math.Clamp(f, 0, 1) * total;
+                    for (int ri = 1; ri < route.Count; ri++)
+                    {
+                        double l = (route[ri] - route[ri - 1]).Length;
+                        if (at <= l || ri == route.Count - 1) return route[ri - 1] + (route[ri] - route[ri - 1]) * (l > 0 ? Math.Min(1, at / l) : 0);
+                        at -= l;
+                    }
+                    return route[^1];
                 }
                 // while tested: small dots flow from the part to its callout (the results going out)
                 if (isHot && anim)
@@ -614,9 +667,7 @@ namespace SMDWin.Views
                 double bl = Blend(p);
                 if (c.State == PartState.Done && c.Mark is double mk0 && bl > 0 && bl < 1)
                 {
-                    var pts = new[] { a, dy > 3 ? new Point(bx, y) : a, new Point(LeadEndX, y) };
-                    double l1 = (pts[1] - pts[0]).Length, l2 = (pts[2] - pts[1]).Length, at = Ease(bl) * (l1 + l2);
-                    var pos = at <= l1 || l2 <= 0 ? pts[0] + (pts[1] - pts[0]) * (l1 > 0 ? at / l1 : 0) : pts[1] + (pts[2] - pts[1]) * ((at - l1) / l2);
+                    var pos = Along(Ease(bl));
                     var mc0 = Mark(mk0);
                     dc.DrawEllipse(B(mc0, 0.25), null, pos, 7, 7);
                     dc.DrawEllipse(B(mc0), null, pos, 3, 3);

@@ -121,30 +121,6 @@ namespace SMDWin.Views
                 "Starts CPU Stress + GPU Stress simultaneously for maximum power draw — same test that used to sit on Temp & Stress.",
                 () => (this.Owner as SMDWin.Views.MainWindow)?.TriggerMaxLoadFromDev()));
 
-            panel.Children.Add(MakeExpBtn("System", "System Diagnostic",
-                "CPU, GPU, RAM, Storage, Network — real tests, real progress, no arbitrary score.",
-                () =>
-                {
-                    var owner = this.Owner as SMDWin.Views.MainWindow;
-                    var win = new SMDWin.Views.DiagnosticProgressWindow("C:") { Owner = owner };
-                    win.Show();
-                }));
-
-            panel.Children.Add(MakeExpBtn("Shield", "System Health Check",
-                "Windows activation, storage health, free space, event log, blue screens plus a short CPU/GPU/RAM check — no score, just OK / Warning / Critical.",
-                () =>
-                {
-                    var owner = this.Owner as SMDWin.Views.MainWindow;
-                    var win = new SMDWin.Views.HealthCheckWindow("C:", owner) { Owner = owner };
-                    win.Show();
-                }));
-
-            panel.Children.Add(MakeExpBtn("Cpu", "CPU Benchmark",
-                "SHA-256, Mandelbrot, FFT — live progress in a dedicated window.",
-                () => (this.Owner as SMDWin.Views.MainWindow)?.TriggerCpuBenchFromDev()));
-            panel.Children.Add(MakeExpBtn("Gpu", "GPU Benchmark",
-                "D3D11 compute throughput (FP32 GFLOPS) — live progress in a dedicated window.",
-                () => (this.Owner as SMDWin.Views.MainWindow)?.TriggerGpuBenchFromDev()));
 
             AddExpSection("Reports");
             panel.Children.Add(MakeExpBtn("Battery", "Full Battery Report",
@@ -156,9 +132,6 @@ namespace SMDWin.Views
             AddExpSection("LHM Diagnostics");
             AddDiagnosticTools(panel);
 
-            AddExpSection("Manual");
-            AddExperimentsManualButton(panel);
-
             return scroll;
         }
 
@@ -168,79 +141,9 @@ namespace SMDWin.Views
             var panel  = new StackPanel { Orientation = Orientation.Vertical };
             scroll.Content = panel;
 
-            var presetLabel = new TextBlock
-            {
-                Text = "Accent color",
-                FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 8),
-            };
-            presetLabel.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            panel.Children.Add(presetLabel);
-            AddAccentPresetPicker(panel);
-
-            var accentLabel = new TextBlock
-            {
-                Text = "Custom accent color (R/G/B sliders + hex — any color, not only the 5 presets above)",
-                FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 8),
-            };
-            accentLabel.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            panel.Children.Add(accentLabel);
-            AddAccentColorPicker(panel);
-
-            var pdfLabel = new TextBlock
-            {
-                Text = "Hardware Info — PDF export style",
-                FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 16, 0, 8),
-            };
-            pdfLabel.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            panel.Children.Add(pdfLabel);
-            var pdfWrap = new WrapPanel { Orientation = Orientation.Horizontal };
-            var pdfCards = new System.Collections.Generic.List<Border>();
-            (string Key, string Name, string Desc)[] pdfTemplates =
-            {
-                ("OnePage",   "Like the app (one page)", "Cards with icons as in the window, two balanced columns, everything on one page"),
-                ("Technical", "Technical report", "Colored bar per category, several pages"),
-                ("Summary",   "Summary + details", "Cover with identity and key figures, then details"),
-            };
-            foreach (var (pdfKey, pdfName, pdfDesc) in pdfTemplates)
-            {
-                bool isSelected = (SettingsService.Current.HwInfoPdfTemplate ?? "OnePage") == pdfKey;
-                var card = new Border
-                {
-                    Width = 150, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10),
-                    CornerRadius = new CornerRadius(8), Cursor = System.Windows.Input.Cursors.Hand,
-                    BorderThickness = new Thickness(isSelected ? 2 : 1),
-                };
-                card.SetResourceReference(Border.BackgroundProperty, "BgCardBrush");
-                card.BorderBrush = isSelected
-                    ? (WpfBrush)System.Windows.Application.Current.Resources["AccentBrush"]
-                    : (WpfBrush)new SolidColorBrush(System.Windows.Media.Color.FromArgb(35, 200, 200, 220));
-
-                var stack = new StackPanel();
-                var nameTb = new TextBlock { Text = pdfName, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0,0,0,3) };
-                nameTb.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-                stack.Children.Add(nameTb);
-                var descTb = new TextBlock { Text = pdfDesc, FontSize = Ui.FontXS, TextWrapping = TextWrapping.Wrap };
-                descTb.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                stack.Children.Add(descTb);
-                card.Child = stack;
-
-                card.MouseLeftButtonUp += (_, _) =>
-                {
-                    SettingsService.Current.HwInfoPdfTemplate = pdfKey;
-                    SettingsService.Save();
-                    foreach (var c in pdfCards)
-                    {
-                        bool sel = c == card;
-                        c.BorderThickness = new Thickness(sel ? 2 : 1);
-                        c.BorderBrush = sel
-                            ? (WpfBrush)System.Windows.Application.Current.Resources["AccentBrush"]
-                            : (WpfBrush)new SolidColorBrush(System.Windows.Media.Color.FromArgb(35, 200, 200, 220));
-                    }
-                };
-                pdfCards.Add(card);
-                pdfWrap.Children.Add(card);
-            }
-            panel.Children.Add(pdfWrap);
+            // the choices still open (the one kept is the default); the old variants that were decided are gone
+            AddAboutAnimationChoice(panel);
+            AddTaskBadgeChoice(panel);
 
             var battLabel = new TextBlock
             {
@@ -409,92 +312,25 @@ namespace SMDWin.Views
             }
             MarkCpuCards();
             panel.Children.Add(cpuWrap);
-            AddIllustrationGallery(panel);
 
-            var fontLabel = new TextBlock
+            // the gallery: many pictures (and the Benchmark drawings) — built only when asked, so the page opens and scrolls fast
+            var galleryHost = new StackPanel();
+            var showGallery = new Wpf.Ui.Controls.Button { Content = "Show the illustration gallery", Margin = new Thickness(0, 20, 0, 8),
+                Padding = new Thickness(14, 6, 14, 7), HorizontalAlignment = System.Windows.HorizontalAlignment.Left };
+            showGallery.Click += (_, _) =>
             {
-                Text = "Font on numbers", FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 16, 0, 8),
+                showGallery.Visibility = Visibility.Collapsed;
+                try { AddIllustrationGallery(galleryHost); }
+                catch (Exception ex) { AppLogger.Warning(ex, "Illustration gallery"); }
             };
-            fontLabel.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            panel.Children.Add(fontLabel);
-            var fontToggle = new CheckBox
-            {
-                Content = "Monospace font on numbers (Cascadia Mono)",
-                IsChecked = SettingsService.Current.DesignExperimentMonoNumbers,
-                Margin = new Thickness(0, 0, 0, 6),
-                FontSize = Ui.FontS,
-            };
-            fontToggle.SetResourceReference(CheckBox.ForegroundProperty, "TextPrimaryBrush");
-            fontToggle.Checked += (_, _) =>
-            {
-                SettingsService.Current.DesignExperimentMonoNumbers = true;
-                SettingsService.Save();
-                (this.Owner as SMDWin.Views.MainWindow)?.ApplyDesignExperimentFont();
-            };
-            fontToggle.Unchecked += (_, _) =>
-            {
-                SettingsService.Current.DesignExperimentMonoNumbers = false;
-                SettingsService.Save();
-                (this.Owner as SMDWin.Views.MainWindow)?.ApplyDesignExperimentFont();
-            };
-            panel.Children.Add(fontToggle);
-            var fontHint = new TextBlock
-            {
-                Text = "Applied to: Battery %, Surface Scan, CPU Temp/Freq/Load (Temp & Stress), Storage Benchmark dials. Compare live — the rest of this session's plan (icon set, signature motif, texture) will add more toggles here.",
-                FontSize = Ui.FontXS, TextWrapping = TextWrapping.Wrap, Opacity = 0.65,
-                Margin = new Thickness(0, 0, 0, 16),
-            };
-            fontHint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-            panel.Children.Add(fontHint);
+            panel.Children.Add(showGallery);
+            panel.Children.Add(galleryHost);
 
-            // the power map on the Power page (coloured boxes linked by lines), instead of the "What the plan does now" list
-            var powerMapToggle = new CheckBox
-            {
-                Content = "Power page: old power map (instead of the \"What the plan does now\" list, PC without battery)",
-                IsChecked = SettingsService.Current.DesignExperimentPowerMap,
-                Margin = new Thickness(0, 0, 0, 16),
-                FontSize = Ui.FontS,
-            };
-            powerMapToggle.SetResourceReference(CheckBox.ForegroundProperty, "TextPrimaryBrush");
-            void SetPowerMap(bool on)
-            {
-                SettingsService.Current.DesignExperimentPowerMap = on;
-                SettingsService.Save();
-                (this.Owner as SMDWin.Views.MainWindow)?.ApplyPowerMapExperiment();
-            }
-            powerMapToggle.Checked += (_, _) => SetPowerMap(true);
-            powerMapToggle.Unchecked += (_, _) => SetPowerMap(false);
-            panel.Children.Add(powerMapToggle);
+            return scroll;
+        }
 
-            var sysInfoLabel = new TextBlock
-            {
-                Text = "System Information layout", FontSize = Ui.FontS,
-                FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 4),
-            };
-            sysInfoLabel.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            panel.Children.Add(sysInfoLabel);
-            var sysInfoLayouts = new (string Key, string Label)[]
-            {
-                ("",            "Header + table with status column (default)"),
-                ("TableGroups", "Header band + table in two groups (Hardware / Windows and security)"),
-                ("Split",       "System and Windows on the left, hardware on the right"),
-                ("List",        "Computer on the left, every component as a row"),
-                ("Grid",        "Old card grid"),
-            };
-            var sysInfoCombo = new ComboBox { Width = 420, HorizontalAlignment = System.Windows.HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 16) };
-            foreach (var (_, label) in sysInfoLayouts) sysInfoCombo.Items.Add(label);
-            string currentLayout = SettingsService.Current.DesignExperimentSysInfoLayout ?? "";
-            sysInfoCombo.SelectedIndex = Math.Max(0, Array.FindIndex(sysInfoLayouts, l => l.Key == currentLayout));
-            sysInfoCombo.SelectionChanged += (_, _) =>
-            {
-                if (sysInfoCombo.SelectedIndex < 0) return;
-                SettingsService.Current.DesignExperimentSysInfoLayout = sysInfoLayouts[sysInfoCombo.SelectedIndex].Key;
-                SettingsService.Save();
-                (this.Owner as SMDWin.Views.MainWindow)?.ApplySysInfoLayoutExperiment();
-            };
-            panel.Children.Add(sysInfoCombo);
-
+        void AddAboutAnimationChoice(StackPanel panel)
+        {
             // About window: the logo animation (5 proposals) — the one kept becomes the final one
             var aboutAnimLabel = new TextBlock
             {
@@ -529,7 +365,10 @@ namespace SMDWin.Views
             aboutAnimRow.Children.Add(aboutPreview);
             panel.Children.Add(aboutAnimRow);
             panel.Children.Add(aboutAnimInfo);
+        }
 
+        void AddTaskBadgeChoice(StackPanel panel)
+        {
             var badgeLabel = new TextBlock
             {
                 Text = "Sidebar task indicator (Storage / Temp & Stress / RAM Memory)", FontSize = Ui.FontS,
@@ -618,8 +457,6 @@ namespace SMDWin.Views
             };
             badgeHint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
             panel.Children.Add(badgeHint);
-
-            return scroll;
         }
     }
 }

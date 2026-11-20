@@ -30,7 +30,7 @@ namespace SMDWin.Views
     public partial class DebugInfoWindow : Window
     {
         // ── Navigation ───────────────────────────────────────────────────────
-        private const int TabCount = 7;
+        private const int TabCount = 5;
         private readonly Button[]    _navBtns  = new Button[TabCount];
         private readonly Border[]    _navLines = new Border[TabCount];
         private readonly UIElement[] _pages    = new UIElement[TabCount];
@@ -39,7 +39,6 @@ namespace SMDWin.Views
         private StackPanel   _checkPanel  = new();
         private TextBox?     _settingsTxt;
         private TextBox      _logBox      = new();
-        private ScrollViewer _logScroll   = new();
 
         // ── Self-Test page controls ──────────────────────────────────────────
         private TextBox       _selfTestBox      = new();
@@ -217,7 +216,7 @@ namespace SMDWin.Views
             navBar.SetResourceReference(Border.BorderBrushProperty, "BorderBrush2");
 
             var navRow = new StackPanel { Orientation = Orientation.Horizontal };
-            string[] labels = { "Status", "Settings", "Log", "Self-Test", "Design", "Experimental", "Databases" };
+            string[] labels = { "Status", "Self-Test", "Design", "Experimental", "Databases" };
 
             for (int i = 0; i < TabCount; i++)
             {
@@ -274,14 +273,9 @@ namespace SMDWin.Views
             root.Children.Add(navBar);
 
             // ── Page host ────────────────────────────────────────────────────
+            // Status is built now (Refresh fills it); the other pages only when first opened — the window opens at once
             _pages[0] = BuildStatusPage();
-            _pages[1] = BuildSettingsPage();
-            _pages[2] = BuildLogPage();
-            _pages[3] = BuildSelfTestPage();
-            _pages[4] = BuildDesignPage();
-            _pages[5] = BuildExperimentalPage();
-            _pages[6] = BuildDatabasesPage();
-
+            for (int i = 1; i < TabCount; i++) _pages[i] = new Grid();
             var pageGrid = new Grid();
             foreach (var p in _pages)
             {
@@ -322,8 +316,27 @@ namespace SMDWin.Views
         }
 
 
+        private readonly bool[] _built = new bool[TabCount];
+
         void SwitchTab(int idx)
         {
+            if (idx > 0 && !_built[idx] && _pages[idx] is Grid holder)
+            {
+                _built[idx] = true;
+                try
+                {
+                    UIElement page = idx switch
+                    {
+                        1 => BuildSelfTestPage(),
+                        2 => BuildDesignPage(),
+                        3 => BuildExperimentalPage(),
+                        _ => BuildDatabasesPage(),
+                    };
+                    holder.Children.Add(page);
+                    PolishButtons(page);
+                }
+                catch (Exception ex) { AppLogger.Warning(ex, $"DebugInfoWindow page {idx}"); }
+            }
             for (int i = 0; i < TabCount; i++)
             {
                 bool active = i == idx;
