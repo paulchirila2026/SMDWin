@@ -108,11 +108,11 @@ namespace SMDWin.Views
                 dc.DrawRectangle(_brBgRect, null, new Rect(0, 0, w, h));
 
                 bool veryShort = cH < 95;
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 4);   // the shared grid; its rows match the 25 % steps
                 for (int step = 0; step <= 4; step++)
                 {
                     double val = step * 25.0;
                     double y = pT + cH * (1.0 - val / 100.0);
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
                     bool showLabel = veryShort ? (step == 0 || step == 4) : (step % 2 == 0);
                     if (!showLabel) continue;
                     var lbl = (_ftPct.Length > step) ? _ftPct[step]

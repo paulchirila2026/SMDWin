@@ -440,6 +440,7 @@ namespace SMDWin.Views
             SettingsService.Save();
             _slotDrawn.Clear();   // force a redraw on the next tick, as on a colour change
             _renderDirty = true;
+            try { RepaintDashChartGrids(); } catch (Exception ex) { AppLogger.Debug($"RepaintDashChartGrids: {ex.Message}"); }
         }
 
         private void UpdateChartWindowButtonStyles(int activeSecs)

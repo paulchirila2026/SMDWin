@@ -223,6 +223,7 @@ namespace SMDWin.Views
             double w = _chart.ActualWidth > 0 ? _chart.ActualWidth : 590, h = _chart.Height;
             if (_live.Count < 2) return;
             double maxGb = Math.Max(_live[^1].GB, 0.1), maxV = Math.Max(_live.Max(x => x.MBps) * 1.1, 1);
+            ChartGrid.AddTo(_chart, new Rect(0, 0, w, h), 4);   // the shared chart grid
             var line = new Polyline { StrokeThickness = 1.8 };
             line.SetResourceReference(Shape.StrokeProperty, "AccentBrush");
             foreach (var (gb, v) in _live) line.Points.Add(new Point(gb / maxGb * w, h - v / maxV * (h - 14)));

@@ -118,10 +118,10 @@
             </WrapPanel></Border>
             <Grid x:Name="StorageTopRow" Margin="0,10,0,0">
               <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <Border x:Name="StorageActivityCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,12">
+              <Border x:Name="StorageActivityCard" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,10,18,10">
                 <Grid>
                   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                  <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                  <DockPanel Margin="0,0,0,4" LastChildFill="True">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                       <Border Width="14" Height="3" CornerRadius="1.5" Background="{DynamicResource DataBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                       <TextBlock Text="read" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0"/>
@@ -141,10 +141,11 @@
                   </DockPanel>
                   <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="250"/></Grid.ColumnDefinitions>
-                    <local:MiniLineChart x:Name="StorageActChart" Height="62" Capacity="300" VerticalAlignment="Center"/>
+                    <!-- the chart fills the whole height of the row (as tall as the values on the right), no empty bands above / below it -->
+                    <local:MiniLineChart x:Name="StorageActChart" MinHeight="62" Capacity="300" VerticalAlignment="Stretch"/>
                     <!-- only on Surface scan: the scan speed (now / min / average / max) -->
                     <StackPanel x:Name="StActScanStats" Grid.Column="1" Width="230" Margin="16,0,0,0" Visibility="Collapsed">
-                      <DockPanel Margin="0,0,0,6"><TextBlock Text="Scan speed now" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
+                      <DockPanel Margin="0,0,0,3"><TextBlock Text="Scan speed now" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
                       <TextBlock x:Name="TxtStActScanNow" Text="—" Style="{StaticResource CompChartValue}" FontSize="20"/></DockPanel>
                       <UniformGrid Columns="3">
                         <StackPanel><TextBlock Text="min" Style="{StaticResource CompFootKey}"/><TextBlock Text="{Binding Text, ElementName=TxtSurfaceSpeedMin, StringFormat='{}{0} MB/s'}" Style="{StaticResource CompFootVal}"/></StackPanel>
@@ -154,11 +155,11 @@
                     </StackPanel>
                     <Border Grid.Column="2" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1,0,0,0" Padding="16,0,0,0" Margin="16,0,0,0">
                       <StackPanel VerticalAlignment="Center">
-                        <DockPanel Margin="0,0,0,6"><TextBlock Text="Read" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
+                        <DockPanel Margin="0,0,0,3"><TextBlock Text="Read" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
                       <TextBlock x:Name="TxtStActRead" Text="—" Style="{StaticResource CompChartValue}" FontSize="20" Foreground="{DynamicResource DataBrush}"/></DockPanel>
-                        <DockPanel Margin="0,0,0,6"><TextBlock Text="Write" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
+                        <DockPanel Margin="0,0,0,3"><TextBlock Text="Write" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
                       <TextBlock x:Name="TxtStActWrite" Text="—" Style="{StaticResource CompChartValue}" FontSize="20"/></DockPanel>
-                        <DockPanel Margin="0,0,0,6"><TextBlock Text="Response time" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
+                        <DockPanel Margin="0,0,0,3"><TextBlock Text="Response time" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom"/>
                       <TextBlock x:Name="TxtStActLat" Text="—" Style="{StaticResource CompChartValue}" FontSize="15"/></DockPanel>
                       </StackPanel>
                     </Border>

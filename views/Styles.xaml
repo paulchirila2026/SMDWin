@@ -912,10 +912,15 @@
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="SnapsToDevicePixels" Value="True"/>
     <!-- the card can be opened: a faint highlight under the mouse (the Windows way), instead of arrows everywhere -->
+    <!-- only on cards that open something (hand cursor); information-only cards (Cursor="Arrow") stay still -->
     <Style.Triggers>
-      <Trigger Property="IsMouseOver" Value="True">
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="IsMouseOver" Value="True"/>
+          <Condition Property="Cursor" Value="Hand"/>
+        </MultiTrigger.Conditions>
         <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
-      </Trigger>
+      </MultiTrigger>
     </Style.Triggers>
   </Style>
   <!-- alert glow behind the card (critical values) — a separate Border, with no text in it, so the shadow does not blur the

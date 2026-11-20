@@ -1399,7 +1399,7 @@
                       <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock x:Name="DashLoadLabelCpu" Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
-                      <Border x:Name="SparkCpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="SparkCpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkCpu" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="SparkCpu_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
@@ -1416,7 +1416,7 @@
                       <!-- in the first seconds the chart is almost empty — a discreet note, until the data is collected -->
                       <TextBlock x:Name="TxtDashCpuCollecting" Grid.Row="1" Text="Collecting data…" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
                                  Opacity="0.7" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,3,0,0" IsHitTestVisible="False" Visibility="Collapsed"/>
-                      <Border x:Name="DashCpuTempChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="DashCpuTempChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="DashCpuTempChart" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="DashCpuTempChart_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
@@ -1506,7 +1506,7 @@
                       <DockPanel Style="{StaticResource DashCompChartHead}">
                         <TextBlock x:Name="DashLoadLabelGpu" Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
-                      <Border x:Name="SparkGpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="SparkGpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkGpu" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="SparkGpu_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave" Loaded="SparkGpu_SizeChanged"
                               ContextMenu="{StaticResource DashChartMenu}"/>
@@ -1523,7 +1523,7 @@
                       <!-- in the first seconds the chart is almost empty — a discreet note, until the data is collected -->
                       <TextBlock x:Name="TxtDashGpuCollecting" Grid.Row="1" Text="Collecting data…" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
                                  Opacity="0.7" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,3,0,0" IsHitTestVisible="False" Visibility="Collapsed"/>
-                      <Border x:Name="DashGpuTempChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="DashGpuTempChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="DashGpuTempChart" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="DashGpuTempChart_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
@@ -1626,7 +1626,7 @@
                           </TextBlock.Text>
                         </TextBlock>
                       </DockPanel>
-                      <Border x:Name="SparkRamFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="SparkRamFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkRam" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="SparkRam_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}"/>
@@ -1809,7 +1809,7 @@
                         <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"><Run Text="Traffic  ·  "/><Run Text="{Binding Text, ElementName=TxtDashNetUp, Mode=OneWay}"/></TextBlock>
                       </DockPanel>
                       <!-- the chart scale ("of 9.8 MB/s") is in the tooltip: in the header it did not fit next to the label -->
-                      <Border x:Name="SparkNetActivityFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="SparkNetActivityFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkNetActivity" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               ToolTip="{Binding Text, ElementName=TxtDashNetScale, StringFormat='Chart scale: {0}'}"
                               SizeChanged="SparkNetActivity_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
@@ -1822,7 +1822,7 @@
                         <TextBlock Style="{StaticResource DashCompChartValue}" x:Name="TxtDialPing" Text="{Binding Text, ElementName=TxtDashPingMs, Mode=OneTime}"/>
                         <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" Text="Ping"/>
                       </DockPanel>
-                      <Border x:Name="DashPingChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
+                      <Border x:Name="DashPingChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="0" SnapsToDevicePixels="True">
                         <Canvas x:Name="DashPingChart" MinHeight="38" ClipToBounds="True" Background="Transparent"
                               SizeChanged="DashPingChart_SizeChanged" MouseMove="DashChart_MouseMove" MouseLeave="DashChart_MouseLeave"
                               ContextMenu="{StaticResource DashChartMenu}">

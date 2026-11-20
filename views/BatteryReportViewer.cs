@@ -1237,18 +1237,8 @@ namespace SMDWin.Views
             int n = data.Count;
             double xStep = w / Math.Max(n - 1, 1);
 
-            // Y gridlines
-            for (int i = 1; i <= 4; i++)
-            {
-                double y = h * (1 - i / 4.0);
-                var line = new System.Windows.Shapes.Line
-                {
-                    X1 = 0, X2 = w, Y1 = y, Y2 = y,
-                    Stroke = new SolidColorBrush(WpfColor.FromArgb(25, 148, 163, 184)),
-                    StrokeThickness = 1
-                };
-                cvs.Children.Add(line);
-            }
+            // the shared chart grid (thin lines fading towards their ends, no frame)
+            SMDWin.Views.ChartGrid.AddTo(cvs, new System.Windows.Rect(0, 0, w, h), 4);
 
             // Design capacity area (grey/muted)
             DrawChartLine(cvs, data.Select((p,i) =>

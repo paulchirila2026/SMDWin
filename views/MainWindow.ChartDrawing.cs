@@ -103,21 +103,7 @@ namespace SMDWin.Views
 
                 // Grid lines WITHOUT text labels — only minimal visual context. The temperature thresholds stay, but dotted and
                 // labelled separately below.
-                const int gridLines = 3;
-                for (int gi = 1; gi < gridLines; gi++)
-                {
-                    double y = pT + cH * gi / gridLines;
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
-                }
-
-                if (SettingsService.Current.ShowChartGridlines)
-                {
-                    for (int gi = 1; gi < 4; gi++)
-                    {
-                        double x = pL + cW * gi / 4.0;
-                        DrawGridLine(dc, new System.Windows.Point(x, pT), new System.Windows.Point(x, pT + cH));
-                    }
-                }
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 3, 4);
 
                 for (int i = 0; i <= 4; i++)
                 {
@@ -330,11 +316,11 @@ namespace SMDWin.Views
             {
                 dc.DrawRectangle(_brBgRect, null, new Rect(0, 0, w, h));
 
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 3);   // the shared grid; its rows match the 0 / ⅓ / ⅔ / max labels
                 for (int step = 0; step <= 3; step++)
                 {
                     float val = yMax * step / 3f;
                     double y = pT + cH * (1.0 - val / yMax);
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
                     var lbl = new FormattedText($"{val/1000:F1}G",
                         System.Globalization.CultureInfo.InvariantCulture,
                         System.Windows.FlowDirection.LeftToRight, ft, 10, _brLabel, dpi);
@@ -441,11 +427,11 @@ namespace SMDWin.Views
                 dc.DrawRectangle(_brBgRect, null, new Rect(0, 0, w, h));
 
                 bool veryShort = cH < 95;
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 4);   // the shared grid; its rows match the 25 % steps
                 for (int step = 0; step <= 4; step++)
                 {
                     double val = step * 25.0;
                     double y = pT + cH * (1.0 - val / 100.0);
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
                     bool showLabel = veryShort ? (step == 0 || step == 4) : (step % 2 == 0);
                     if (!showLabel) continue;
                     var lbl = (_ftPct.Length > step) ? _ftPct[step]
@@ -811,38 +797,25 @@ namespace SMDWin.Views
             new(text, System.Globalization.CultureInfo.InvariantCulture,
                 System.Windows.FlowDirection.LeftToRight, _chartTypeface, 10, _brLabel, dpi);
 
-        // ── Grid lines on physical pixels ─────────────────────────────────────
-        // A 0.5 px pen at fractional positions gives results that depend on the PC: at 125%/150% scaling the line falls between
-        // two pixels (looks double/thicker), and on old graphics cards / RDP (WPF software rendering) lines under 1 px are drawn
-        // as full 1 px lines, much more pronounced. Here: exactly 1 physical pixel, aligned to the pixel grid, with half the
-        // opacity so the visual intensity stays the same.
-        private System.Windows.Media.Pen? _penGridPx;
-        private System.Windows.Media.Pen? _penGridPxSource;
-        private double _penGridPxScale;
-
+        // ── Grid lines ─────────────────────────────────────
+        // All charts share one grid (ChartGrid): no frame, thin horizontal and vertical lines in a neutral colour that fade
+        // out towards their ends, exactly 1 physical pixel wide on the pixel grid.
         private void DrawGridLine(System.Windows.Media.DrawingContext dc, System.Windows.Point a, System.Windows.Point b)
         {
-            var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
-            double sx = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1, sy = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1;
-            if (_penGridPx == null || !ReferenceEquals(_penGridPxSource, _penGrid) || Math.Abs(_penGridPxScale - sy) > 0.001)
-            {
-                var c = (_penGrid.Brush as SolidColorBrush)?.Color ?? WpfColor.FromArgb(40, 100, 116, 139);
-                byte alpha = (byte)Math.Clamp(Math.Round(c.A * Math.Min(1.0, _penGrid.Thickness)), 8, 255);
-                var br = new SolidColorBrush(WpfColor.FromArgb(alpha, c.R, c.G, c.B)); br.Freeze();
-                var pen = new System.Windows.Media.Pen(br, 1.0 / sy); pen.Freeze();
-                _penGridPx = pen; _penGridPxSource = _penGrid; _penGridPxScale = sy;
-            }
-            if (Math.Abs(a.Y - b.Y) < 0.01)
-            {
-                double y = (Math.Floor(a.Y * sy) + 0.5) / sy;
-                a.Y = y; b.Y = y;
-            }
-            else if (Math.Abs(a.X - b.X) < 0.01)
-            {
-                double x = (Math.Floor(a.X * sx) + 0.5) / sx;
-                a.X = x; b.X = x;
-            }
-            dc.DrawLine(_penGridPx, a, b);
+            var c = ChartGrid.LineColor(this);
+            double sc = ChartGrid.Scale(this);
+            if (Math.Abs(a.Y - b.Y) < 0.01) ChartGrid.HLine(dc, Math.Min(a.X, b.X), Math.Max(a.X, b.X), a.Y, c, sc);
+            else ChartGrid.VLine(dc, a.X, Math.Min(a.Y, b.Y), Math.Max(a.Y, b.Y), c, sc);
+        }
+
+        /// <summary>The shared chart grid over a plot area: <paramref name="rows"/> rows and automatic columns; with time labels
+        /// at fixed fractions (<paramref name="xDivisions"/> = 4 → quarters) the column count is a multiple of it, so a line
+        /// passes under every label.</summary>
+        private void DrawPlotGrid(System.Windows.Media.DrawingContext dc, Rect plot, int rows = 4, int xDivisions = 0)
+        {
+            int cols = ChartGrid.AutoColumns(plot.Width);
+            if (xDivisions > 0) cols = Math.Max(xDivisions, (int)Math.Round(cols / (double)xDivisions) * xDivisions);
+            ChartGrid.Draw(dc, plot, ChartGrid.LineColor(this), rows, cols, ChartGrid.Scale(this));
         }
 
         private static System.Windows.Media.Pen MakeChartPen(byte r, byte g, byte b,
@@ -1038,13 +1011,13 @@ namespace SMDWin.Views
                 if (dangerY > pT && dangerY < pT + cH)
                     dc.DrawRectangle(_brDanger, null, new Rect(pL, pT, cW, dangerY - pT));
 
-                // Grid lines + labels
+                // Grid lines + labels (the vertical lines of the shared grid, the horizontal ones at the labelled values)
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 1);
                 foreach (int temp in new[] { 30, 40, 50, 60, 70, 80, 90, 100 })
                 {
                     double y = pT + cH - (temp - yMin) / (yMax - yMin) * cH;
                     if (y < pT || y > pT + cH) continue;
-                    var pen = temp % 20 == 0 ? _penGrid : _penGrid; // same pen, dashes below
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
+                    if (y > pT + 1 && y < pT + cH - 1) DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
                     var fmtT = new FormattedText(TempUnit.Deg(temp),
                         System.Globalization.CultureInfo.InvariantCulture,
                         System.Windows.FlowDirection.LeftToRight, ft, 10, _brLabel, dpi);
@@ -1109,11 +1082,12 @@ namespace SMDWin.Views
                 if (dangerY > pT && dangerY < pT + cH)
                     dc.DrawRectangle(_brDanger, null, new Rect(pL, pT, cW, dangerY - pT));
 
+                DrawPlotGrid(dc, new Rect(pL, pT, cW, cH), 1);
                 foreach (int temp in new[] { 30, 40, 50, 60, 70, 80, 90, 100 })
                 {
                     double y = pT + cH - (temp - yMin) / (yMax - yMin) * cH;
                     if (y < pT || y > pT + cH) continue;
-                    DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
+                    if (y > pT + 1 && y < pT + cH - 1) DrawGridLine(dc, new System.Windows.Point(pL, y), new System.Windows.Point(pL + cW, y));
                     var fmtT = new FormattedText(TempUnit.Deg(temp),
                         System.Globalization.CultureInfo.InvariantCulture,
                         System.Windows.FlowDirection.LeftToRight, ft, 10, _brLabel, dpi);

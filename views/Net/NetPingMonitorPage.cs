@@ -545,14 +545,13 @@ namespace SMDWin.Views.Net
             double cW = w - pL - pR, cH = h - pT - pB;
             _plotTop = pT; _plotBottom = pT + cH; _plotMax = maxPing;
 
+            // the shared chart grid: vertical lines over the plot, horizontal ones at the labelled values (fading at the ends)
+            ChartGrid.AddTo(_chart, new Rect(pL, pT, cW, cH), 1);
             foreach (int ms in new[] { 0, 50, 100, 200, 300 })
             {
                 if (ms > maxPing) continue;
                 double y = pT + cH - ms / maxPing * cH;
-                var grid = new Line { X1 = pL, X2 = pL + cW, Y1 = y, Y2 = y, StrokeThickness = 1, Opacity = 0.6,
-                    StrokeDashArray = ms == 0 ? null : new System.Windows.Media.DoubleCollection { 3, 4 } };
-                grid.SetResourceReference(Shape.StrokeProperty, "CardBorderBrush");
-                _chart.Children.Add(grid);
+                if (ms > 0 && y > pT + 1) ChartGrid.AddHLine(_chart, pL, pL + cW, y);
                 var lbl = new TextBlock { Text = $"{ms} ms", FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, Opacity = 0.8 };
                 lbl.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 Canvas.SetLeft(lbl, 2); Canvas.SetTop(lbl, y - 11); _chart.Children.Add(lbl);

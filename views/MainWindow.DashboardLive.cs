@@ -85,14 +85,7 @@ namespace SMDWin.Views
             }
             using (var dc = dv.RenderOpen())
             {
-                if (SettingsService.Current.ShowChartGridlines)
-                {
-                    for (int gi = 1; gi < 4; gi++)
-                    {
-                        double gx = pL + cW * gi / 4.0;
-                        DrawGridLine(dc, new System.Windows.Point(gx, pT), new System.Windows.Point(gx, pT + cH));
-                    }
-                }
+                // the grid is the canvas background (ChartGrid, MainWindow.DashChartFrames.cs), not drawn here
 
                 // Filled gradient area
                 var fillPg = new System.Windows.Media.PathGeometry();
@@ -1147,14 +1140,8 @@ namespace SMDWin.Views
                     gridVals.Add(dynMax); // top
                 }
 
-                foreach (float gv in gridVals)
-                {
-                    double gy = pT + cH * (1.0 - (gv - yMin) / range);
-                    if (gy < pT - 1 || gy > pT + cH + 1) continue;
-                    DrawGridLine(dc,
-                        new System.Windows.Point(pL, gy),
-                        new System.Windows.Point(pL + cW, gy));
-                }
+                // the grid lines themselves are the canvas background (the shared ChartGrid, MainWindow.DashChartFrames.cs) —
+                // the same on every Dashboard chart; gridVals only serve the scale here
 
 
                 const int GapBreakThreshold = 3;

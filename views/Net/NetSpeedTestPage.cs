@@ -501,13 +501,11 @@ namespace SMDWin.Views.Net
             // the time axis is fixed (0-20 s) and each phase starts from 0: the two lines overlap
             const double xMax = SMDWin.Services.SpeedTestService.PhaseSeconds;
 
+            // the shared chart grid (thin lines fading towards their ends, no frame); its rows match the labels
+            ChartGrid.AddTo(_chartCanvas, new Rect(pL, pT, cw, ch), 4);
             for (int i = 0; i <= 4; i++)
             {
                 double value = yMax * i / 4, y = pT + ch - ch * i / 4;
-                var line = new Line { X1 = pL, X2 = pL + cw, Y1 = y, Y2 = y, StrokeThickness = 1, Opacity = 0.6,
-                    StrokeDashArray = i == 0 ? null : new DoubleCollection { 3, 4 } };
-                line.SetResourceReference(Shape.StrokeProperty, "CardBorderBrush");
-                _chartCanvas.Children.Add(line);
                 var label = new TextBlock { Text = value >= 1000 ? $"{value / 1000:0.#}G" : $"{value:0}", FontSize = Ui.FontXS, Opacity = 0.8 };
                 label.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 Canvas.SetLeft(label, 4); Canvas.SetTop(label, y - 8);

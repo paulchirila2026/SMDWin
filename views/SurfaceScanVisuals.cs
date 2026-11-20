@@ -255,7 +255,6 @@ namespace SMDWin.Views
             if (W < LeftAxis + 20 || H < TopPad + BottomPad + 10) return;
 
             var textBrush = TryFindResource("TextSecondaryBrush") as Brush ?? Brushes.Gray;
-            var gridBrush = TryFindResource("BorderBrush2") as Brush ?? Brushes.LightGray;
             var accent    = TryFindResource("AccentBrush") as Brush ?? Brushes.DodgerBlue;
             var slowBrush = TryFindResource("YellowBrush") as Brush ?? Brushes.Orange;
             var badBrush  = TryFindResource("RedBrush") as Brush ?? Brushes.Red;
@@ -274,13 +273,11 @@ namespace SMDWin.Views
             double X(int b) => LeftAxis + (b + 0.5) / n * plotW;
             double XPos(double pos) => LeftAxis + (pos - vs) / span * plotW;
 
-            // Grila: 0, jumatate, maxim
-            var gridPen = new Pen(gridBrush, 1); gridPen.Freeze();
-            var dashPen = new Pen(gridBrush, 1) { DashStyle = new DashStyle(new double[] { 3, 3 }, 0) }; dashPen.Freeze();
-            foreach (var (v, pen) in new[] { (0.0, gridPen), (yMax / 2, dashPen), (yMax, dashPen) })
+            // the shared chart grid (thin lines fading towards their ends, no frame); the labels: 0, half, maximum
+            ChartGrid.Draw(dc, new Rect(LeftAxis, TopPad, plotW, plotH), ChartGrid.LineColor(this), 4, 0, ChartGrid.Scale(this));
+            foreach (double v in new[] { 0.0, yMax / 2, yMax })
             {
                 double y = Math.Round(Y(v)) + 0.5;
-                dc.DrawLine(pen, new Point(LeftAxis, y), new Point(W, y));
                 var ft = Txt($"{v:F0} MB/s");
                 dc.DrawText(ft, new Point(LeftAxis - 6 - ft.Width, y - ft.Height / 2));
             }

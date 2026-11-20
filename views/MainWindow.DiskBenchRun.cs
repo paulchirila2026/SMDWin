@@ -554,7 +554,7 @@ namespace SMDWin.Views
                 Margin = new Thickness(0, 8, 0, 0), Height = 220, MaxWidth = 1500, CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(8, 6, 8, 4), Child = _liveChartCanvas, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
             };
-            chartHost.SetResourceReference(Border.BackgroundProperty, "BgInputBrush");
+            // no box behind the chart: like every other chart, only the grid
             var legend = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 14, 0, 0) };
             _liveChartWriteHeaderTb = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(writeColor), Margin = new Thickness(0, 0, 24, 0), Text = L("Write ", "Scriere ", "Schreiben ", "Écriture ") + "—" };
             _liveChartReadHeaderTb  = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(readColor),  Text = L("Read ", "Citire ", "Lesen ", "Lecture ") + "—" };
@@ -777,11 +777,17 @@ namespace SMDWin.Views
                 cv.Children.Add(tb);
             }
 
+            // the shared chart grid (thin lines fading towards their ends, no frame) behind the plot; its rows match the labels
+            if (ChartGrid.Background(cW, cH, ChartGrid.LineColor(cv), 4, 0, ChartGrid.Scale(cv)) is Brush gridBg)
+            {
+                var gridRect = new System.Windows.Shapes.Rectangle { Width = cW, Height = cH, Fill = gridBg, IsHitTestVisible = false };
+                Canvas.SetLeft(gridRect, pL); Canvas.SetTop(gridRect, pT);
+                cv.Children.Add(gridRect);
+            }
             // Y axis: speed (MB/s) — the same scale for every section
             for (int g = 0; g <= 4; g++)
             {
                 double y = pT + cH * (1 - g / 4.0);
-                cv.Children.Add(new Line { X1 = pL, X2 = pL + cW, Y1 = y, Y2 = y, Stroke = gridBrush, StrokeThickness = 1 });
                 double v = top * g / 4.0;
                 if (g > 0) Label(v >= 1000 ? $"{v / 1000:0.#}K" : $"{v:0}", 0, y - 8, pL - 6, TextAlignment.Right);
             }

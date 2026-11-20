@@ -276,12 +276,7 @@ namespace SMDWin.Views
             // fixed time axis: 10 minutes, new data enters from the right (like the other charts)
             double max = Math.Max(5, Math.Ceiling(peak * 1.2 / 5) * 5);
             var end = DateTime.Now; var start = end.AddMinutes(-10);
-            for (int i = 1; i <= 3; i++)
-            {
-                var gl = new Line { X1 = 0, X2 = w, Y1 = h * i / 4.0, Y2 = h * i / 4.0, StrokeThickness = 1, Opacity = 0.6 };
-                gl.SetResourceReference(Shape.StrokeProperty, "BorderBrush2");
-                c.Children.Add(gl);
-            }
+            ChartGrid.AddTo(c, new Rect(0, 0, w, h), 4);   // the shared chart grid
             var pts = _batDrawHist.Select(p => new WpfPoint(
                 Math.Clamp((p.T - start).TotalSeconds / 600.0, 0, 1) * (w - 4),
                 h - 2 - Math.Clamp(p.W / max, 0, 1) * (h - 4))).ToList();

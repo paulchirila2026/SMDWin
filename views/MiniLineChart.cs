@@ -11,7 +11,7 @@ namespace SMDWin.Views
 {
     /// <summary>
     /// A simple line chart for the RAM / Power page cards: a 1.5 px accent line, the area under it accent 8 %, 3 discreet
-    /// horizontal lines, a dot on the last value.
+    /// grid lines (the shared ChartGrid), a dot on the last value.
     /// A fixed window of <see cref="Capacity"/> values; new data enters from the right. Drawn directly (OnRender).
     /// </summary>
     public sealed class MiniLineChart : FrameworkElement
@@ -350,7 +350,7 @@ namespace SMDWin.Views
             dc.Pop();
         }
 
-        /// <summary>The upper limit label: a discreet dotted line at the top of the scale + its text at the top left.</summary>
+        /// <summary>The upper limit label: a discreet grid line at the top of the scale + its text at the top left.</summary>
         private void DrawScaleLabel(DrawingContext dc, double hi, double top, double width)
         {
             if (ScaleText == null) return;
@@ -358,10 +358,8 @@ namespace SMDWin.Views
             if (string.IsNullOrEmpty(text)) return;
             var res = R();
             var ft = Text(text, 10.5, res.TextSecondary);
-            double y = Math.Round(top) + 0.5;
-            dc.PushOpacity(0.55);
-            dc.DrawLine(res.ScaleDash, new Point(ft.Width + 8, y), new Point(width, y));
-            dc.Pop();
+            // the top of the scale: a grid-style line (fading at its ends) instead of a dotted one
+            ChartGrid.HLine(dc, ft.Width + 8, width, top, ChartGrid.LineColor(this), ChartGrid.Scale(this));
             // the card background under the text, so the chart line does not pass through it
             if (res.Bg is Brush bg)
             {
@@ -380,12 +378,8 @@ namespace SMDWin.Views
 
             var res = R();
             var accent = res.Accent;
-            var gridPen = res.Grid;
-            for (int k = 1; k <= 3; k++)
-            {
-                double y = Math.Round(H * k / 4.0) + 0.5;
-                dc.DrawLine(gridPen, new Point(0, y), new Point(W, y));
-            }
+            // the shared chart grid: 4 rows, automatic columns, lines fading towards their ends, no frame
+            ChartGrid.Draw(dc, new Rect(0, 0, W, H), ChartGrid.LineColor(this), 4, 0, ChartGrid.Scale(this));
             if (_vals.Count < 2 || SMDWin.Services.SeriesRuns.Finite(_vals).Count == 0) { DrawEmptyText(dc, W, H); return; }
             // the continuous runs: a NaN (a second without a read) breaks the line instead of being joined or drawn as 0
             var runs = SMDWin.Services.SeriesRuns.Finite(_vals);

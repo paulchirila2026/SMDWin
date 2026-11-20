@@ -593,11 +593,11 @@ namespace SMDWin.Views.Net
                 double Y(int pct) => h - h * (pct - lo) / (100.0 - lo);
                 double X(DateTime t) => w - w * (now - t).TotalSeconds / windowSec;
 
+                ChartGrid.AddTo(_signalCanvas, new Rect(0, 0, w, h), 1);   // the shared grid: vertical lines; horizontal ones at the labels
                 for (int pct = lo; pct <= 100; pct += (100 - lo) > 50 ? 20 : 10)
                 {
                     double y = Y(pct);
-                    _signalCanvas.Children.Add(new System.Windows.Shapes.Line { X1 = 0, Y1 = y, X2 = w, Y2 = y,
-                        Stroke = NetWindowHelper.Res("CardBorderBrush"), StrokeThickness = 1, Opacity = 0.5 });
+                    if (y > 1 && y < h - 1) ChartGrid.AddHLine(_signalCanvas, 0, w, y);
                     var lbl = new TextBlock { Text = $"{pct}% · {pct / 2 - 100} dBm", FontSize = Ui.FontXS, Foreground = NetWindowHelper.Res("TextSecondaryBrush") };
                     Canvas.SetLeft(lbl, -74); Canvas.SetTop(lbl, y - 8);
                     _signalCanvas.Children.Add(lbl);
