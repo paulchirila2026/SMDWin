@@ -421,17 +421,27 @@ namespace SMDWin.Views
             return sp;
         }
 
-        /// <summary>A bar made of blocks: full = accent / yellow / red, empty = BorderBrush2.</summary>
+        /// <summary>A thin solid bar with rounded ends (as in Windows Settings › Storage): filled = accent / yellow / red,
+        /// the rest = BorderBrush2. (It used to be a row of blocks; <paramref name="n"/> is kept for the callers.)</summary>
         private static void FillBlocks(UGrid bar, double pct, int n, string? key)
         {
-            bar.Children.Clear(); bar.Columns = n;
-            int lit = pct <= 0 ? 0 : Math.Clamp((int)Math.Round(pct / 100 * n), 1, n);
-            for (int i = 0; i < n; i++)
+            bar.Children.Clear(); bar.Columns = 1;
+            double f = Math.Clamp(pct / 100.0, 0, 1);
+            double th = Math.Min(6, double.IsNaN(bar.Height) ? 6 : bar.Height), r = th / 2;
+            var g = new Grid { Height = th, VerticalAlignment = VAlign.Center, ClipToBounds = true };
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(f, GridUnitType.Star) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1 - f, GridUnitType.Star) });
+            var track = new Border { CornerRadius = new CornerRadius(r) };
+            track.SetResourceReference(Border.BackgroundProperty, "BorderBrush2");
+            Grid.SetColumnSpan(track, 2);
+            g.Children.Add(track);
+            if (f > 0)
             {
-                var b = new Border { CornerRadius = new CornerRadius(2), Margin = new Thickness(0, 0, i < n - 1 ? 2.5 : 0, 0) };
-                b.SetResourceReference(Border.BackgroundProperty, i < lit ? (key ?? "AccentBrush") : "BorderBrush2");
-                bar.Children.Add(b);
+                var fill = new Border { CornerRadius = new CornerRadius(r), MinWidth = th };
+                fill.SetResourceReference(Border.BackgroundProperty, key ?? "AccentBrush");
+                g.Children.Add(fill);
             }
+            bar.Children.Add(g);
         }
 
         /// <summary>A formatted SMART value (ATA by ID, NVMe by name); "" if missing.</summary>

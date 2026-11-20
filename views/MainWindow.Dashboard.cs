@@ -721,7 +721,9 @@ namespace SMDWin.Views
                 {
                     bool enabled = SMDWin.Services.WindowsInfoReader.ReadSecureBoot();
                     sb.Text = enabled ? T4("Enabled ✓", "Activat ✓", "Aktiviert ✓", "Activé ✓") : T4("Disabled", "Dezactivat", "Deaktiviert", "Désactivé");
-                    sb.Foreground = enabled ? _brValue : _brOrange;   // Secure Boot off: a warning, not an error
+                    // Secure Boot off: a warning (orange), not an error; on: the normal text colour. A resource reference, so it follows
+                    // the theme (the XAML default used to be the green "success" colour, which showed through as a green "Disabled")
+                    sb.SetResourceReference(TextBlock.ForegroundProperty, enabled ? "TextPrimaryBrush" : "StatusWarnBrush");
                 }
                 catch { sb.Text = "—"; }
             }

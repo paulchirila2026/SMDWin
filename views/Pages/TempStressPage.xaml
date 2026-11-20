@@ -239,8 +239,9 @@
               <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
-                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStCpuStatus}"/>
-                    <TextBlock x:Name="TxtStCpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Style="{StaticResource CompStatusText}"/></StackPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStCpuStatus}"/>
+                    <TextBlock x:Name="TxtStCpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Visibility="Collapsed"/>
+                    <TextBlock Text="{Binding Text, ElementName=TxtStCpuStatus}" Foreground="{Binding Foreground, ElementName=TxtStCpuStatus, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/></StackPanel>
                   <StackPanel Orientation="Horizontal">
                     <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M15.25,2 C15.63,2 15.95,2.28 15.99,2.65 L16,2.75 L16,5.08 A3.8,3.8 0 0 1 18.93,8 L21.25,8 A0.75,0.75 0 0 1 21.35,9.5 L19,9.5 L19,11.25 L21.25,11.25 C21.63,11.25 21.95,11.53 21.99,11.9 L22,12 C22,12.38 21.72,12.7 21.35,12.74 L21.25,12.75 L19,12.75 L19,14.5 L21.25,14.5 C21.63,14.5 21.95,14.78 21.99,15.15 L22,15.25 C22,15.63 21.72,15.95 21.35,15.99 L21.25,16 L18.92,16 A3.8,3.8 0 0 1 16,18.92 L16,21.25 A0.75,0.75 0 0 1 14.5,21.35 L14.5,19 L12.75,19 L12.75,21.25 C12.75,21.63 12.47,21.95 12.1,21.99 L12,22 A0.75,0.75 0 0 1 11.26,21.35 L11.25,21.25 L11.25,19 L9.5,19 L9.5,21.25 C9.5,21.63 9.22,21.95 8.85,21.99 L8.75,22 A0.75,0.75 0 0 1 8.01,21.35 L8,21.25 L8,18.93 A3.8,3.8 0 0 1 5.08,16 L2.75,16 A0.75,0.75 0 0 1 2.65,14.5 L5,14.5 L5,12.75 L2.75,12.75 A0.75,0.75 0 0 1 2.01,12.1 L2,12 C2,11.62 2.28,11.3 2.65,11.26 L2.75,11.25 L5,11.25 L5,9.5 L2.75,9.5 A0.75,0.75 0 0 1 2.01,8.85 L2,8.75 C2,8.37 2.28,8.05 2.65,8.01 L2.75,8 L5.08,8 A3.8,3.8 0 0 1 8,5.07 L8,2.75 A0.75,0.75 0 0 1 9.5,2.65 L9.5,5 L11.25,5 L11.25,2.75 C11.25,2.37 11.53,2.05 11.9,2.01 L12,2 C12.38,2 12.7,2.28 12.74,2.65 L12.75,2.75 L12.75,5 L14.5,5 L14.5,2.75 C14.5,2.4 14.73,2.11 15.05,2.03 L15.15,2.01 Z M15.25,6.5 L8.75,6.5 C7.51,6.5 6.5,7.5 6.5,8.75 L6.5,15.25 C6.5,16.49 7.5,17.5 8.75,17.5 L15.25,17.5 C16.49,17.5 17.5,16.5 17.5,15.25 L17.5,8.75 C17.5,7.51 16.5,6.5 15.25,6.5 M12,9 A3,3 0 0 1 12,15 A3,3 0 0 1 12,9 M12,10.5 A1.5,1.5 0 0 0 12,13.5 A1.5,1.5 0 0 0 12,10.5"/></Viewbox>
                     <StackPanel VerticalAlignment="Center">
@@ -278,7 +279,7 @@
                     <Grid Grid.Row="0" Grid.ColumnSpan="3">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStCpuTempHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStCpuTempNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -287,7 +288,7 @@
                     <Grid Grid.Row="2" Grid.Column="0">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStCpuLoadHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStCpuLoadNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -296,7 +297,7 @@
                     <Grid Grid.Row="2" Grid.Column="2">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStCpuClockHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStCpuClockNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -314,8 +315,9 @@
               <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
-                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStGpuStatus}"/>
-                    <TextBlock x:Name="TxtStGpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Style="{StaticResource CompStatusText}"/></StackPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtStGpuStatus}"/>
+                    <TextBlock x:Name="TxtStGpuStatus" Text="" Foreground="{DynamicResource StatusOkBrush}" Visibility="Collapsed"/>
+                    <TextBlock Text="{Binding Text, ElementName=TxtStGpuStatus}" Foreground="{Binding Foreground, ElementName=TxtStGpuStatus, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/></StackPanel>
                   <StackPanel Orientation="Horizontal">
                     <Viewbox Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F0 M12.46,11.01 L12.34,10.48 L12.09,9.86 L11.8,9.4 L11.1,8.7 L10.54,8.36 L10.02,8.16 L9.49,8.04 L8.51,8.04 L7.98,8.16 L7.36,8.41 L6.9,8.7 L6.2,9.4 L5.91,9.86 L5.66,10.48 L5.54,11.01 L5.54,11.99 L5.69,12.64 L5.91,13.14 L6.49,13.93 L6.9,14.3 L7.36,14.59 L7.98,14.84 L8.51,14.96 L9.49,14.96 L10.14,14.81 L10.64,14.59 L11.1,14.3 L11.8,13.6 L12.14,13.04 L12.34,12.52 L12.46,11.99 Z M10.9,12.12 L10.62,12.67 L10.41,12.91 L9.91,13.28 L9.31,13.47 L8.69,13.47 L8.38,13.4 L7.83,13.12 L7.38,12.67 L7.22,12.41 L7.03,11.81 L7.03,11.19 L7.1,10.88 L7.22,10.59 L7.59,10.09 L8.09,9.72 L8.69,9.53 L9,9.5 L9.62,9.6 L10.17,9.88 L10.41,10.09 L10.78,10.59 L10.97,11.19 L11,11.5 Z M4.65,5.76 L3.95,5.88 L3.29,6.17 L2.88,6.49 L2.42,7.04 L2.13,7.7 L2,8.5 L2.01,14.6 L2.13,15.3 L2.33,15.79 L2.88,16.51 L3.46,16.92 L3.95,17.12 L4.65,17.24 L5.25,17.25 L5.28,19.19 L5.47,19.53 L5.62,19.65 L6,19.75 L13.19,19.72 L13.53,19.53 L13.72,19.19 L13.75,17.25 L17.25,17.25 L18.05,17.12 L18.71,16.83 L19.26,16.37 L19.67,15.79 L19.87,15.3 L19.97,14.75 L21.44,14.72 L21.78,14.53 L21.9,14.38 L22,14 L21.97,8.81 L21.78,8.47 L21.44,8.28 L19.97,8.25 L19.87,7.7 L19.58,7.04 L19.12,6.49 L18.54,6.08 L17.87,5.82 L17.25,5.75 Z M12.25,17.25 L12.25,18.25 L6.75,18.25 L6.75,17.25 Z M20,9.75 L20.5,9.75 L20.5,13.25 L20,13.25 Z M18.13,7.62 L18.33,7.88 L18.45,8.18 L18.5,8.55 L18.5,14.45 L18.45,14.82 L18.33,15.12 L18.13,15.38 L17.87,15.58 L17.57,15.7 L17.2,15.75 L4.8,15.75 L4.43,15.7 L4.13,15.58 L3.87,15.38 L3.67,15.12 L3.55,14.82 L3.5,14.45 L3.5,8.55 L3.55,8.18 L3.67,7.88 L3.87,7.62 L4.13,7.42 L4.43,7.3 L4.8,7.25 L17.2,7.25 L17.57,7.3 L17.87,7.42 Z M16.96,11.13 L16.65,10.37 L16.13,9.85 L15.37,9.54 L14.63,9.54 L13.87,9.85 L13.35,10.37 L13.04,11.13 L13.04,11.87 L13.35,12.63 L13.87,13.15 L14.63,13.46 L15.37,13.46 L16.13,13.15 L16.65,12.63 L16.96,11.87 Z M15.44,11.73 L15.15,11.97 L14.77,11.94 L14.53,11.65 L14.56,11.27 L14.85,11.03 L15.23,11.06 L15.47,11.35 Z"/></Viewbox>
                     <StackPanel VerticalAlignment="Center">
@@ -353,7 +355,7 @@
                     <Grid Grid.Row="0" Grid.ColumnSpan="3">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Temperature" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStGpuTempHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStGpuTempNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -362,7 +364,7 @@
                     <Grid Grid.Row="2" Grid.Column="0">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStGpuLoadHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStGpuLoadNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -371,7 +373,7 @@
                     <Grid Grid.Row="2" Grid.Column="2">
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource CompChartHead}">
-                        <TextBlock Text="clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock Text="Clock" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="TxtStGpuClockHead" Style="{StaticResource CompChartValue}" FontSize="18" Text="—"/>
                         <TextBlock x:Name="TxtStGpuClockNote" Text="" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.75" Margin="8,0,0,3" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis"/>
                       </DockPanel>
@@ -517,7 +519,7 @@
                       <TextBlock x:Name="TxtCpuTempMin"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}"
                                  Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                       <TextBlock x:Name="TxtCpuTempMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}"
-                                 Foreground="{DynamicResource StatusWarnBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                       <TextBlock x:Name="TxtCpuTempAvg"     Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}"
                                  Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                     </Grid>
@@ -762,7 +764,7 @@
                       <TextBlock x:Name="TxtStressGpuTemp"  Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
                                  Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
                       <TextBlock x:Name="TxtGpuTempMin"     Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
-                      <TextBlock x:Name="TxtGpuTempMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource StatusWarnBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuTempMax"     Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                       <TextBlock x:Name="TxtGpuTempAvg"     Grid.Column="5" Text="—" FontSize="{StaticResource FontSizeL}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
                     </Grid>
 

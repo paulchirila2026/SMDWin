@@ -419,7 +419,7 @@ namespace SMDWin.Views
                     if (gt > _gpuTempMax) _gpuTempMax = gt;
                     _gpuTempSum += gt; _gpuTempCnt++;
                     if (FindName("TxtGpuTempMin") is TextBlock gtMin) gtMin.Text = FmtTemp(_gpuTempMin);
-                    if (FindName("TxtGpuTempMax") is TextBlock gtMax) { gtMax.Text = FmtTemp(_gpuTempMax); gtMax.Foreground = _gpuTempMax > 90 ? _brRed : _gpuTempMax > 75 ? _brOrange : _brGreen; }
+                    if (FindName("TxtGpuTempMax") is TextBlock gtMax) { gtMax.Text = FmtTemp(_gpuTempMax); gtMax.Foreground = _gpuTempMax > 90 ? _brRed : _gpuTempMax > 80 ? _brOrange : _brValue; }
                     if (FindName("TxtGpuTempAvg") is TextBlock gtAvg) gtAvg.Text = FmtTemp(_gpuTempSum / _gpuTempCnt);
                 }
                 // CPU Load
@@ -460,7 +460,7 @@ namespace SMDWin.Views
 
                 // CPU Temp Min/Max/Avg — display in tabel
                 if (_cpuMin.HasValue && FindName("TxtCpuTempMin") is TextBlock ctMin) ctMin.Text = FmtTemp(_cpuMin.Value);
-                if (_cpuMax.HasValue && FindName("TxtCpuTempMax") is TextBlock ctMax) { ctMax.Text = FmtTemp(_cpuMax.Value); ctMax.Foreground = _cpuMax.Value > 85 ? _brRed : _cpuMax.Value > 70 ? _brOrange : _brGreen; }
+                if (_cpuMax.HasValue && FindName("TxtCpuTempMax") is TextBlock ctMax) { ctMax.Text = FmtTemp(_cpuMax.Value); ctMax.Foreground = _cpuMax.Value > 90 ? _brRed : _cpuMax.Value > 80 ? _brOrange : _brValue; }
                 // CPU Temp Avg — computed from the _chartCpu buffer
                 if (_cpuMin.HasValue && _cpuMax.HasValue && FindName("TxtCpuTempAvg") is TextBlock ctAvg)
                 {
@@ -496,13 +496,10 @@ namespace SMDWin.Views
                 if (snap.CpuTemp.HasValue && snap.CpuTemp.Value > 0)
                 {
                     float cpuNow = snap.CpuTemp.Value;
-                    var cpuNowColor = cpuNow > 85f ? WpfColor.FromRgb(239,68,68)
-                                    : cpuNow > 70f ? WpfColor.FromRgb(251,146,60)
-                                    :                WpfColor.FromRgb(34,197,94);
                     if (FindName("TxtStressCpuTemp") is TextBlock tstCpu)
                     {
                         tstCpu.Text       = $"{TempUnit.Fmt(cpuNow)}";
-                        tstCpu.Foreground = new SolidColorBrush(cpuNowColor);
+                        tstCpu.Foreground = cpuNow > 90f ? _brRed : cpuNow > 80f ? _brOrange : _brValue;   // colour only when it needs attention
                     }
                     // Also update Min/Max for the CPU (if TxtStressCpuMM exists)
                     _cpuMin = _cpuMin.HasValue ? Math.Min(_cpuMin.Value, cpuNow) : cpuNow;
@@ -690,14 +687,14 @@ namespace SMDWin.Views
                     if (FindName("TxtCoreTempsNow") is TextBlock tCoreNow)
                     {
                         tCoreNow.Text = $"{TempUnit.Convert(coreMin):F0}–{TempUnit.Fmt(coreMax)}";
-                        tCoreNow.Foreground = coreMax > 85 ? _brRed : coreMax > 70 ? _brOrange : _brGreen;
+                        tCoreNow.Foreground = coreMax > 90 ? _brRed : coreMax > 80 ? _brOrange : _brValue;
                     }
                     if (FindName("TxtCoreTempsMin") is TextBlock tCoreMin)
                         tCoreMin.Text = $"{TempUnit.Fmt(_coreTempsSessMin)}";
                     if (FindName("TxtCoreTempsMax") is TextBlock tCoreMax)
                     {
                         tCoreMax.Text = $"{TempUnit.Fmt(_coreTempsSessMax)}";
-                        tCoreMax.Foreground = _coreTempsSessMax > 85 ? _brRed : _coreTempsSessMax > 70 ? _brOrange : _brGreen;
+                        tCoreMax.Foreground = _coreTempsSessMax > 90 ? _brRed : _coreTempsSessMax > 80 ? _brOrange : _brValue;
                     }
                     if (FindName("TxtCoreTempsAvg") is TextBlock tCoreAvg && _coreTempsSessCnt > 0)
                         tCoreAvg.Text = $"{TempUnit.Fmt(_coreTempsSessSum / _coreTempsSessCnt)}";
@@ -829,7 +826,7 @@ namespace SMDWin.Views
                     _cpuVCoreSum += vc; _cpuVCoreCnt++;
                     if (FindName("TxtCpuVCoreVal") is TextBlock vcV) vcV.Text = $"{vc:F3} V";
                     if (FindName("TxtCpuVCoreMin") is TextBlock vcMn) vcMn.Text = $"{_cpuVCoreMin:F3} V";
-                    if (FindName("TxtCpuVCoreMax") is TextBlock vcMx) { vcMx.Text = $"{_cpuVCoreMax:F3} V"; vcMx.Foreground = _cpuVCoreMax > 1.40f ? _brRed : _cpuVCoreMax > 1.30f ? _brOrange : _brGreen; }
+                    if (FindName("TxtCpuVCoreMax") is TextBlock vcMx) { vcMx.Text = $"{_cpuVCoreMax:F3} V"; vcMx.Foreground = _cpuVCoreMax > 1.40f ? _brRed : _cpuVCoreMax > 1.30f ? _brOrange : _brValue; }
                     if (FindName("TxtCpuVCoreAvg") is TextBlock vcAv && _cpuVCoreCnt > 0) vcAv.Text = $"{_cpuVCoreSum/_cpuVCoreCnt:F3} V";
                 }
 
@@ -1331,7 +1328,7 @@ namespace SMDWin.Views
                         if (TxtDashCpuTempBig != null)
                         {
                             AnimateValue(TxtDashCpuTempBig, TempUnit.Convert(ct), "°");
-                            TxtDashCpuTempBig.Foreground = ct > 85 ? _brRed : ct > 70 ? _brOrange : _brGreen;
+                            TxtDashCpuTempBig.Foreground = ct > 90 ? _brRed : ct > 80 ? _brOrange : _brValue;   // colour only when it needs attention
                         }
                         if (DashCpuTempCard != null)
                             UpdateCardAlert(DashCpuTempCard, ct >= SettingsService.Current.TempWarnCpu, ref _cpuTempAlertSince);
@@ -1339,7 +1336,7 @@ namespace SMDWin.Views
                         if (FindName("TxtDashHwCpuTemp2") is System.Windows.Controls.TextBlock ct2x)
                         {
                             ct2x.Text = $"{TempUnit.Fmt(ct)}";
-                            ct2x.Foreground = ct > 85 ? _brRed : ct > 70 ? _brOrange : _brGreen;
+                            ct2x.Foreground = ct > 90 ? _brRed : ct > 80 ? _brOrange : _brValue;
                         }
                     }
                     else
@@ -1366,14 +1363,14 @@ namespace SMDWin.Views
                         _lastKnownGpuTemp = gt;
                         _lastKnownGpuTempUtc = DateTime.UtcNow;
                         AnimateValue(TxtDashGpuTempBig, TempUnit.Convert(gt), "°");
-                        TxtDashGpuTempBig.Foreground = gt > 85 ? _brRed : gt > 70 ? _brOrange : _brGreen;
+                        TxtDashGpuTempBig.Foreground = gt > 90 ? _brRed : gt > 80 ? _brOrange : _brValue;   // colour only when it needs attention
                         if (DashGpuTempCard != null)
                             UpdateCardAlert(DashGpuTempCard, gt >= SettingsService.Current.TempWarnGpu, ref _gpuTempAlertSince);
                         // GPU temp in the right column of Hardware
                         if (FindName("TxtDashHwGpuTemp2") is System.Windows.Controls.TextBlock gt2x)
                         {
                             gt2x.Text = $"{TempUnit.Fmt(gt)}";
-                            gt2x.Foreground = gt > 85 ? _brRed : gt > 70 ? _brOrange : _brGreen;
+                            gt2x.Foreground = gt > 90 ? _brRed : gt > 80 ? _brOrange : _brValue;
                         }
                         if (FindName("TxtDashVramUsedLive") is System.Windows.Controls.TextBlock vramLive)
                         {
@@ -1474,7 +1471,7 @@ namespace SMDWin.Views
                         {
                             float gt = snap.GpuTemp.Value;
                             TxtDashGpuTempInline.Text = $"{TempUnit.Fmt(gt)}";
-                            TxtDashGpuTempInline.Foreground = gt > 85 ? _brRed : gt > 70 ? _brOrange : _brGreen;
+                            TxtDashGpuTempInline.Foreground = gt > 90 ? _brRed : gt > 80 ? _brOrange : _brValue;
                         }
                         // GPU load for chart:
                         // During GPU stress (ClearRenderTargetView / compute), NVIDIA LHM reports only

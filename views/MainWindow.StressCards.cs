@@ -179,8 +179,8 @@ namespace SMDWin.Views
                 StSetText("TxtStCpuTempHead", ct.HasValue ? $"{TempUnit.Fmt(ct, 0, true)}" : "—");
                 StSetText("TxtStCpuLoadHead", cl.HasValue ? $"{cl:F0}%" : "—");
                 StSetText("TxtStCpuClockHead", cf.HasValue ? $"{cf / 1000f:F2} GHz" : "—");
-                if (FindName("StCpuChartTemp") is MiniLineChart tc && double.IsFinite(tc.Peak)) StSetText("TxtStCpuTempNote", $"max {TempUnit.Fmt(tc.Peak, 0, true)}{ChartWindowLabel()}");
-                if (FindName("StCpuChartLoad") is MiniLineChart lc && double.IsFinite(lc.Peak)) StSetText("TxtStCpuLoadNote", $"max {lc.Peak:F0}%{ChartWindowLabel()}");
+                if (FindName("StCpuChartTemp") is MiniLineChart tc && double.IsFinite(tc.Peak)) StSetText("TxtStCpuTempNote", $"{HighestWord()} {TempUnit.Fmt(tc.Peak, 0, true)}{ChartWindowLabel()}");
+                if (FindName("StCpuChartLoad") is MiniLineChart lc && double.IsFinite(lc.Peak)) StSetText("TxtStCpuLoadNote", $"{HighestWord()} {lc.Peak:F0}%{ChartWindowLabel()}");
 
                 // the minimum frequency while the load is high — the best sign of throttling
                 if (cl.HasValue && cf.HasValue)
@@ -193,7 +193,7 @@ namespace SMDWin.Views
                 // short ("under load 1.90–2.40 GHz"): the long sentence was cut on every laptop; the full one is in the tooltip
                 string loMin = busy.Count >= 3 ? (busy.Min(h => h.clk) / 1000f).ToString("F2") : "", loMax = (maxClk / 1000f).ToString("F2");
                 StSetText("TxtStCpuClockNote", busy.Count >= 3 ? PT("under load {0}–{1} GHz", loMin, loMax)
-                                              : maxClk > 0 ? $"max {loMax} GHz" : "");
+                                              : maxClk > 0 ? $"{HighestWord()} {loMax} GHz" : "");
                 if (FindName("TxtStCpuClockNote") is TextBlock clkNote)
                     clkNote.ToolTip = busy.Count >= 3 ? PT("min under load {0} · max {1} GHz", loMin, loMax) : null;
 
@@ -254,7 +254,7 @@ namespace SMDWin.Views
                         bool turboOff = _stThrottledSec == 0 && TurboOffCached();
                         tt.Text = _stThrottledSec > 0 ? PT("{0} s this session", _stThrottledSec) : turboOff ? PT("Turbo off (power plan)") : PT("none");
                         tt.ToolTip = turboOff ? PT("Turbo is off in the power plan (Power › Processor): the processor stays at its base speed.") : null;
-                        tt.SetResourceReference(TextBlock.ForegroundProperty, _stThrottledSec > 0 || turboOff ? "StatusWarnBrush" : "StatusOkBrush");
+                        tt.SetResourceReference(TextBlock.ForegroundProperty, _stThrottledSec > 0 || turboOff ? "StatusWarnBrush" : "TextPrimaryBrush");   // colour only when it needs attention
                     }
                 }
                 StSetStatus("TxtStCpuStatus", ct, warnC, throttled, cl);
@@ -265,9 +265,9 @@ namespace SMDWin.Views
                 StSetText("TxtStGpuTempHead", gt.HasValue ? $"{TempUnit.Fmt(gt, 0, true)}" : "—");
                 StSetText("TxtStGpuLoadHead", gl.HasValue ? $"{gl:F0}%" : "—");
                 StSetText("TxtStGpuClockHead", gf.HasValue ? $"{gf / 1000f:F2} GHz" : "—");
-                if (FindName("StGpuChartTemp") is MiniLineChart gtc && double.IsFinite(gtc.Peak)) StSetText("TxtStGpuTempNote", $"max {TempUnit.Fmt(gtc.Peak, 0, true)}{ChartWindowLabel()}");
-                if (FindName("StGpuChartLoad") is MiniLineChart glc && double.IsFinite(glc.Peak)) StSetText("TxtStGpuLoadNote", $"max {glc.Peak:F0}%{ChartWindowLabel()}");
-                if (FindName("StGpuChartClock") is MiniLineChart gcc && double.IsFinite(gcc.Peak)) StSetText("TxtStGpuClockNote", $"max {gcc.Peak:F2} GHz{ChartWindowLabel()}");
+                if (FindName("StGpuChartTemp") is MiniLineChart gtc && double.IsFinite(gtc.Peak)) StSetText("TxtStGpuTempNote", $"{HighestWord()} {TempUnit.Fmt(gtc.Peak, 0, true)}{ChartWindowLabel()}");
+                if (FindName("StGpuChartLoad") is MiniLineChart glc && double.IsFinite(glc.Peak)) StSetText("TxtStGpuLoadNote", $"{HighestWord()} {glc.Peak:F0}%{ChartWindowLabel()}");
+                if (FindName("StGpuChartClock") is MiniLineChart gcc && double.IsFinite(gcc.Peak)) StSetText("TxtStGpuClockNote", $"{HighestWord()} {gcc.Peak:F2} GHz{ChartWindowLabel()}");
                 else if (!gf.HasValue) StSetText("TxtStGpuClockNote", "Not reported by this GPU");   // e.g. Intel integrated graphics
                 // a chart with no data says so, instead of "Collecting data…" forever
                 if (FindName("StGpuChartClock") is MiniLineChart gccE)
@@ -381,6 +381,9 @@ namespace SMDWin.Views
 
         /// <summary>The chart window, stated next to the maximum ("max 55 °C · 1 min"): the chart maximum is not the session
         /// maximum from the table.</summary>
+        /// <summary>"highest" (the chart maximum), the same word as on the Dashboard.</summary>
+        private static string HighestWord() => T4("highest", "maxim", "Spitze", "maximum");
+
         private string ChartWindowLabel() => _stressChartRangeSeconds switch
         {
             >= 3600 => " · 1 h",

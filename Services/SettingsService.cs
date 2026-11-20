@@ -61,7 +61,7 @@ namespace SMDWin.Services
               // legacy — accepted but migrated automatically
               "Dark Navy", "Dark Slate", "Dark Midnight", "Light Clean", "Light Warm", "Light Refined" };
 
-        private const int CurrentSettingsVersion = 27;
+        private const int CurrentSettingsVersion = 28;
 
         /// <summary>All settings back to their defaults (Settings › Advanced › Reset); saved immediately.</summary>
         public static void ResetToDefaults()
@@ -343,6 +343,14 @@ namespace SMDWin.Services
                 // v26 → v27: the Dashboard charts start at 1 minute again (they fill faster); other windows are in the right-click menu
                 Current.ChartWindowSeconds = 60;
                 Current.SettingsVersion = 27;
+                Save();
+            }
+            if (Current.SettingsVersion < 28)
+            {
+                // v27 → v28: the charts show only the horizontal grid lines; the vertical ones (no labels, only noise on large,
+                // mostly empty charts) stay available through "Gridlines" in the chart menu
+                Current.ShowChartGridlines = false;
+                Current.SettingsVersion = 28;
                 Save();
             }
             if (Current.UpdateSpeed is not ("Saver" or "Normal" or "Fast")) Current.UpdateSpeed = "Normal";

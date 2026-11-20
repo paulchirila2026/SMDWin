@@ -1451,7 +1451,7 @@ namespace SMDWin.Models
         public string StressChartMarkStyle { get; set; } = "Tint";
         /// <summary>Temp &amp; Stress: the line under the charts that shows when there was throttling.</summary>
         public bool StressChartShowThrottle { get; set; } = true;
-        public bool ShowChartGridlines { get; set; } = true;
+        public bool ShowChartGridlines { get; set; } = false;   // the vertical chart grid lines (the horizontal ones are always drawn)
         public bool ShowDiskLatency    { get; set; } = false;
 
         public Dictionary<string, float> ScaleMaxObserved { get; set; } = new();

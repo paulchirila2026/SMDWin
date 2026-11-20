@@ -1177,7 +1177,7 @@
                                  Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,3"/>
                       <TextBlock Text="Secure Boot" Style="{StaticResource InvFieldLabel}"/>
                       <TextBlock x:Name="TxtDashSecureBootV" Text="—" Style="{StaticResource InvFieldValue}"
-                                 Foreground="{DynamicResource StatusSuccessBrush}"/>
+                                 Foreground="{DynamicResource TextPrimaryBrush}"/>
                       <TextBlock x:Name="TxtDashSerialLastV" Visibility="Collapsed"/>
                       <TextBlock x:Name="TxtDashWinCrash" Visibility="Collapsed"/>
                     </StackPanel>
