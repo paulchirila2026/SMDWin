@@ -564,7 +564,14 @@ namespace SMDWin.Views
             var fill = TryFindResource("CardSurfaceBrush") as Brush ?? TryFindResource("BgCardBrush") as Brush ?? Brushes.Transparent;
             // the case: a soft vertical gradient (a touch lighter at the top) so it has volume, not a flat outline
             Color fillC = (fill as SolidColorBrush)?.Color ?? (light ? Colors.White : Color.FromRgb(0x15, 0x1E, 0x31));
-            var caseFill = new LinearGradientBrush(Lerp(fillC, inkC, light ? 0.025 : 0.06), Lerp(fillC, Colors.Black, light ? 0.02 : 0.10), 90);
+            // the card colour is often translucent (a thin white veil on Dark): keep its transparency — mixing it as an opaque
+            // colour turned the case into a white slab
+            LinearGradientBrush caseFill;
+            if (fillC.A >= 250)
+                caseFill = new LinearGradientBrush(Lerp(fillC, inkC, light ? 0.025 : 0.06), Lerp(fillC, Colors.Black, light ? 0.02 : 0.10), 90);
+            else
+                caseFill = new LinearGradientBrush(Color.FromArgb((byte)Math.Min(255, fillC.A * 1.8 + 4), fillC.R, fillC.G, fillC.B),
+                                                   Color.FromArgb((byte)(fillC.A * 0.5), fillC.R, fillC.G, fillC.B), 90);
             caseFill.Freeze();
             var sheen = new LinearGradientBrush(new GradientStopCollection
             {
