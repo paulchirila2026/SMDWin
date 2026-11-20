@@ -516,19 +516,19 @@ namespace SMDWin.Services
             SetColor("CardHover",    isLight ? "#FBFCFE"   : "#12FFFFFF");
             resources["CardHoverBg"] = resources["CardHoverBrush"];
 
-            // ── One colour per component: the icon colour + a soft tile behind it ──
+            // ── One colour per component: the icon colour; no tile behind it (Windows look — icons sit on the card) ──
             SetColor("CompCpu",      isLight ? "#2563EB" : "#8FBBFF");
-            SetColor("CompCpuTile",  isLight ? "#1F3B82F6" : "#296EA8FF");
+            SetColor("CompCpuTile", "#00FFFFFF");
             SetColor("CompGpu",      isLight ? "#7C3AED" : "#C4B5FD");
-            SetColor("CompGpuTile",  isLight ? "#1F8B5CF6" : "#2EA78BFA");
+            SetColor("CompGpuTile", "#00FFFFFF");
             SetColor("CompRam",      isLight ? "#0F766E" : "#5EEAD4");
-            SetColor("CompRamTile",  isLight ? "#1F0D9488" : "#292DD4BF");
+            SetColor("CompRamTile", "#00FFFFFF");
             SetColor("CompDisk",     isLight ? "#C2410C" : "#FDBA74");
-            SetColor("CompDiskTile", isLight ? "#1FEA580C" : "#29FB923C");
+            SetColor("CompDiskTile", "#00FFFFFF");
             SetColor("CompNet",      isLight ? "#0369A1" : "#7DD3FC");
-            SetColor("CompNetTile",  isLight ? "#1F0EA5E9" : "#2938BDF8");
+            SetColor("CompNetTile", "#00FFFFFF");
             SetColor("CompOs",       isLight ? "#2563EB" : "#8FBBFF");
-            SetColor("CompOsTile",   isLight ? "#1F3B82F6" : "#296EA8FF");
+            SetColor("CompOsTile", "#00FFFFFF");
 
             // ── The page colour under everything, opaque on both themes: the desktop wallpaper must not tint the window through
             //    Mica, so the app looks the same on every monitor ─────────
