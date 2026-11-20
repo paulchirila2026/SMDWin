@@ -11,6 +11,7 @@
       </ResourceDictionary.MergedDictionaries>
       <local:EmptyStringToCollapsedConverter x:Key="EmptyStringToCollapsed"/>
       <local:ForegroundToPillBgConverter x:Key="ForegroundToPillBg"/>
+      <local:NeutralUnlessAlertConverter x:Key="NeutralUnlessAlert"/>
       <local:ThemeStatusBrushConverter x:Key="ThemeStatusBrush"/>
     </ResourceDictionary>
   </Application.Resources>

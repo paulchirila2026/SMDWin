@@ -486,7 +486,7 @@ namespace SMDWin.Views
 
             if (TxtDashRamUsed != null)
             {
-                var ramBr = ramPct > 90 ? _brRed : ramPct > 80 ? _brOrange : _brGreen;
+                var ramBr = ramPct > 90 ? _brRed : ramPct > 80 ? _brOrange : _brValue;
                 TxtDashRamUsed.Foreground = ramBr;
                 if (TxtRamDashSub != null) TxtRamDashSub.Foreground = ramBr;
             }
@@ -525,7 +525,7 @@ namespace SMDWin.Views
                 if (FindName("TxtDashHwCpuTemp") is System.Windows.Controls.TextBlock hwct)
                 {
                     hwct.Text = $"{TempUnit.Fmt(cpuTemp)}";
-                    hwct.Foreground = cpuTemp > 85 ? _brRed : cpuTemp > 70 ? _brOrange : _brGreen;
+                    hwct.Foreground = cpuTemp > 90 ? _brRed : cpuTemp > 80 ? _brOrange : _brValue;
                 }
                 if (FindName("TxtDashHwGpuTemp") is System.Windows.Controls.TextBlock hwgt)
                 {
@@ -548,7 +548,7 @@ namespace SMDWin.Views
                 if (FindName("TxtDashGpuVramInline") is System.Windows.Controls.TextBlock vramTb)
                 {
                     var vramMB = _lastTempSnap?.GpuMemUsedMB;
-                    vramTb.Text = vramMB.HasValue && vramMB.Value > 0 ? $"{vramMB.Value:F0} MB VRAM" : "";
+                    vramTb.Text = vramMB.HasValue && vramMB.Value > 0 ? $"{vramMB.Value:F0} MB" : "";   // the label next to it already says VRAM
                 }
             }
 
@@ -584,13 +584,13 @@ namespace SMDWin.Views
                     else if (lastPing < 50)
                     { TxtDashPingStatus.Text = LanguageService.S("Common", "Excellent"); TxtDashPingStatus.Foreground = _brGreen; }
                     else if (lastPing < 120)
-                    { TxtDashPingStatus.Text = LanguageService.S("Common", "Good"); TxtDashPingStatus.Foreground = _brOrange; }
+                    { TxtDashPingStatus.Text = LanguageService.S("Common", "Good"); TxtDashPingStatus.Foreground = _brGreen; }
                     else
                     { TxtDashPingStatus.Text = LanguageService.S("Dashboard", "PingHigh"); TxtDashPingStatus.Foreground = _brRed; }
                 }
                 if (!float.IsNaN(lastPing) && lastPing > 0)
                 {
-                    var pingBrush = lastPing < 50 ? _brGreen : lastPing < 120 ? _brOrange : _brRed;
+                    var pingBrush = lastPing < 120 ? _brValue : lastPing < 300 ? _brOrange : _brRed;
                     var pingRgb   = lastPing < 50 ? (34, 197, 94) : lastPing < 120 ? (245, 158, 11) : (239, 68, 68);
                     if (TxtDashPingMs != null) TxtDashPingMs.Foreground = pingBrush;
                     if (FindName("TxtDashPingMsSuffix") is TextBlock pingSuffix) pingSuffix.Foreground = pingBrush;
@@ -613,7 +613,7 @@ namespace SMDWin.Views
                     {
                         // Below 10% one decimal is shown — on an idle SSD the activity is small but real, otherwise it looks "stuck at 0%"
                         sapX.Text = _lastDiskActivePct < 10f ? $"{_lastDiskActivePct:F1}%" : $"{_lastDiskActivePct:F0}%";
-                        sapX.Foreground = _lastDiskActivePct > 90 ? _brRed : _lastDiskActivePct > 70 ? _brOrange : _brGreen;
+                        sapX.Foreground = _lastDiskActivePct > 90 ? _brOrange : _brValue;
                     }
                     if (FindName("TxtStorageAvgMs")    is System.Windows.Controls.TextBlock samX)
                         samX.Text = _lastDiskAvgMs < 1 ? "<1" : $"{_lastDiskAvgMs:F1}";
@@ -1458,9 +1458,9 @@ namespace SMDWin.Views
                 TxtDashRamUsed.Text = $"{usedGB:F1}";
                 if (TxtRamDashSub != null) TxtRamDashSub.Text = $" / {SMDWin.Services.UnitFormat.RamTotalLabelFromMB(totalMB)}";
 
-                TxtDashRamPct.Foreground = pct > 85 ? _brRed
-                    : pct > 70 ? _brOrange
-                    : _brGreen;
+                TxtDashRamPct.Foreground = pct > 90 ? _brRed
+                    : pct > 80 ? _brOrange
+                    : _brValue;
                 if (DashRamCard != null)
                     UpdateCardAlert(DashRamCard, pct > 90, ref _ramAlertSince);
 
@@ -1502,7 +1502,7 @@ namespace SMDWin.Views
             mx = mx.HasValue ? Math.Max(mx.Value, v) : v;
 
             valLbl.Text = $"{TempUnit.Fmt(v)}";
-            valLbl.Foreground = v > 90 ? _brRed : v > 75 ? _brOrange : _brGreen;
+            valLbl.Foreground = v > 90 ? _brRed : v > 80 ? _brOrange : _brValue;
             mmLbl.Text = $"Min {TempUnit.Fmt(mn)}  /  Max {TempUnit.Fmt(mx)}"; // hidden stub — harmless
         }
 

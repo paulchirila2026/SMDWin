@@ -1282,7 +1282,6 @@
                             MouseLeftButtonUp="DashHardware_Click" ToolTip="Hardware information — opens a new window">
                   <TextBlock Text="{Binding Text, ElementName=TxtHardwareStripPcName}" FontFamily="{StaticResource NumFont}" FontSize="26" FontWeight="SemiBold"
                              Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                  <Path Style="{StaticResource DashExternal}" Margin="10,2,0,0" Width="15" Height="15"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                   <TextBlock FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
@@ -1294,7 +1293,20 @@
                     </TextBlock.Text>
                   </TextBlock>
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" Background="Transparent" MouseLeftButtonUp="LiveBadge_MouseUp" ToolTip="Live data (uptime is in the System card)">
-                    <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Ellipse x:Name="DashLiveDot" Width="6" Height="6" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,5,0">
+                      <!-- a gentle pulse: the dot fades and comes back, so "live" is felt without drawing the eye -->
+                      <Ellipse.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                          <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                              <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.35" Duration="0:0:0.8">
+                                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                              </DoubleAnimation>
+                            </Storyboard>
+                          </BeginStoryboard>
+                        </EventTrigger>
+                      </Ellipse.Triggers>
+                    </Ellipse>
                     <TextBlock Text="LIVE" FontSize="{StaticResource FontSizeS}" FontWeight="Bold" Foreground="{DynamicResource StatusOkBrush}"/>
                   </StackPanel>
                 </StackPanel>
@@ -1348,7 +1360,7 @@
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=CpuStatusText, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=CpuStatusText}"/>
-                        <TextBlock Text="{Binding Text, ElementName=CpuStatusText}" Foreground="{Binding Foreground, ElementName=CpuStatusText}" Style="{StaticResource CompStatusText}"/>
+                        <TextBlock Text="{Binding Text, ElementName=CpuStatusText}" Foreground="{Binding Foreground, ElementName=CpuStatusText, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
                     <Path Style="{StaticResource DashChevron}" Margin="10,0,0,0" ToolTip="Open Temp &amp; Stress"/>
@@ -1385,7 +1397,7 @@
                     <ContentControl Grid.Column="0" Focusable="False" Visibility="Collapsed"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock x:Name="DashLoadLabelCpu" Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="DashLoadLabelCpu" Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
                       <Border x:Name="SparkCpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkCpu" MinHeight="38" ClipToBounds="True" Background="Transparent"
@@ -1396,7 +1408,7 @@
                     <ContentControl Grid.Column="2" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock Style="{StaticResource DashChartLabel}" Text="temperature" VerticalAlignment="Bottom"/>
+                        <TextBlock Style="{StaticResource DashChartLabel}" Text="Temperature" VerticalAlignment="Bottom"/>
                         <TextBlock Style="{StaticResource DashCompChartValue}"
                                    Foreground="{Binding Foreground, ElementName=TxtDashCpuTempBig}"
                                    x:Name="TxtDialCpuTemp" Text="{Binding Text, ElementName=TxtDashCpuTempBig, Converter={StaticResource DashTempConv}, Mode=OneTime}"/>
@@ -1419,7 +1431,7 @@
                   <UniformGrid Columns="4">
                     <Border Style="{StaticResource CompFootCellFirst}">
                       <StackPanel>
-                        <TextBlock x:Name="TxtDashCpuFoot4K" Text="Clock now" Style="{StaticResource CompFootKey}"/>
+                        <TextBlock x:Name="TxtDashCpuFoot4K" Text="Clock" Style="{StaticResource CompFootKey}"/>
                         <TextBlock x:Name="TxtDashCpuFoot4V" Text="" Style="{StaticResource CompFootVal}"/>
                       </StackPanel>
                     </Border>
@@ -1455,7 +1467,7 @@
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=GpuStatusText, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=GpuStatusText}"/>
-                        <TextBlock Text="{Binding Text, ElementName=GpuStatusText}" Foreground="{Binding Foreground, ElementName=GpuStatusText}" Style="{StaticResource CompStatusText}"/>
+                        <TextBlock Text="{Binding Text, ElementName=GpuStatusText}" Foreground="{Binding Foreground, ElementName=GpuStatusText, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
                     <Path Style="{StaticResource DashChevron}" Margin="10,0,0,0" ToolTip="Open Temp &amp; Stress"/>
@@ -1492,7 +1504,7 @@
                     <ContentControl Grid.Column="0" Focusable="False" Visibility="Collapsed"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock x:Name="DashLoadLabelGpu" Text="load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="DashLoadLabelGpu" Text="Load" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                       </DockPanel>
                       <Border x:Name="SparkGpuFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
                         <Canvas x:Name="SparkGpu" MinHeight="38" ClipToBounds="True" Background="Transparent"
@@ -1503,7 +1515,7 @@
                     <ContentControl Grid.Column="2" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock Style="{StaticResource DashChartLabel}" Text="temperature" VerticalAlignment="Bottom"/>
+                        <TextBlock Style="{StaticResource DashChartLabel}" Text="Temperature" VerticalAlignment="Bottom"/>
                         <TextBlock Style="{StaticResource DashCompChartValue}"
                                    Foreground="{Binding Foreground, ElementName=TxtDashGpuTempBig}"
                                    x:Name="TxtDialGpuTemp" Text="{Binding Text, ElementName=TxtDashGpuTempBig, Converter={StaticResource DashTempConv}, Mode=OneTime}"/>
@@ -1562,7 +1574,7 @@
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=RamStatusText, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=RamStatusText}"/>
-                        <TextBlock Text="{Binding Text, ElementName=RamStatusText}" Foreground="{Binding Foreground, ElementName=RamStatusText}" Style="{StaticResource CompStatusText}"/>
+                        <TextBlock Text="{Binding Text, ElementName=RamStatusText}" Foreground="{Binding Foreground, ElementName=RamStatusText, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
                     <Path Style="{StaticResource DashChevron}" Margin="10,0,0,0" ToolTip="Open RAM Memory"/>
@@ -1604,7 +1616,7 @@
                     <Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock x:Name="DashLoadLabelRam" Text="usage" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="DashLoadLabelRam" Text="Usage" Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"/>
                         <TextBlock Style="{StaticResource DashCompChartValue}" FontSize="17" x:Name="TxtDialRamUsed">
                           <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}{1}">
@@ -1661,7 +1673,7 @@
                     <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashRowDiskHealth, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashRowDiskHealth}"/>
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Tag, ElementName=TxtDashRowDiskHealth}"/>
                         <TextBlock x:Name="TxtDashRowDiskHealth" Text="" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource CompStatusText}"/>
                         <Border x:Name="BdDashRowDiskHealth" Visibility="Collapsed"/>
                       </StackPanel>
@@ -1740,7 +1752,7 @@
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashNetStatus, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashNetStatus}"/>
-                        <TextBlock Text="{Binding Text, ElementName=TxtDashNetStatus}" Foreground="{Binding Foreground, ElementName=TxtDashNetStatus}" Style="{StaticResource CompStatusText}"/>
+                        <TextBlock Text="{Binding Text, ElementName=TxtDashNetStatus}" Foreground="{Binding Foreground, ElementName=TxtDashNetStatus, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
                     <Path Style="{StaticResource DashChevron}" Margin="10,0,0,0" ToolTip="Open Network"/>
@@ -1794,7 +1806,7 @@
                     <ContentControl Grid.Column="0" Focusable="False"><Grid>
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}">
-                        <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"><Run Text="traffic  ·  "/><Run Text="{Binding Text, ElementName=TxtDashNetUp, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom"><Run Text="Traffic  ·  "/><Run Text="{Binding Text, ElementName=TxtDashNetUp, Mode=OneWay}"/></TextBlock>
                       </DockPanel>
                       <!-- the chart scale ("of 9.8 MB/s") is in the tooltip: in the header it did not fit next to the label -->
                       <Border x:Name="SparkNetActivityFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
@@ -1808,7 +1820,7 @@
                       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                       <DockPanel Style="{StaticResource DashCompChartHead}" Background="Transparent" ToolTip="{Binding Text, ElementName=TxtDashPingHost, StringFormat='Ping to {0} - current and maximum since start'}">
                         <TextBlock Style="{StaticResource DashCompChartValue}" x:Name="TxtDialPing" Text="{Binding Text, ElementName=TxtDashPingMs, Mode=OneTime}"/>
-                        <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" Text="ping"/>
+                        <TextBlock Style="{StaticResource DashChartLabel}" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" Text="Ping"/>
                       </DockPanel>
                       <Border x:Name="DashPingChartFrame" Grid.Row="1" Margin="0,3,0,0" BorderThickness="1" SnapsToDevicePixels="True">
                         <Canvas x:Name="DashPingChart" MinHeight="38" ClipToBounds="True" Background="Transparent"
@@ -1877,10 +1889,10 @@
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashWinCrash, Converter={StaticResource DashFactVis}}">
                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashWinCrash}"/>
-                        <TextBlock Text="{Binding Text, ElementName=TxtDashWinCrash}" Foreground="{Binding Foreground, ElementName=TxtDashWinCrash}" Style="{StaticResource CompStatusText}"/>
+                        <TextBlock Text="{Binding Text, ElementName=TxtDashWinCrash}" Foreground="{Binding Foreground, ElementName=TxtDashWinCrash, Converter={StaticResource NeutralUnlessAlert}}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
-                    <Path Style="{StaticResource DashExternal}" Margin="10,0,0,0" ToolTip="Opens Windows Info in a new window"/>
+                    <Path Style="{StaticResource DashChevron}" Margin="10,0,0,0" ToolTip="Opens Windows Info in a new window"/>
                   </StackPanel>
                   <StackPanel Orientation="Horizontal">
                     <!-- the component icon on a soft tile in the component colour -->

@@ -1329,12 +1329,12 @@ namespace SMDWin.Services
                         if (hw.Displays.Count == 1)
                         {
                             var d = hw.Displays[0];
-                            s.DisplayResolution = $"{d.Width}×{d.Height}" + (d.RefreshHz > 0 ? $" @ {d.RefreshHz}Hz" : "");
+                            s.DisplayResolution = $"{d.Width} × {d.Height}" + (d.RefreshHz > 0 ? $", {d.RefreshHz} Hz" : "");   // "2560 × 1440, 59 Hz"
                         }
                         else
                         {
                             var parts = hw.Displays.Select((d, i) =>
-                                $"#{i+1}: {d.Width}×{d.Height}" + (d.RefreshHz > 0 ? $"@{d.RefreshHz}Hz" : ""));
+                                $"{i+1}: {d.Width} × {d.Height}" + (d.RefreshHz > 0 ? $", {d.RefreshHz} Hz" : ""));
                             s.DisplayResolution = string.Join("\n", parts);
                         }
                         // Strip \\.\DISPLAY prefix — only keep a friendly label

@@ -290,6 +290,9 @@ namespace SMDWin.Views
             if (res["StatusOkBrush"]   is SolidColorBrush ok)   _brGreen  = Frozen(ok.Color);
         }
         private static readonly SolidColorBrush _brGray   = MakeFrozenBrush(148, 163, 184);
+        /// <summary>A normal value (no colour): red is kept for errors and serious problems, orange for warnings.</summary>
+        private static System.Windows.Media.Brush _brValue =>
+            (System.Windows.Application.Current?.TryFindResource("TextPrimaryBrush") as System.Windows.Media.Brush) ?? System.Windows.Media.Brushes.White;
         private static readonly SolidColorBrush _brCoolBlue = MakeFrozenBrush(56, 138, 221);
         private static SolidColorBrush MakeFrozenBrush(byte r, byte g, byte b)
         {

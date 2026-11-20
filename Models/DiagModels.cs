@@ -471,7 +471,7 @@ namespace SMDWin.Models
         public int    BatteryCycles { get; set; }
         public string BatteryRuntime { get; set; } = "";
         // Display info
-        public string DisplayResolution { get; set; } = "";   // "1920×1080 @ 60Hz"
+        public string DisplayResolution { get; set; } = "";   // "1920 × 1080, 60 Hz"
         public string DisplayName { get; set; } = "";         // "Generic PnP Monitor"
         public int    DisplayCount { get; set; }
     }

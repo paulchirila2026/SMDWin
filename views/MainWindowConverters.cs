@@ -58,4 +58,25 @@ namespace SMDWin.Views
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// The colour of a state word next to its mark: red and orange stay (an error, a warning); green, blue and grey become the
+    /// normal text colour — the mark already says "all good", the Windows way.
+    /// </summary>
+    public class NeutralUnlessAlertConverter : System.Windows.Data.IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is System.Windows.Media.SolidColorBrush b)
+            {
+                var c = b.Color;
+                bool warm = c.R > c.G + 25 && c.R > c.B + 25;     // red, orange, amber
+                if (warm) return b;
+            }
+            return (System.Windows.Application.Current?.TryFindResource("TextPrimaryBrush") as System.Windows.Media.Brush) ?? System.Windows.Media.Brushes.White;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            => throw new NotImplementedException();
+    }
 }

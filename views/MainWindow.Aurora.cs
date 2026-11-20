@@ -101,12 +101,13 @@ namespace SMDWin.Views
                 double rx2 = Math.Max(800 * sx, w * 0.66), ry2 = Math.Max(780 * sy, h * 1.00);   // right
                 double rx3 = Math.Max(980 * sx, w * 0.72), ry3 = Math.Max(540 * sy, h * 0.60);   // bottom
                 double y2 = h * 0.38;
+                // about half the earlier strength: the lights stay as a hint of colour, not a glow the eye goes to
                 lights = !alert
                     ? new[]
                     {
-                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.16),
-                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.10),
-                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.05),
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.09),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.055),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.025),
                     }
                     // the same places, warmer: the blue light becomes a deep red, the violet one a dark wine, the teal one a dark
                     // rose — at about 80 % of the previous strength, since the lights are now much larger

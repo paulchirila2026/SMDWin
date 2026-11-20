@@ -911,12 +911,17 @@
     <Setter Property="Padding" Value="18,14,18,0"/>
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="SnapsToDevicePixels" Value="True"/>
-    <!-- no hover effect (the "hand" cursor is enough) -->
+    <!-- the card can be opened: a faint highlight under the mouse (the Windows way), instead of arrows everywhere -->
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
   <!-- alert glow behind the card (critical values) — a separate Border, with no text in it, so the shadow does not blur the
        content. Added / removed from code: MainWindow.DashRows.cs → ApplyRowAlert -->
   <Style x:Key="CompGlow" TargetType="Border">
-    <Setter Property="CornerRadius" Value="14"/>
+    <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Background" Value="{DynamicResource BgCardBrush}"/>
     <Setter Property="IsHitTestVisible" Value="False"/>
   </Style>
@@ -927,7 +932,7 @@
     <Setter Property="Background" Value="{DynamicResource CardFootBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CardFootLineBrush}"/>
     <Setter Property="BorderThickness" Value="0,1,0,0"/>
-    <Setter Property="CornerRadius" Value="0,0,13,13"/>
+    <Setter Property="CornerRadius" Value="0,0,7,7"/>
   </Style>
   <Style x:Key="CompFootCell" TargetType="Border">
     <Setter Property="BorderBrush" Value="{DynamicResource CardFootLineBrush}"/>

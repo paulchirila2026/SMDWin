@@ -337,7 +337,7 @@ namespace SMDWin.Views
                     st.Text = status;
                     st.SetResourceReference(TextBlock.ForegroundProperty,
                         charging || (plugged && p >= 99) ? "StatusOkBrush" : !plugged && p >= 0 && p < 20 ? "StatusCritBrush"
-                        : !plugged ? "StatusWarnBrush" : "TextSecondaryBrush");
+                        : "TextSecondaryBrush");   // running on battery is not a warning by itself
                 }
                 if (FindName("DashGaugeBat") is PercentGauge g)
                 {
@@ -547,14 +547,14 @@ namespace SMDWin.Views
                 run.SetResourceReference(System.Windows.Documents.TextElement.ForegroundProperty, brushKey);
                 tb.Inlines.Add(run);
             }
-            Part("▼ ", "AccentBrush"); Part(min, "TextPrimaryBrush");
-            Part("   ▲ ", "StatusWarnBrush"); Part(max, "TextPrimaryBrush");
+            Part("▼ ", "TextSecondaryBrush"); Part(min, "TextPrimaryBrush");
+            Part("   ▲ ", "TextSecondaryBrush"); Part(max, "TextPrimaryBrush");
         }
 
         private void SetDashMaxLabel(string labelName, string baseText, DashRangeTracker tracker, Func<float, string> format)
         {
             if (FindName(labelName) is TextBlock tb && tracker.TryGet(out _, out float max))
-                tb.Text = $"{SMDWin.Services.LiteralTexts.Translate(baseText)}  ·  max {format(max)}";
+                tb.Text = $"{SMDWin.Services.LiteralTexts.Translate(baseText)}  ·  {T4("highest", "maxim", "Spitze", "maximum")} {format(max)}";
         }
 
         private void UpdateDashRanges(float cpu, float gpu, bool gpuValid, float ram, float netDownKBps, float netUpKBps)
@@ -565,10 +565,10 @@ namespace SMDWin.Views
             if (ram > 0) _rangeRam.Add(ram, window);
             _rangeNetDown.Add(netDownKBps, window);
             _rangeNetUp.Add(netUpKBps, window);
-            // the maximum sits in the chart header ("load · max 25%"), not under the dial
-            SetDashMaxLabel("DashLoadLabelCpu", "load", _rangeCpu, v => $"{v:F0}%");
-            if (gpuValid) SetDashMaxLabel("DashLoadLabelGpu", "load", _rangeGpu, v => $"{v:F0}%");
-            if (ram > 0) SetDashMaxLabel("DashLoadLabelRam", "usage", _rangeRam, v => $"{v:F0}%");
+            // the maximum sits in the chart header ("Load · highest 25%"), not under the dial
+            SetDashMaxLabel("DashLoadLabelCpu", "Load", _rangeCpu, v => $"{v:F0}%");
+            if (gpuValid) SetDashMaxLabel("DashLoadLabelGpu", "Load", _rangeGpu, v => $"{v:F0}%");
+            if (ram > 0) SetDashMaxLabel("DashLoadLabelRam", "Usage", _rangeRam, v => $"{v:F0}%");
         }
 
         private static void HookGauge(TextBlock? source, PercentGauge? gauge)

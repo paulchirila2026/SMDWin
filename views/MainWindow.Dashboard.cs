@@ -362,12 +362,12 @@ namespace SMDWin.Views
             if (r.tpm != null && _cachedTpmText == null)
             {
                 if (r.tpm.Length == 0) { _cachedTpmText = LanguageService.S("WindowsInfo", "NotPresent"); _cachedTpmBrush = _brGray as SolidColorBrush; }
-                else { _cachedTpmText = r.tpm; _cachedTpmBrush = (r.tpm2 ? _brGreen : _brGray) as SolidColorBrush; }
+                else { _cachedTpmText = r.tpm; _cachedTpmBrush = (r.tpm2 ? _brValue : _brGray) as SolidColorBrush; }
             }
             if (r.lic != null && _cachedLicenseText == null)
             {
                 _cachedLicenseText = r.lic;
-                _cachedLicenseBrush = (r.licOk ? _brGreen : (r.lic == "—" ? _brGray : _brOrange)) as SolidColorBrush;
+                _cachedLicenseBrush = (r.licOk ? _brValue : (r.lic == "—" ? _brGray : _brOrange)) as SolidColorBrush;
             }
             if (r.key != null && _cachedWinProductKey == null) _cachedWinProductKey = r.key;
             // what the background read could not get stays "—" (not null): a null would make the next Populate try the same slow
@@ -690,7 +690,7 @@ namespace SMDWin.Views
                         // SpecVersion = "1.2, ..." or "2.0, ..."
                         string ver = specVer.Split(',')[0].Trim();
                         tpm.Text = $"TPM {ver}";
-                        tpm.Foreground = ver.StartsWith("2") ? _brGreen : _brGray;
+                        tpm.Foreground = ver.StartsWith("2") ? _brValue : _brGray;
                     }
                     else { tpm.Text = LanguageService.S("WindowsInfo", "NotPresent"); tpm.Foreground = _brGray; }
                     _cachedTpmText = tpm.Text; _cachedTpmBrush = tpm.Foreground as SolidColorBrush;
@@ -708,8 +708,8 @@ namespace SMDWin.Views
                         @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control",
                         "PEFirmwareType", null);
                     if (fwType is int fw)
-                        { boot.Text = fw == 2 ? "UEFI" : "BIOS / MBR"; boot.Foreground = fw == 2 ? _brGreen : _brOrange; }
-                    else { boot.Text = LanguageService.S("WindowsInfo", "BootModeUefi"); boot.Foreground = _brGreen; } // default on Win11
+                        { boot.Text = fw == 2 ? "UEFI" : "BIOS / MBR"; boot.Foreground = fw == 2 ? _brValue : _brOrange; }
+                    else { boot.Text = LanguageService.S("WindowsInfo", "BootModeUefi"); boot.Foreground = _brValue; } // default on Win11
                 }
                 catch { boot.Text = "—"; }
             }
@@ -721,7 +721,7 @@ namespace SMDWin.Views
                 {
                     bool enabled = SMDWin.Services.WindowsInfoReader.ReadSecureBoot();
                     sb.Text = enabled ? T4("Enabled ✓", "Activat ✓", "Aktiviert ✓", "Activé ✓") : T4("Disabled", "Dezactivat", "Deaktiviert", "Désactivé");
-                    sb.Foreground = enabled ? _brGreen : _brGray;
+                    sb.Foreground = enabled ? _brValue : _brOrange;   // Secure Boot off: a warning, not an error
                 }
                 catch { sb.Text = "—"; }
             }
@@ -754,7 +754,7 @@ namespace SMDWin.Views
                                       : !string.IsNullOrEmpty(family) ? family : "Digital";
                         string statusStr = status == 1 ? T4("Licensed", "Licențiat", "Lizenziert", "Sous licence") : status == 5 ? T4("Notification", "Notificare", "Benachrichtigung", "Notification") : T4("Not activated", "Neactivat", "Nicht aktiviert", "Non activé");
                         lic.Text = $"{statusStr} · {type}";
-                        lic.Foreground = status == 1 ? _brGreen : _brOrange;
+                        lic.Foreground = status == 1 ? _brValue : _brOrange;
                     }
                     else { lic.Text = "—"; }
                     _cachedLicenseText = lic.Text; _cachedLicenseBrush = lic.Foreground as SolidColorBrush;
@@ -825,7 +825,7 @@ namespace SMDWin.Views
                 if (s.CrashCount > 0)
                 { wc.Text = $"{s.CrashCount} crash{(s.CrashCount > 1 ? "es" : "")} {_LS("Crash", "DetectedSuffix")}"; wc.Foreground = _brOrange; }
                 else
-                { wc.Text = _LS("Crash", "NoRecentCrashes"); wc.Foreground = _brGreen; }
+                { wc.Text = _LS("Crash", "NoRecentCrashes"); wc.Foreground = _brValue; }   // colour only when something is wrong
             }
 
             // Hardware strip row
@@ -1313,7 +1313,7 @@ namespace SMDWin.Views
                     var critBr   = Res("StatusProblemBrush", new SolidColorBrush(WpfColor.FromRgb(239, 68, 68)));
                     Brush BarBrush(double used) => used >= SMDWin.Services.StatusRules.DiskCritPct ? critBr : used >= SMDWin.Services.StatusRules.DiskWarnPct ? warnBr : accentBr;
 
-                    // each partition = one block: the text row (letter + name | free) and below it a 24-segment bar (the logo motif).
+                    // each partition = one block: the text row (letter + name | free) and below it a thin solid bar.
                     // Filled: accent (the system disk) / grey (the rest); yellow ≥ 90 %, red ≥ 95 %; empty: BorderBrush2.
                     System.Windows.Controls.Grid Line(string left, string leftSub, double usedPct, string right, string? tip, bool primary = true)
                     {
@@ -1350,20 +1350,21 @@ namespace SMDWin.Views
 
                         if (usedPct > 0 || !string.IsNullOrEmpty(right))
                         {
-                            const int Blocks = 24;
-                            int lit = usedPct <= 0 ? 0 : Math.Clamp((int)Math.Round(usedPct / 100.0 * Blocks), 1, Blocks);
-                            var bar = new System.Windows.Controls.Primitives.UniformGrid { Rows = 1, Columns = Blocks, Height = 9 };
-                            for (int i = 0; i < Blocks; i++)
+                            // a thin solid bar with rounded ends (as in Windows Settings › Storage), not a row of blocks
+                            double f = Math.Clamp(usedPct / 100.0, 0, 1);
+                            var bar = new System.Windows.Controls.Grid { Height = 6, ClipToBounds = true };
+                            bar.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new System.Windows.GridLength(f, System.Windows.GridUnitType.Star) });
+                            bar.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new System.Windows.GridLength(1 - f, System.Windows.GridUnitType.Star) });
+                            var track = new System.Windows.Controls.Border { CornerRadius = new System.Windows.CornerRadius(3) };
+                            track.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "BorderBrush2");
+                            System.Windows.Controls.Grid.SetColumnSpan(track, 2);
+                            bar.Children.Add(track);
+                            if (f > 0)
                             {
-                                var blk = new System.Windows.Controls.Border
-                                {
-                                    CornerRadius = new System.Windows.CornerRadius(2),
-                                    Margin = new System.Windows.Thickness(0, 0, i < Blocks - 1 ? 2.5 : 0, 0),
-                                };
-                                if (i >= lit) blk.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "BorderBrush2");
-                                else if (usedPct >= SMDWin.Services.StatusRules.DiskWarnPct || primary) blk.Background = BarBrush(usedPct);
-                                else { blk.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "TextSecondaryBrush"); blk.Opacity = 0.55; }
-                                bar.Children.Add(blk);
+                                var fill = new System.Windows.Controls.Border { CornerRadius = new System.Windows.CornerRadius(3), MinWidth = 6 };
+                                if (usedPct >= SMDWin.Services.StatusRules.DiskWarnPct || primary) fill.Background = BarBrush(usedPct);
+                                else { fill.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "TextSecondaryBrush"); fill.Opacity = 0.55; }
+                                bar.Children.Add(fill);
                             }
                             System.Windows.Controls.Grid.SetRow(bar, 1);
                             System.Windows.Controls.Grid.SetColumnSpan(bar, 2);
@@ -1380,6 +1381,13 @@ namespace SMDWin.Views
                     }
                     // the same formatting as Storage and System Info (DisplayFormat.SizeGb)
                     string FreeStr(double gb) { string s = SMDWin.Services.DisplayFormat.SizeGb(gb); return T4($"{s} free", $"{s} liberi", $"{s} frei", $"{s.Replace("GB", "Go").Replace("TB", "To")} libres"); }
+                    // "2.7 GB free of 118 GB" — the size of the whole partition next to the free space, as in Windows Settings
+                    string FreeOfStr(double gb, double tot)
+                    {
+                        string f = SMDWin.Services.DisplayFormat.SizeGb(gb), t = SMDWin.Services.DisplayFormat.SizeGb(tot);
+                        return T4($"{f} free of {t}", $"{f} liberi din {t}", $"{f} von {t} frei",
+                                  $"{f.Replace("GB", "Go").Replace("TB", "To")} libres sur {t.Replace("GB", "Go").Replace("TB", "To")}");
+                    }
 
                     var groupsOrdered = diskGroups.Values
                         .OrderByDescending(g => g.Any(e => e.drivePath.Equals("C:", StringComparison.OrdinalIgnoreCase)))
@@ -1394,7 +1402,7 @@ namespace SMDWin.Views
                             // no volume label → the name Windows gives too (as on the Storage page), the capacity is in the tooltip
                             if (string.IsNullOrEmpty(vol)) vol = T4("Local Disk", "Disc local", "Lokaler Datenträger", "Disque local");
                             bool isSys = e.drivePath.Equals("C:", StringComparison.OrdinalIgnoreCase);
-                            AddLine(Line(e.drivePath, vol, e.usedPct, FreeStr(e.freeGB),
+                            AddLine(Line(e.drivePath, vol, e.usedPct, FreeOfStr(e.freeGB, e.totalGB),
                                 $"{e.lbl}\n{SMDWin.Services.DisplayFormat.SizeGb(e.totalGB)} · {e.usedPct:F0}% used", isSys));
                         }
                         if (parts.Count > MaxLines)
@@ -1415,7 +1423,7 @@ namespace SMDWin.Views
                             string tipTxt = mdl + " · " + grp[0].mediaType + "\n" + string.Join("\n",
                                 grp.Select(e => $"{e.lbl}: {FreeStr(e.freeGB)} of {e.totalGB:F0} GB ({e.usedPct:F0}% used)"));
                             AddLine(Line(letters, subTxt, Math.Max(used, grp.Max(e => e.usedPct) >= SMDWin.Services.StatusRules.DiskWarnPct ? grp.Max(e => e.usedPct) : used),
-                                FreeStr(fr), tipTxt, grpSys));
+                                FreeOfStr(fr, tot), tipTxt, grpSys));
                         }
                         if (groupsOrdered.Count > MaxLines)
                             AddLine(Line($"+{groupsOrdered.Count - MaxLines} more drives", "", 0, "", null));
@@ -1447,8 +1455,13 @@ namespace SMDWin.Views
                             int worst = healths.Min();
                             // the cell is already labelled "Health": only the figure, in the theme's status colour
                             rowHealth.Text = $"{worst}%";
-                            if (worst >= 80) rowHealth.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "StatusOkBrush");
-                            else rowHealth.Foreground = worst >= 50 ? warnBr : critBr;
+                            // the mark (bound to Tag) carries the state colour; the word stays neutral when all is well
+                            if (worst >= 80)
+                            {
+                                rowHealth.SetResourceReference(FrameworkElement.TagProperty, "StatusOkBrush");
+                                rowHealth.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "TextPrimaryBrush");
+                            }
+                            else { rowHealth.Foreground = worst >= 50 ? warnBr : critBr; rowHealth.Tag = rowHealth.Foreground; }
                         }
                         else
                         {
@@ -1611,7 +1624,7 @@ namespace SMDWin.Views
                     if (TxtDashBatNetMain != null)
                     {
                         TxtDashBatNetMain.Text = primary.IpAddress;
-                        TxtDashBatNetMain.Foreground = (System.Windows.Media.Brush)FindResource("AccentBrush");
+                        TxtDashBatNetMain.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
                     }
 
                     var badges = active.Take(3).Select(a =>
