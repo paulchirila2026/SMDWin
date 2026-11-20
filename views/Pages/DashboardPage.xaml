@@ -1344,11 +1344,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=CpuStatusText, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=CpuStatusText}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=CpuStatusText}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=CpuStatusText}"/>
                         <TextBlock Text="{Binding Text, ElementName=CpuStatusText}" Foreground="{Binding Foreground, ElementName=CpuStatusText}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
@@ -1448,11 +1447,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=GpuStatusText, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=GpuStatusText}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=GpuStatusText}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=GpuStatusText}"/>
                         <TextBlock Text="{Binding Text, ElementName=GpuStatusText}" Foreground="{Binding Foreground, ElementName=GpuStatusText}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
@@ -1552,11 +1550,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=RamStatusText, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=RamStatusText}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=RamStatusText}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=RamStatusText}"/>
                         <TextBlock Text="{Binding Text, ElementName=RamStatusText}" Foreground="{Binding Foreground, ElementName=RamStatusText}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
@@ -1651,11 +1648,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashRowDiskHealth, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=TxtDashRowDiskHealth}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashRowDiskHealth}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashRowDiskHealth}"/>
                         <TextBlock x:Name="TxtDashRowDiskHealth" Text="" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource CompStatusText}"/>
                         <Border x:Name="BdDashRowDiskHealth" Visibility="Collapsed"/>
                       </StackPanel>
@@ -1730,11 +1726,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashNetStatus, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=TxtDashNetStatus}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashNetStatus}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashNetStatus}"/>
                         <TextBlock Text="{Binding Text, ElementName=TxtDashNetStatus}" Foreground="{Binding Foreground, ElementName=TxtDashNetStatus}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>
@@ -1864,11 +1859,10 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
-                    <!-- status pill: the same colour as the text, very pale behind it -->
+                    <!-- state: a Windows-style mark (tick / ! / i in a filled circle) and the word, no pill behind it -->
                     <Grid VerticalAlignment="Center" Visibility="{Binding Text, ElementName=TxtDashWinCrash, Converter={StaticResource DashFactVis}}">
-                      <Border CornerRadius="11" Background="{Binding Foreground, ElementName=TxtDashWinCrash}" Opacity="0.14"/>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="9,3,10,3">
-                        <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashWinCrash}"/>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <local:StatusMark Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Foreground, ElementName=TxtDashWinCrash}"/>
                         <TextBlock Text="{Binding Text, ElementName=TxtDashWinCrash}" Foreground="{Binding Foreground, ElementName=TxtDashWinCrash}" Style="{StaticResource CompStatusText}"/>
                       </StackPanel>
                     </Grid>

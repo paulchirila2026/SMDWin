@@ -754,7 +754,8 @@ namespace SMDWin.Services
             // accent, no glass, no shadow, no outline, 10 px corners; the icon in the accent, the text dark (Light) / light (Dark) and
             // SemiBold. Dark uses the middle step (26 %) — the lower one did not stand out on the dark menu.
             {
-                var pill = new SolidColorBrush(ParseHex(isLight ? "#172563EB" : "#425B9BFF"));
+                // Windows navigation: a faint neutral highlight (the accent is the short bar on the left, in the button template)
+                var pill = new SolidColorBrush(ParseHex(isLight ? "#0F000000" : "#14FFFFFF"));
                 pill.Freeze();
                 resources["SbItemActiveBase"] = pill;
                 resources["SbItemActiveBg"]   = pill;

@@ -264,15 +264,16 @@ namespace SMDWin.Views
             return g;
         }
 
-        /// <summary>The row state as a label: coloured text on a very light background of the same colour.</summary>
+        /// <summary>The row state the Windows way: a small mark (tick / ! / i in a filled circle) and the coloured word.</summary>
         private static FrameworkElement StatusPill(string text, string brushKey)
         {
             var t = HeroText(text, Ui.FontS, brushKey, semibold: true);
-            return new Border
-            {
-                CornerRadius = new CornerRadius(12), Padding = new Thickness(11, 3, 11, 4), Child = t,
-                Background = Tinted(brushKey, 0.15), HorizontalAlignment = WpfHAlign.Right, VerticalAlignment = WpfVAlign.Center,
-            };
+            t.VerticalAlignment = WpfVAlign.Center;
+            var mark = new StatusMark { Width = 14, Height = 14, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = WpfVAlign.Center };
+            mark.SetResourceReference(StatusMark.FillProperty, brushKey);
+            var sp = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = WpfHAlign.Right, VerticalAlignment = WpfVAlign.Center };
+            sp.Children.Add(mark); sp.Children.Add(t);
+            return sp;
         }
 
         // ── The header ──────────────────────────────────────────────────────────────────────────────────────────────────

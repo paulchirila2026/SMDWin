@@ -30,11 +30,11 @@
   <!-- the temperature unit shown next to the figures; ApplyTempUnit changes it to °F from Settings -->
   <sys:String x:Key="TempUnitSymbol">°C</sys:String>
 
-  <sys:Double x:Key="RadiusControlD">8</sys:Double>
-  <sys:Double x:Key="RadiusCardD">12</sys:Double>
+  <sys:Double x:Key="RadiusControlD">4</sys:Double>
+  <sys:Double x:Key="RadiusCardD">8</sys:Double>
   <sys:Double x:Key="RadiusDialogD">8</sys:Double>
   <sys:Double x:Key="RadiusPillD">999</sys:Double>
-  <CornerRadius x:Key="RadiusControl">8</CornerRadius>
+  <CornerRadius x:Key="RadiusControl">4</CornerRadius>
 
   <Style TargetType="{x:Type ui:Button}">
     <Setter Property="CornerRadius"       Value="{StaticResource RadiusControl}"/>
@@ -106,10 +106,10 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <CornerRadius x:Key="RadiusCard">12</CornerRadius>
+  <CornerRadius x:Key="RadiusCard">8</CornerRadius>
   <CornerRadius x:Key="RadiusDialog">8</CornerRadius>
   <CornerRadius x:Key="RadiusPill">999</CornerRadius>
-  <CornerRadius x:Key="RadiusCardTop">12,12,0,0</CornerRadius>
+  <CornerRadius x:Key="RadiusCardTop">8,8,0,0</CornerRadius>
 
   <Thickness x:Key="CardPadding">16,14,16,14</Thickness>
   <Thickness x:Key="CardPaddingSm">12,10,12,10</Thickness>
@@ -351,17 +351,17 @@
   <SolidColorBrush x:Key="AuroraBaseBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="GaugeTrackBrush" Color="#33808080"/>
   <SolidColorBrush x:Key="CompCpuBrush" Color="#8FBBFF"/>
-  <SolidColorBrush x:Key="CompCpuTileBrush" Color="#296EA8FF"/>
+  <SolidColorBrush x:Key="CompCpuTileBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="CompGpuBrush" Color="#C4B5FD"/>
-  <SolidColorBrush x:Key="CompGpuTileBrush" Color="#2EA78BFA"/>
+  <SolidColorBrush x:Key="CompGpuTileBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="CompRamBrush" Color="#5EEAD4"/>
-  <SolidColorBrush x:Key="CompRamTileBrush" Color="#292DD4BF"/>
+  <SolidColorBrush x:Key="CompRamTileBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="CompDiskBrush" Color="#FDBA74"/>
-  <SolidColorBrush x:Key="CompDiskTileBrush" Color="#29FB923C"/>
+  <SolidColorBrush x:Key="CompDiskTileBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="CompNetBrush" Color="#7DD3FC"/>
-  <SolidColorBrush x:Key="CompNetTileBrush" Color="#2938BDF8"/>
+  <SolidColorBrush x:Key="CompNetTileBrush" Color="Transparent"/>
   <SolidColorBrush x:Key="CompOsBrush" Color="#8FBBFF"/>
-  <SolidColorBrush x:Key="CompOsTileBrush" Color="#296EA8FF"/>
+  <SolidColorBrush x:Key="CompOsTileBrush" Color="Transparent"/>
   <Visibility x:Key="SidebarRailVisibility">Collapsed</Visibility>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -907,7 +907,7 @@
     <Setter Property="Background" Value="{DynamicResource CardSurfaceBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CardEdgeBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="14"/>
+    <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="18,14,18,0"/>
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -1244,7 +1244,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border x:Name="Bd" Background="Transparent" CornerRadius="10"
+          <Border x:Name="Bd" Background="Transparent" CornerRadius="5"
                   Margin="6,3,6,3" Height="{StaticResource NavItemHeight}" Padding="{TemplateBinding Padding}"
                   ClipToBounds="False">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -1264,7 +1264,7 @@
     </Setter>
   </Style>
 
-  <!-- active page = a flat tonal pill: a faint accent tint, no glass, shadow or outline, 10 px corners
+  <!-- active page = the Windows navigation look: a faint neutral background, 5 px corners and the short accent bar on the left
        (ThemeManager: SbItemActiveBase, SbItemActivePillFg; the icon colour SbItemActiveIconBrush is set on the icon by
        HighlightActiveNavIcon). The same size and place as the other buttons, so nothing moves when the page changes or the
        menu collapses. -->
@@ -1275,12 +1275,16 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border x:Name="BgBorder" CornerRadius="10" BorderThickness="0" Margin="6,3,6,3"
-                  Height="{StaticResource NavItemHeight}" Background="{DynamicResource SbItemActiveBase}"
-                  Padding="{TemplateBinding Padding}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="Center"/>
-          </Border>
+          <Grid Margin="6,3,6,3" Height="{StaticResource NavItemHeight}">
+            <Border x:Name="BgBorder" CornerRadius="5" BorderThickness="0"
+                    Background="{DynamicResource SbItemActiveBase}" Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"/>
+            </Border>
+            <!-- the Windows navigation mark: a short rounded accent bar at the left edge -->
+            <Border Width="3" Height="16" CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Background="{DynamicResource SbItemActiveIconBrush}" IsHitTestVisible="False"/>
+          </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="IsPressed" Value="True">
               <Setter TargetName="BgBorder" Property="Opacity" Value="0.75"/>

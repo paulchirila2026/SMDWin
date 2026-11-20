@@ -1498,7 +1498,7 @@ namespace SMDWin.Models
         /// <summary>Developer: the old three-column "Sleep &amp; wake" card instead of the chip strip (kept as a fallback).</summary>
         public bool DesignExperimentOldSleepCard { get; set; }
 
-        public double DesignExperimentCornerRadius { get; set; } = 12.0;
+        public double DesignExperimentCornerRadius { get; set; } = 8.0;
 
         public bool DesignExperimentShadowsOff { get; set; } = true;
 

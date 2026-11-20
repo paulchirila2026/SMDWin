@@ -46,7 +46,7 @@ namespace SMDWin.Views
             try
             {
                 double px = SettingsService.Current.DesignExperimentCornerRadius;
-                if (px <= 4.0) px = 12;   // 4 was the old default: it now means the standard card radius
+                if (px <= 4.0 || px == 12.0) px = 8;   // 4 and 12 were older defaults: the Windows 11 card radius is 8
                 System.Windows.Application.Current.Resources["RadiusCard"] = new CornerRadius(px);
                 System.Windows.Application.Current.Resources["RadiusCardTop"] = new CornerRadius(px, px, 0, 0);
                 System.Windows.Application.Current.Resources["RadiusCardD"] = px;
