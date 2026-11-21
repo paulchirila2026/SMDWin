@@ -1211,7 +1211,7 @@ namespace SMDWin.Views
         internal System.Windows.Controls.TextBlock TxtDriverSearchDesc => PageSettings?.TxtDriverSearchDesc!;
         internal System.Windows.Controls.RadioButton RbDriverSearchDrp => PageSettings?.RbDriverSearchDrp!;
         internal System.Windows.Controls.RadioButton RbDriverSearchGoogle => PageSettings?.RbDriverSearchGoogle!;
-        internal System.Windows.Shapes.Ellipse PawnIoLed => PageSettings?.PawnIoLed!;
+        internal StatusMark PawnIoLed => PageSettings?.PawnIoLed!;
         internal System.Windows.Controls.TextBlock TxtPawnIoStatus => PageSettings?.TxtPawnIoStatus!;
         internal Wpf.Ui.Controls.Button BtnInstallPawnIo => PageSettings?.BtnInstallPawnIo!;
         internal System.Windows.Controls.TextBlock TxtGeneralLabel => PageSettings?.TxtGeneralLabel!;

@@ -6,6 +6,8 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Dark background: only one alert state left — a faint red while the processor or graphics card is above 90 °C, fading back to blue as soon as it drops below (no amber state, no saved Health check result).
+- Settings: Advanced is a card on the same page (the sensor read rate is now a compact 3 s / 1 s / 0.5 s choice); the Advanced and About links and the second page are gone (About opens from the logo in the sidebar). The "Data folder" and "Reports folder" rows are removed (both folders are next to SMDWin.exe), so all settings fit on one page. The sensor driver state uses the Windows mark.
 - Storage › Surface scan: the progress and the read-speed chart are side by side with "Response time" at the top, and the sector map spans the whole width below, filling the rest of the page.
 - Cards no longer light up under the mouse (Dashboard and everywhere else); list rows still do. The remaining coloured pills and dots (Applications, Windows Services, Space usage, Event Viewer, SMART attributes, the sensor banner) are Windows-style state marks with plain words; "Do not disable" is a small lock with neutral text instead of a red pill.
 - Page action buttons are 8 px apart with more room inside. Storage: Disk Management and Diskpart are in one "Windows tools" menu button.

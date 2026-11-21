@@ -39,27 +39,17 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// Settings has two pages: all the categories at once (General … Data & reports) and, apart, Advanced + About.
-        /// A category tag shows the first page and scrolls to that card; "Advanced" / "About" open the second page.
+        /// Settings is one page: every category, Advanced included. A category tag scrolls to its card ("About" opens the
+        /// About window, as the logo in the sidebar does).
         /// </summary>
         private void ShowSettingsTab(string tag)
         {
-            bool adv = tag is "Advanced" or "About";
-            if (FindName("SetOverview") is FrameworkElement ov) ov.Visibility = adv ? Visibility.Collapsed : Visibility.Visible;
-            if (FindName("SetPageAdvanced") is FrameworkElement pa) pa.Visibility = adv ? Visibility.Visible : Visibility.Collapsed;
-            foreach (var n in new[] { "BtnSetBack", "TxtSettingsAdvSep", "TxtSettingsAdvTitle" })
-                if (FindName(n) is FrameworkElement fe) fe.Visibility = adv ? Visibility.Visible : Visibility.Collapsed;
-            if (FindName("TxtSettingsAdvTitle") is TextBlock at)
-                at.Text = LiteralTexts.Translate(tag == "About" ? "About" : "Advanced");
+            if (tag == "About") { try { new AboutWindow { Owner = this }.Show(); } catch (Exception ex) { AppLogger.Debug($"About: {ex.Message}"); } return; }
             foreach (var t in SettingsTabTags)
                 if (FindName("SetPanel" + t) is FrameworkElement p) p.Visibility = Visibility.Visible;
             if (FindName("PanelSettings") is ScrollViewer sv) sv.ScrollToTop();
-            if (FindName("SetPanel" + tag) is FrameworkElement target && tag is not ("General" or "Advanced"))
+            if (FindName("SetPanel" + tag) is FrameworkElement target && tag != "General")
                 Dispatcher.BeginInvoke(new Action(() => target.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
-            DecorateSettingsRows();
-            if (TxtSettingsSearchHint != null) TxtSettingsSearchHint.Text = PT("Search settings…");
-            if (adv) BuildSettingsAbout();
-            ScheduleFitSettingsPage();
         }
 
         // ── Cautare ──────────────────────────────────────────────────────────────
@@ -91,9 +81,6 @@ namespace SMDWin.Views
                 }
             }
             if (q.Length < 2 || first == null || firstTab == null) return;
-            bool wantAdv = firstTab is "Advanced" or "About";
-            bool onAdv = FindName("SetOverview") is FrameworkElement ov && ov.Visibility != Visibility.Visible;
-            if (wantAdv != onAdv) ShowSettingsTab(wantAdv ? firstTab : "General");
             var target = first;
             Dispatcher.BeginInvoke(new Action(() => target.BringIntoView()), System.Windows.Threading.DispatcherPriority.Loaded);
         }

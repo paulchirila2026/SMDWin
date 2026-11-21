@@ -188,7 +188,7 @@
                       <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkAuroraAlert" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
                       <StackPanel VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource SetRowTitle}" Text="Background reacts to problems"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="On Dark the background slowly turns faintly amber for warnings and red when something is critical"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="On Dark the background slowly turns faintly red while the processor or graphics card is above 90 °C"/>
                       </StackPanel>
                     </DockPanel>
                   </Border>
@@ -321,7 +321,7 @@
                     </StackPanel>
                   <Border Style="{StaticResource SetRow}">
                     <DockPanel>
-                      <Ellipse x:Name="PawnIoLed" DockPanel.Dock="Left" Width="9" Height="9" Margin="5,0,22,0" VerticalAlignment="Center" Fill="{DynamicResource StatusWarnBrush}"/>
+                      <local:StatusMark x:Name="PawnIoLed" DockPanel.Dock="Left" Width="14" Height="14" Margin="3,0,19,0" VerticalAlignment="Center" Fill="{DynamicResource StatusWarnBrush}"/>
                       <Border Style="{StaticResource SetRowControl}"><ui:Button x:Name="BtnInstallPawnIo" Appearance="Primary" Content="Install" Padding="14,5" Click="BtnInstallPawnIo_Click"/></Border>
                       <StackPanel VerticalAlignment="Center" ToolTip="PawnIO lets SMD Win read CPU temperature, fans and power limits on most PCs. Signed driver, used only while the program runs.">
                         <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor driver"/>
@@ -384,26 +384,6 @@
                   </Border>
                   <Border Style="{StaticResource SetRow}">
                     <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><ui:Button Appearance="Secondary" Content="Open" Padding="14,5" Click="OpenDataFolder_Click"/></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Data folder"/>
-                        <TextBlock x:Name="TxtDataFolderPath" Style="{StaticResource SetRowDesc}" Text="Settings, logs and reports, stored next to the application"/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Open" Padding="14,5" Click="OpenReportFolder_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Change" Padding="14,5" Click="ChangeReportFolder_Click"/><Border Width="8"/><ui:Button x:Name="BtnResetReportFolder" Appearance="Secondary" Content="Default" Padding="14,5" Click="ResetReportFolder_Click" ToolTip="Back to Data › Reports"/></StackPanel></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Reports folder"/>
-                        <TextBlock x:Name="TxtReportFolderPath" Style="{StaticResource SetRowDesc}" Text="Data › Reports, next to SMD Win"/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
                       <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.75,11.5 A0.75,0.75 0 0 0 8.75,13 L15.25,13 A0.75,0.75 0 0 0 15.25,11.5 Z M8.75,14.25 A0.75,0.75 0 0 0 8.75,15.75 L15.25,15.75 A0.75,0.75 0 0 0 15.25,14.25 Z M8.75,17 A0.75,0.75 0 0 0 8.75,18.5 L15.25,18.5 A0.75,0.75 0 0 0 15.25,17 Z M13.59,2.59 L19.4,8.4 A2,2 0 0 1 20,9.83 L20,20 A2,2 0 0 1 18,22 L6,22 A2,2 0 0 1 4,20 L4,4 C4,2.9 4.9,2 6,2 L12.17,2 C12.69,2 13.22,2.22 13.59,2.59 M18,20.5 A0.5,0.5 0 0 0 18.5,20 L18.5,10 L14,10 A2,2 0 0 1 12,8 L12,3.5 L6,3.5 A0.5,0.5 0 0 0 5.5,4 L5.5,20 C5.5,20.27 5.72,20.5 6,20.5 Z M17.38,8.5 L13.5,4.62 L13.5,8 C13.5,8.28 13.72,8.5 14,8.5 Z"/></Viewbox>
                       <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Create file" Padding="14,5" Click="ReportProblem_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Open log" Padding="14,5" Click="OpenAppLog_Click"/></StackPanel></Border>
                       <StackPanel VerticalAlignment="Center">
@@ -425,99 +405,52 @@
                   </StackPanel>
                 </Border>
               </StackPanel>
-              </StackPanel>
-              <!-- the less used parts, on their own page -->
-              <Grid x:Name="SetLinksRow" Grid.Row="1" Grid.ColumnSpan="3">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource SetCard}" Padding="18,12,18,12" Cursor="Hand" Tag="Advanced" MouseLeftButtonUp="SettingsLink_Click">
-                  <DockPanel>
-                    <Path DockPanel.Dock="Right" Data="M9,6 L15,12 L9,18" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
-                    <Viewbox DockPanel.Dock="Left" Width="17" Height="17" Margin="0,0,12,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M8.75,14.5 A3.25,3.25 0 0 1 11.91,17 L21.25,17 A0.75,0.75 0 0 1 21.35,18.5 L11.91,18.5 A3.25,3.25 0 0 1 5.59,18.5 L2.75,18.5 A0.75,0.75 0 0 1 2.65,17 L5.59,17 A3.25,3.25 0 0 1 8.75,14.5 M8.75,16 A1.75,1.75 0 0 0 8.75,19.5 A1.75,1.75 0 0 0 8.75,16 M15.25,3 A3.25,3.25 0 0 1 18.41,5.5 L21.25,5.5 A0.75,0.75 0 0 1 21.35,7 L18.41,7 A3.25,3.25 0 0 1 12.09,7 L2.75,7 A0.75,0.75 0 0 1 2.65,5.5 L12.09,5.5 A3.25,3.25 0 0 1 15.25,3 M15.25,4.5 A1.75,1.75 0 0 0 15.25,8 A1.75,1.75 0 0 0 15.25,4.5"/></Viewbox>
-                    <StackPanel VerticalAlignment="Center">
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="Advanced"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="For technicians: read rate, driver search, administrator rights"/>
-                    </StackPanel>
-                  </DockPanel>
-                </Border>
-                <Border Grid.Column="2" Style="{StaticResource SetCard}" Padding="18,12,18,12" Cursor="Hand" Tag="About" MouseLeftButtonUp="SettingsLink_Click">
-                  <DockPanel>
-                    <Path DockPanel.Dock="Right" Data="M9,6 L15,12 L9,18" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"/>
-                    <Viewbox DockPanel.Dock="Left" Width="17" Height="17" Margin="0,0,12,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F0 M12,2 A10,10 0 1 0 12,22 A10,10 0 1 0 12,2 Z M12,3.5 A8.5,8.5 0 1 0 12,20.5 A8.5,8.5 0 1 0 12,3.5 Z M11.25,10.5 L12.75,10.5 L12.75,17 L11.25,17 Z M12,6.6 A1,1 0 1 1 12,8.6 A1,1 0 1 1 12,6.6 Z"/></Viewbox>
-                    <StackPanel VerticalAlignment="Center">
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="About SMD Win"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="Version, updates and licenses"/>
-                    </StackPanel>
-                  </DockPanel>
-                </Border>
-              </Grid>
-            </Grid>
-
-            <StackPanel x:Name="SetPageAdvanced" Visibility="Collapsed" MaxWidth="1180" HorizontalAlignment="Left">
-            <StackPanel x:Name="SetPanelAdvanced" HorizontalAlignment="Stretch">
-              <Grid Margin="0,0,0,14">
-                <Border CornerRadius="10" Background="{DynamicResource AccentBrush}" Opacity="0.09"/>
-                <TextBlock Margin="14,10" TextWrapping="Wrap" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextPrimaryBrush}" Text="Nothing here is needed for normal use. A changed option shows a dot, and Default puts it back."/>
-              </Grid>
-              <Border x:Name="SetCardAdvanced" Style="{StaticResource SetCard}">
-                <StackPanel>
-                  <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
-                    <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M8.75,14.5 A3.25,3.25 0 0 1 11.91,17 L21.25,17 A0.75,0.75 0 0 1 21.35,18.5 L11.91,18.5 A3.25,3.25 0 0 1 5.59,18.5 L2.75,18.5 A0.75,0.75 0 0 1 2.65,17 L5.59,17 A3.25,3.25 0 0 1 8.75,14.5 M8.75,16 A1.75,1.75 0 0 0 8.75,19.5 A1.75,1.75 0 0 0 8.75,16 M15.25,3 A3.25,3.25 0 0 1 18.41,5.5 L21.25,5.5 A0.75,0.75 0 0 1 21.35,7 L18.41,7 A3.25,3.25 0 0 1 12.09,7 L2.75,7 A0.75,0.75 0 0 1 2.65,5.5 L12.09,5.5 A3.25,3.25 0 0 1 15.25,3 M15.25,4.5 A1.75,1.75 0 0 0 15.25,8 A1.75,1.75 0 0 0 15.25,4.5"/></Viewbox>
-                    <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Advanced"/>
-                    <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="For technicians — the defaults suit most PCs"/>
-                  </StackPanel>
-                <Border Style="{StaticResource SetRow}">
+              <!-- Advanced: the few technician options, here with the rest (there is no second page any more) -->
+              <StackPanel x:Name="SetPanelAdvanced" HorizontalAlignment="Stretch">
+                <Border x:Name="SetCardAdvanced" Style="{StaticResource SetCard}">
                   <StackPanel>
-                    <TextBlock Style="{StaticResource SetRowTitle}" Text="How often the sensors are read"/>
-                    <TextBlock Style="{StaticResource SetRowDesc}" Text="More often = smoother charts and a little more processor use. Every second suits almost any PC." Margin="0,2,0,10"/>
-                <UniformGrid Columns="3" Margin="0,0,-10,2">
-                  <RadioButton x:Name="RbSpeedSaver" Tag="Saver" GroupName="UpdateSpeedGroup" Style="{StaticResource SetTileStyle}" Margin="0,0,10,0" Checked="UpdateSpeed_Checked">
-                    <StackPanel>
-                      <StackPanel Orientation="Horizontal" Height="18" Margin="0,0,0,8"><Border Width="5" Height="6" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/><Border Width="5" Height="11" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource BorderBrush2}"/><Border Width="5" Height="18" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource BorderBrush2}"/></StackPanel>
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="Power saving"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="Every 3 seconds"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
+                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M8.75,14.5 A3.25,3.25 0 0 1 11.91,17 L21.25,17 A0.75,0.75 0 0 1 21.35,18.5 L11.91,18.5 A3.25,3.25 0 0 1 5.59,18.5 L2.75,18.5 A0.75,0.75 0 0 1 2.65,17 L5.59,17 A3.25,3.25 0 0 1 8.75,14.5 M8.75,16 A1.75,1.75 0 0 0 8.75,19.5 A1.75,1.75 0 0 0 8.75,16 M15.25,3 A3.25,3.25 0 0 1 18.41,5.5 L21.25,5.5 A0.75,0.75 0 0 1 21.35,7 L18.41,7 A3.25,3.25 0 0 1 12.09,7 L2.75,7 A0.75,0.75 0 0 1 2.65,5.5 L12.09,5.5 A3.25,3.25 0 0 1 15.25,3 M15.25,4.5 A1.75,1.75 0 0 0 15.25,8 A1.75,1.75 0 0 0 15.25,4.5"/></Viewbox>
+                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Advanced"/>
+                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="For technicians — the defaults suit most PCs"/>
                     </StackPanel>
-                  </RadioButton>
-                  <RadioButton x:Name="RbSpeedNormal" Tag="Normal" GroupName="UpdateSpeedGroup" Style="{StaticResource SetTileStyle}" Margin="0,0,10,0" Checked="UpdateSpeed_Checked">
-                    <StackPanel>
-                      <StackPanel Orientation="Horizontal" Height="18" Margin="0,0,0,8"><Border Width="5" Height="6" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/><Border Width="5" Height="11" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/><Border Width="5" Height="18" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource BorderBrush2}"/></StackPanel>
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="Standard"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="Every second (recommended)"/>
-                    </StackPanel>
-                  </RadioButton>
-                  <RadioButton x:Name="RbSpeedFast" Tag="Fast" GroupName="UpdateSpeedGroup" Style="{StaticResource SetTileStyle}" Margin="0,0,10,0" Checked="UpdateSpeed_Checked">
-                    <StackPanel>
-                      <StackPanel Orientation="Horizontal" Height="18" Margin="0,0,0,8"><Border Width="5" Height="6" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/><Border Width="5" Height="11" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/><Border Width="5" Height="18" CornerRadius="1.5" Margin="0,0,3,0" VerticalAlignment="Bottom" Background="{DynamicResource DataBrush}"/></StackPanel>
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="High"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="Twice a second"/>
-                    </StackPanel>
-                  </RadioButton>
-                </UniformGrid>
+                    <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                      <DockPanel>
+                        <Border Style="{StaticResource SetRowControl}"><Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
+                          <RadioButton x:Name="RbSpeedSaver" Tag="Saver" GroupName="UpdateSpeedGroup" Style="{StaticResource SegmentChipStyle}" Content="3 s" ToolTip="Power saving: every 3 seconds" Checked="UpdateSpeed_Checked"/>
+                          <RadioButton x:Name="RbSpeedNormal" Tag="Normal" GroupName="UpdateSpeedGroup" Style="{StaticResource SegmentChipStyle}" Content="1 s" ToolTip="Standard: every second (recommended)" Checked="UpdateSpeed_Checked"/>
+                          <RadioButton x:Name="RbSpeedFast" Tag="Fast" GroupName="UpdateSpeedGroup" Style="{StaticResource SegmentChipStyle}" Content="0.5 s" ToolTip="High: twice a second" Checked="UpdateSpeed_Checked"/>
+                        </StackPanel></Border></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock Style="{StaticResource SetRowTitle}" Text="How often the sensors are read"/>
+                          <TextBlock Style="{StaticResource SetRowDesc}" Text="More often = smoother charts, a little more processor use"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                      <DockPanel>
+                        <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M17,6 A3,3 0 0 1 20,9 L20,10 L21,10 A1,1 0 0 1 22,11 L22,13 A1,1 0 0 1 21,14 L20,14 L20,15 A3,3 0 0 1 17,18 L5,18 A3,3 0 0 1 2,15 L2,9 A3,3 0 0 1 5,6 Z M17,7.5 L5,7.5 C4.22,7.5 3.58,8.1 3.5,8.86 L3.5,15 C3.5,15.78 4.1,16.42 4.86,16.5 L17,16.5 C17.78,16.5 18.42,15.9 18.5,15.14 L18.5,9 C18.5,8.22 17.9,7.58 17.14,7.5 Z M6,9 L11,9 A1,1 0 0 1 12,9.88 L12,14 A1,1 0 0 1 11.12,15 L6,15 A1,1 0 0 1 5,14.12 L5,10 A1,1 0 0 1 5.88,9 Z L11,9 Z"/></Viewbox>
+                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkSlowerOnBattery" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Click="SlowerOnBattery_Click"/></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock Style="{StaticResource SetRowTitle}" Text="Reduce on battery power"/>
+                          <TextBlock Style="{StaticResource SetRowDesc}" Text="Use power saving while running on battery"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                      <DockPanel>
+                        <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Viewbox>
+                        <Border Style="{StaticResource SetRowControl}"><Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="RbDriverSearchDrp" Content="drp.su" Tag="drp" GroupName="DriverSearch" Style="{StaticResource SegmentChipStyle}" Checked="DriverSearchSite_Changed" IsChecked="True" ToolTip="drp.su — large driver database"/>
+                            <RadioButton x:Name="RbDriverSearchGoogle" Content="Google" Tag="google" GroupName="DriverSearch" Style="{StaticResource SegmentChipStyle}" Checked="DriverSearchSite_Changed"/></StackPanel></Border></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock x:Name="TxtDriverSearchHeader" Style="{StaticResource SetRowTitle}" Text="Driver search provider"/>
+                          <TextBlock x:Name="TxtDriverSearchDesc" Style="{StaticResource SetRowDesc}" Text="Used by “Search online” on the Drivers page"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
                   </StackPanel>
                 </Border>
-                <Border Style="{StaticResource SetRow}">
-                  <DockPanel>
-                    <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M17,6 A3,3 0 0 1 20,9 L20,10 L21,10 A1,1 0 0 1 22,11 L22,13 A1,1 0 0 1 21,14 L20,14 L20,15 A3,3 0 0 1 17,18 L5,18 A3,3 0 0 1 2,15 L2,9 A3,3 0 0 1 5,6 Z M17,7.5 L5,7.5 C4.22,7.5 3.58,8.1 3.5,8.86 L3.5,15 C3.5,15.78 4.1,16.42 4.86,16.5 L17,16.5 C17.78,16.5 18.42,15.9 18.5,15.14 L18.5,9 C18.5,8.22 17.9,7.58 17.14,7.5 Z M6,9 L11,9 A1,1 0 0 1 12,9.88 L12,14 A1,1 0 0 1 11.12,15 L6,15 A1,1 0 0 1 5,14.12 L5,10 A1,1 0 0 1 5.88,9 Z L11,9 Z"/></Viewbox>
-                    <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkSlowerOnBattery" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Click="SlowerOnBattery_Click"/></Border>
-                    <StackPanel VerticalAlignment="Center">
-                      <TextBlock Style="{StaticResource SetRowTitle}" Text="Reduce on battery power"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Text="Use power saving while running on battery"/>
-                    </StackPanel>
-                  </DockPanel>
-                </Border>
-                <Border Style="{StaticResource SetRow}">
-                  <DockPanel>
-                    <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Viewbox>
-                    <Border Style="{StaticResource SetRowControl}"><Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="RbDriverSearchDrp" Content="drp.su" Tag="drp" GroupName="DriverSearch" Style="{StaticResource SegmentChipStyle}" Checked="DriverSearchSite_Changed" IsChecked="True" ToolTip="drp.su — large driver database"/>
-                        <RadioButton x:Name="RbDriverSearchGoogle" Content="Google" Tag="google" GroupName="DriverSearch" Style="{StaticResource SegmentChipStyle}" Checked="DriverSearchSite_Changed"/></StackPanel></Border></Border>
-                    <StackPanel VerticalAlignment="Center">
-                      <TextBlock x:Name="TxtDriverSearchHeader" Style="{StaticResource SetRowTitle}" Text="Driver search provider"/>
-                      <TextBlock x:Name="TxtDriverSearchDesc" Style="{StaticResource SetRowDesc}" Text="Used by “Search online” on the Drivers page"/>
-                    </StackPanel>
-                  </DockPanel>
-                </Border>
-                </StackPanel>
-              </Border>
               <Border x:Name="BdrRestartAdmin" Visibility="Collapsed" Style="{StaticResource SetCard}">
                 <DockPanel Margin="0,12">
                   <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M3,5.75 C3,5.34 3.34,5 3.75,5 Q7.74,5 11.55,2.15 C11.82,1.95 12.18,1.95 12.45,2.15 Q16.26,5 20.25,5 C20.66,5 21,5.34 21,5.75 L21,11 C21,16 18.04,19.68 12.27,21.95 A0.8,0.8 0 0 1 11.73,21.95 C5.96,19.68 3,16 3,11 Z M4.5,6.48 L4.5,11 C4.5,15.26 6.95,18.38 12,20.44 C17.05,18.38 19.5,15.26 19.5,11 L19.5,6.48 A14.4,14.4 0 0 1 12,3.68 A14.4,14.4 0 0 1 4.5,6.48"/></Viewbox>
@@ -528,22 +461,15 @@
                   </StackPanel>
                 </DockPanel>
               </Border>
-            </StackPanel>
-            <StackPanel x:Name="SetPanelAbout" HorizontalAlignment="Stretch">
-              <Border x:Name="SetCardAbout" Style="{StaticResource SetCard}">
-                <StackPanel>
-                  <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
-                    <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F0 M12,2 A10,10 0 1 0 12,22 A10,10 0 1 0 12,2 Z M12,3.5 A8.5,8.5 0 1 0 12,20.5 A8.5,8.5 0 1 0 12,3.5 Z M11.25,10.5 L12.75,10.5 L12.75,17 L11.25,17 Z M12,6.6 A1,1 0 1 1 12,8.6 A1,1 0 1 1 12,6.6 Z"/></Viewbox>
-                    <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="About"/>
-                    <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="Version, updates and licenses"/>
-                  </StackPanel>
-                <Border x:Name="SetAboutHost" Padding="0,0,0,12"/>
-                </StackPanel>
-              </Border>
-            </StackPanel>
-            </StackPanel>
+              </StackPanel>
+              </StackPanel>
+            </Grid>
+
             <!-- hidden: older fields read by code (the per-category rate, the older thresholds, group titles) -->
             <StackPanel Visibility="Collapsed">
+              <!-- the data / reports folder rows were removed (the folders are next to SMDWin.exe); the code still fills these -->
+              <TextBlock x:Name="TxtDataFolderPath"/>
+              <TextBlock x:Name="TxtReportFolderPath"/>
               <UniformGrid Columns="3"><UniformGrid Columns="3" Margin="0,0,0,16">
                     <ui:Button x:Name="BtnThemeDark" Appearance="Secondary" Click="SetTheme_Click" Tag="Dark" Margin="0,0,6,0" Padding="5" HorizontalAlignment="Stretch" ToolTip="Dark theme">
                       <StackPanel>

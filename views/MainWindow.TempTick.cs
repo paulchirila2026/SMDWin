@@ -383,6 +383,7 @@ namespace SMDWin.Views
             UpdateSensorStaleState();
             snap = _lastTempSnap;   // fresh or without values, never old data presented as live
             if (snap == null) return;
+            NoteAuroraTemps(snap.CpuTemp, snap.GpuTemp);   // the Dark background turns red above 90 °C
 
             // Session history — one sample every 5s from app start, for the PDF full-session charts
             var histNow = DateTime.Now;

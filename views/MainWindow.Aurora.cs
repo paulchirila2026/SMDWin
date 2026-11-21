@@ -20,11 +20,9 @@ namespace SMDWin.Views
     /// The lights sit at fixed places (top left, right, bottom), so the page looks the same every time.
     /// The picture is redrawn only when the window size, the screen scaling or the theme changes.
     ///
-    /// State tint (Dark only), three levels: blue when all is well (the base picture); a faint amber when there is a warning
-    /// (the last Health check found warnings or non-dangerous critical items, or a Dashboard value is over its warning
-    /// threshold); a faint red while something is dangerous (a high temperature held for a while, or a Health check item that
-    /// means physical danger — DiagnosticOrchestrator.IsPhysicalDanger). The tint is a second picture that fades in over the
-    /// first one — slowly, so it reads as part of the background and not as a flash. Drawn only when needed.
+    /// State tint (Dark only): blue when all is well (the base picture); a faint red while the processor or the graphics card
+    /// is above 90 °C. The tint is a second picture that fades in over the first one — slowly, so it reads as part of the
+    /// background and not as a flash — and fades out the same way as soon as the temperature drops. Drawn only when needed.
     /// </summary>
     public partial class MainWindow
     {
@@ -176,24 +174,27 @@ namespace SMDWin.Views
         {
             try
             {
-                var s = SettingsService.Current;
-                bool hot = (_dashAlertState.TryGetValue("cputemp", out bool ct) && ct)
-                        || (_dashAlertState.TryGetValue("gputemp", out bool gt) && gt);
-                bool danger = hot || s.HealthCheckLastDanger;   // only physical danger, not every critical item
-                // a warning: the last Health check found something (the orange / red dot on "PC health"), or another
-                // Dashboard value is held over its threshold
-                bool warn = s.HealthCheckLastSeverity is "Warning" or "Critical"
-                         || _dashAlertState.Any(kv => kv.Value && kv.Key is not ("cputemp" or "gputemp"));
-                int level = !s.AuroraAlertTint ? 0 : danger ? 2 : warn ? 1 : 0;
+                // red only while the processor or the graphics card is above 90 °C; as soon as it drops below, the tint fades
+                // back to blue (no amber state and no saved Health check result: those confused more than they helped)
+                int level = SettingsService.Current.AuroraAlertTint && _auroraHot ? 2 : 0;
                 if (level == _auroraAlertLevel) return;
-                int was = _auroraAlertLevel;
                 _auroraAlertLevel = level;
-                if (level == 0) { FadeAuroraAlert(0); return; }
-                // from amber to red (or back): fade the old tint out first, then draw and fade in the new one
-                if (was > 0) FadeAuroraAlert(0, then: RenderAlertImage);
+                if (level == 0) FadeAuroraAlert(0);
                 else RenderAlertImage();   // fades in as soon as the picture is ready
             }
             catch (Exception ex) { AppLogger.Debug($"UpdateAuroraAlert: {ex.Message}"); }
+        }
+
+        private bool _auroraHot;
+        private const float AuroraHotC = 90f;
+
+        /// <summary>Called on every sensor tick with the latest temperatures.</summary>
+        private void NoteAuroraTemps(float? cpu, float? gpu)
+        {
+            bool hot = (cpu is float c && c > AuroraHotC) || (gpu is float g && g > AuroraHotC);
+            if (hot == _auroraHot) return;
+            _auroraHot = hot;
+            UpdateAuroraAlert();
         }
 
         /// <summary>Draws the red picture if it is missing or outdated, then fades it in.</summary>
