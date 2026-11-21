@@ -14,8 +14,10 @@ class Program
     {
         string outDir = args.Length > 0 ? args[0] : "sketches";
         Directory.CreateDirectory(outDir);
+        Console.WriteLine("start");
         var app = new SMDWin.App();
         app.InitializeComponent();
+        Console.WriteLine("resources loaded");
         try { SMDWin.Services.SettingsService.Current.EnableAnimations = false; } catch { }
 
         var sets = new (DeviceSketch.Kind kind, string file, bool dgpu, string[] hw, string[] val, double[] mark)[]
@@ -62,19 +64,17 @@ class Program
                 card.SetResourceReference(Border.BorderBrushProperty, "CardEdgeBrush");
                 var page = new Border { Padding = new Thickness(24), Child = card };
                 page.SetResourceReference(Border.BackgroundProperty, "BgDarkBrush");
-                var host = new Window { Content = page, SizeToContent = SizeToContent.WidthAndHeight, WindowStyle = WindowStyle.None,
-                                        ShowInTaskbar = false, Left = -10000, Top = -10000, AllowsTransparency = false };
-                host.Show();
+                // no window: measure and arrange off screen, then render
+                Console.WriteLine($"render {s.file} {theme}…");
+                page.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                page.Arrange(new Rect(page.DesiredSize));
                 page.UpdateLayout();
-                sk.Refresh();
-                host.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 int w = (int)Math.Ceiling(page.ActualWidth), h = (int)Math.Ceiling(page.ActualHeight);
                 var bmp = new RenderTargetBitmap(w * 2, h * 2, 192, 192, PixelFormats.Pbgra32);
                 bmp.Render(page);
                 var enc = new PngBitmapEncoder();
                 enc.Frames.Add(BitmapFrame.Create(bmp));
                 using (var f = File.Create(Path.Combine(outDir, $"{s.file}-{theme.ToLowerInvariant()}.png"))) enc.Save(f);
-                host.Close();
                 Console.WriteLine($"{s.file} {theme} {w}x{h}");
             }
         }

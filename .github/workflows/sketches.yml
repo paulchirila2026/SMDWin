@@ -15,6 +15,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - name: Render
+        timeout-minutes: 8
         run: dotnet run --project tools/SketchRender/SketchRender.csproj -c Release -- sketches
       - uses: actions/upload-artifact@v4
         with:
