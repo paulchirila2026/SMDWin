@@ -544,7 +544,7 @@ namespace SMDWin.Views
             if (hw.Optical) b.Optical(432, 56, 66, 66);
             if (bay) { b.Drive25(438, 150, 54, 78, sysNvme ? -1 : 2); if (!sysNvme) b.Led(465, 220); }
             b.Air("M226 336 C226 326 226 318 226 308", false); b.Air("M374 336 C374 326 374 318 374 308", false);
-            m.Anchor[0] = new Point(276, 180); m.Lane[0] = 144;
+            m.Anchor[0] = new Point(289, 180); m.Lane[0] = 144;   // right of the heat pipes
             m.Anchor[1] = new Point(400, 178);
             m.Anchor[2] = sysNvme || !bay ? new Point(298, 249) : new Point(492, 189);
             m.Anchor[3] = m.Anchor[0];
@@ -589,10 +589,10 @@ namespace SMDWin.Views
                 if (sysNvme) b.Led(369, 130 + m2h - 10);
             }
             else b.Rect(352, 130, 34, m2h, 2, Sty.Faint);
-            if (bay) { b.Drive25(336, 214, 66, 74, sysNvme ? -1 : 2); if (!sysNvme) b.Led(394, 222); }
-            m.Anchor[0] = new Point(306, 168); m.Lane[0] = 121;
+            if (bay) { b.Drive25(336, 214, 66, 68, sysNvme ? -1 : 2); if (!sysNvme) b.Led(394, 222); }
+            m.Anchor[0] = new Point(320, 168); m.Lane[0] = 121;   // right of the heat pipes
             m.Anchor[1] = new Point(312, 263); m.Lane[1] = 287;
-            m.Anchor[2] = sysNvme || !bay ? new Point(386, bay ? 180 : 210) : new Point(402, 251);
+            m.Anchor[2] = sysNvme || !bay ? new Point(386, bay ? 180 : 210) : new Point(402, 248);
             m.Anchor[3] = m.Anchor[0];
             return m;
         }
