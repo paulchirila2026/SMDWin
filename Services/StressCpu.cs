@@ -175,6 +175,13 @@ namespace SMDWin.Services
                 var v5 = Vector256.Create(1.65f);
                 var v6 = Vector256.Create(1.76f);
                 var v7 = Vector256.Create(1.87f);
+                // 12 independent chains: a multiply-add takes ~4-5 cycles and two can start per cycle, so ~10 must be in flight for
+                // the units to never wait (8 left ~20 % of them idle on Haswell — lower power than OCCT). 12 + 2 constants fit the
+                // 16 vector registers.
+                var v8  = Vector256.Create(1.98f);
+                var v9  = Vector256.Create(2.09f);
+                var v10 = Vector256.Create(2.20f);
+                var v11 = Vector256.Create(2.31f);
 
                 var intSeedRnd = new Random(Environment.CurrentManagedThreadId * 104729 + 7);
                 var intBufA = new long[IntKernelBufLen];
@@ -190,8 +197,10 @@ namespace SMDWin.Services
                 {
                     int pct = _intensityPct;
 
-                    const long KernelPeriodMs = 20_000;
-                    bool intKernelTurn = ((Environment.TickCount64 / KernelPeriodMs) % 2) == 1;
+                    // The integer check runs 2 s of every 30 s: it verifies another part of the processor, but it is much lighter
+                    // than the vector work — at half of the time (as before) the power and the temperature kept dropping every 20 s.
+                    const long KernelPeriodMs = 30_000, IntKernelMs = 2_000;
+                    bool intKernelTurn = (Environment.TickCount64 % KernelPeriodMs) < IntKernelMs;
 
                     // ── Work slice: exactly pct ms, measured ──────────────────
                     slice.Restart();
@@ -228,17 +237,23 @@ namespace SMDWin.Services
                                 v5 = Fma.MultiplyAdd(v5, a, b);
                                 v6 = Fma.MultiplyAdd(v6, a, b);
                                 v7 = Fma.MultiplyAdd(v7, a, b);
+                                v8  = Fma.MultiplyAdd(v8,  a, b);
+                                v9  = Fma.MultiplyAdd(v9,  a, b);
+                                v10 = Fma.MultiplyAdd(v10, a, b);
+                                v11 = Fma.MultiplyAdd(v11, a, b);
                             }
                             if (token.IsCancellationRequested) break;
                         }
                         // Sink — the result "escapes" the loop, so the JIT cannot eliminate the computation
-                        _fmaSink = v0.GetElement(0) + v3.GetElement(1) + v7.GetElement(2);
+                        _fmaSink = v0.GetElement(0) + v3.GetElement(1) + v7.GetElement(2) + v11.GetElement(3);
 
                         if (!IsFinite(v0) || !IsFinite(v1) || !IsFinite(v2) || !IsFinite(v3) ||
-                            !IsFinite(v4) || !IsFinite(v5) || !IsFinite(v6) || !IsFinite(v7))
+                            !IsFinite(v4) || !IsFinite(v5) || !IsFinite(v6) || !IsFinite(v7) ||
+                            !IsFinite(v8) || !IsFinite(v9) || !IsFinite(v10) || !IsFinite(v11))
                         {
                             if (HasRealCorruption(v0) || HasRealCorruption(v1) || HasRealCorruption(v2) || HasRealCorruption(v3) ||
-                                HasRealCorruption(v4) || HasRealCorruption(v5) || HasRealCorruption(v6) || HasRealCorruption(v7))
+                                HasRealCorruption(v4) || HasRealCorruption(v5) || HasRealCorruption(v6) || HasRealCorruption(v7) ||
+                                HasRealCorruption(v8) || HasRealCorruption(v9) || HasRealCorruption(v10) || HasRealCorruption(v11))
                             {
                                 System.Threading.Interlocked.Increment(ref _integrityErrorCount);
                             }
@@ -246,6 +261,8 @@ namespace SMDWin.Services
                             v2 = Vector256.Create(1.32f); v3 = Vector256.Create(1.43f);
                             v4 = Vector256.Create(1.54f); v5 = Vector256.Create(1.65f);
                             v6 = Vector256.Create(1.76f); v7 = Vector256.Create(1.87f);
+                            v8 = Vector256.Create(1.98f); v9 = Vector256.Create(2.09f);
+                            v10 = Vector256.Create(2.20f); v11 = Vector256.Create(2.31f);
                         }
                     }
                     else
@@ -300,7 +317,7 @@ namespace SMDWin.Services
                     }
                     counts[idx] = c;
                     mismatchCounts[idx] = localMismatches;
-                }) { IsBackground = true };
+                }) { IsBackground = true, Priority = ThreadPriority.BelowNormal };   // below the interface: the window stays responsive, the idle processor time (the score) is the same
                 threads[idx].Start();
             }
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -382,7 +399,7 @@ namespace SMDWin.Services
                         }
                     }
                     counts[idx] = c;
-                }) { IsBackground = true };
+                }) { IsBackground = true, Priority = ThreadPriority.BelowNormal };   // below the interface: the window stays responsive, the idle processor time (the score) is the same
                 threads[idx].Start();
             }
             foreach (var t in threads) t.Join();
@@ -439,7 +456,7 @@ namespace SMDWin.Services
                         if (py >= Height) py = idx;
                     }
                     work[idx] = w;
-                }) { IsBackground = true };
+                }) { IsBackground = true, Priority = ThreadPriority.BelowNormal };   // below the interface: the window stays responsive, the idle processor time (the score) is the same
                 threads[idx].Start();
             }
             foreach (var t in threads) t.Join();
@@ -481,7 +498,7 @@ namespace SMDWin.Services
                         }
                     }
                     bytes[idx] = b;
-                }) { IsBackground = true };
+                }) { IsBackground = true, Priority = ThreadPriority.BelowNormal };   // below the interface: the window stays responsive, the idle processor time (the score) is the same
                 threads[idx].Start();
             }
             foreach (var t in threads) t.Join();
@@ -585,7 +602,7 @@ namespace SMDWin.Services
                     }
                     counts[idx] = c;
                     mismatchCounts[idx] = localMismatches;
-                }) { IsBackground = true };
+                }) { IsBackground = true, Priority = ThreadPriority.BelowNormal };   // below the interface: the window stays responsive, the idle processor time (the score) is the same
                 threads[idx].Start();
             }
             foreach (var t in threads) t.Join();

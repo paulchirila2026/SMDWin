@@ -789,6 +789,18 @@
                       <TextBlock x:Name="TxtStressGpuMM" Visibility="Collapsed"/>
                     </Grid>
 
+                    <!-- GPU power: the clearest sign of how hard a stress test works the card (shown only when the card reports it) -->
+                    <Grid x:Name="RowGpuBoardPower" Margin="8,1,8,1" MinHeight="28" Visibility="Collapsed">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                        <TextBlock Text="Power" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                      <TextBlock x:Name="TxtGpuBoardPowerNow" Grid.Column="2" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuBoardPowerMin" Grid.Column="3" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                      <TextBlock x:Name="TxtGpuBoardPowerMax" Grid.Column="4" Text="—" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Right" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center"/>
+                    </Grid>
+
                     <!-- GPU Clock + VRAM -->
                     <Grid Margin="8,1,8,1" Cursor="Hand" MouseLeftButtonUp="SensorRow_Click" Tag="GpuClock" MinHeight="28">
                       <Grid.ColumnDefinitions><ColumnDefinition Width="0"/><ColumnDefinition Width="*" MinWidth="120"/><ColumnDefinition Width="70"/><ColumnDefinition Width="62"/><ColumnDefinition Width="62"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
@@ -887,14 +899,14 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                       </Grid.RowDefinitions>
-                      <Border Grid.Row="0" Background="{DynamicResource BgHoverBrush}" Opacity="0.6">
+                      <Border Grid.Row="0" Background="{DynamicResource BgHoverBrush}">
                         <Grid Margin="8,7,8,2">
                           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border Background="{DynamicResource AccentLightBrush}" CornerRadius="4" Padding="8,3">
                               <TextBlock Text="iGPU" FontSize="{StaticResource FontSizeXS}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
                             </Border>
                             <TextBlock x:Name="TxtIntegratedGpuName" Text="iGPU" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextSecondaryBrush}" Opacity="0.9"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                           </StackPanel>
                         </Grid>

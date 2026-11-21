@@ -1215,13 +1215,13 @@ namespace SMDWin.Services
 
             static string ReasonText(string reason) => reason switch
             {
-                "Thermal" => "too hot",
-                "PowerLimit" => "power limit",
-                "BdProchot" => "the charger / board forced it",
-                "BatterySaver" => "battery saver",
-                "VrThermal" => "power circuit too hot",
-                "FixedFrequency" => "fixed low speed",
-                _ => "unknown reason",
+                "Thermal" => Tx("too hot"),
+                "PowerLimit" => Tx("power limit"),
+                "BdProchot" => Tx("the charger / board forced it"),
+                "BatterySaver" => Tx("battery saver"),
+                "VrThermal" => Tx("power circuit too hot"),
+                "FixedFrequency" => Tx("fixed low speed"),
+                _ => Tx("unknown reason"),
             };
         }
 

@@ -475,6 +475,23 @@ namespace SMDWin.Views
             UpdateHeroBar(cpuPct, ramPct, cpuTemp, gpuTemp);
             UpdateComputeStatus(CpuStatusPill, CpuStatusText, cpuPct, cpuTemp, SettingsService.Current.TempWarnCpu, busyAt: 70, idleBelow: 0);
             UpdateComputeStatus(GpuStatusPill, GpuStatusText, gpuPct, gpuTemp, SettingsService.Current.TempWarnGpu, busyAt: 50, idleBelow: 50);
+            // A laptop graphics chip that Windows switched off keeps reporting its last temperature (68 °C for minutes on a GTX 960M
+            // while the processor ran at 90 °C). No load and a temperature that has not moved by a tenth of a degree for a minute:
+            // the card is asleep and the figure is its last reading.
+            if (!float.IsNaN(gpuTemp) && gpuTemp > 0)
+            {
+                if (float.IsNaN(_gpuTempLastVal) || Math.Abs(gpuTemp - _gpuTempLastVal) >= 0.1f || gpuPct >= 1f) { _gpuTempLastVal = gpuTemp; _gpuTempChangedUtc = DateTime.UtcNow; }
+                bool asleep = gpuPct < 1f && !_gpuStress.IsRunning && (DateTime.UtcNow - _gpuTempChangedUtc).TotalSeconds >= 60;
+                if (asleep && GpuStatusText != null && gpuTemp < SettingsService.Current.TempWarnGpu - 10)
+                {
+                    SetStateLabel(GpuStatusText, T4("Asleep", "În repaus", "Ruhezustand", "En veille"), (System.Windows.Media.Brush)FindResource("AccentBrush"));
+                    GpuStatusText.ToolTip = T4("The graphics card is switched off to save power; the temperature shown is its last reading.",
+                                               "Placa video e oprită pentru economie de energie; temperatura afișată e ultima citită.",
+                                               "Die Grafikkarte ist zum Stromsparen abgeschaltet; die Temperatur ist der letzte Messwert.",
+                                               "La carte graphique est éteinte pour économiser l'énergie ; la température affichée est la dernière lue.");
+                }
+                else if (GpuStatusText != null) GpuStatusText.ToolTip = null;
+            }
             UpdateStatusPill(RamStatusPill, RamStatusText, ramPct, 90, 75, "critical", "high", "ok");   // the same words as the RAM page
 
             if (TxtDashRamUsed != null)
@@ -1401,6 +1418,9 @@ namespace SMDWin.Views
         /// Changes the state label (Cool → Warm → Hot, Ok → High): the text fades briefly, and the colour moves smoothly from the
         /// old one to the new one. The animation runs only at the moment of change and only with animations on.
         /// </summary>
+        private float _gpuTempLastVal = float.NaN;
+        private DateTime _gpuTempChangedUtc = DateTime.UtcNow;
+
         private static void SetStateLabel(TextBlock label, string text, System.Windows.Media.Brush brush)
         {
             if (label.Text == text) { label.Foreground = brush; return; }

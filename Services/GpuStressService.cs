@@ -137,6 +137,12 @@ namespace SMDWin.Services
             SharpDX.Direct3D11.Buffer? verifyStaging = null;
             ComputeShader?             verifyShader  = null;
             ComputeShader?        cs      = null;
+            VertexShader?         vs      = null;
+            PixelShader?          ps      = null;
+            Texture2D?            tex     = null;
+            ShaderResourceView?   texSrv  = null;
+            SamplerState?         sampler = null;
+            RasterizerState?      rsState = null;
             var                   pacingQueries = new List<Query>();   // frames in flight on the GPU (the queue does not drain between frames)
             bool                  usedWarp    = false;
             // integrated graphics (no dedicated video memory): uses the computer's memory and bus, so a full-load test
@@ -249,9 +255,11 @@ namespace SMDWin.Services
 
                 StatusText = $"GPU: {GetAdapterName(device)}";
 
+                // The image the draw pass paints over every frame: real pixel writes (a one-colour clear is nearly free on modern
+                // cards, it only marks the memory as cleared).
                 bigRT = new Texture2D(device, new Texture2DDescription
                 {
-                    Width = 4096, Height = 4096, MipLevels = 1, ArraySize = 1,
+                    Width = RtSize, Height = RtSize, MipLevels = 1, ArraySize = 1,
                     Format = Format.R8G8B8A8_UNorm,
                     SampleDescription = new SampleDescription(1, 0),
                     Usage = ResourceUsage.Default,
@@ -261,29 +269,114 @@ namespace SMDWin.Services
                 });
                 rtv = new RenderTargetView(device, bigRT);
 
-                uavBuf = new SharpDX.Direct3D11.Buffer(device, new BufferDescription
+                // The compute work reads and writes a large buffer spread over the card's memory, so the memory and its bus work too,
+                // not only the calculation units. A quarter of the card's memory, between 64 and 512 MB (D3D11 allows one resource up
+                // to a quarter of the video memory); 64 MB on integrated graphics, which share the computer's memory.
+                long dedicatedVram = 0;
+                try
                 {
-                    SizeInBytes = 4 * 1024 * 1024 * 4,
-                    Usage = ResourceUsage.Default,
-                    BindFlags = BindFlags.UnorderedAccess | BindFlags.ShaderResource,
-                    CpuAccessFlags = CpuAccessFlags.None,
-                    OptionFlags = ResourceOptionFlags.BufferAllowRawViews,
-                    StructureByteStride = 0
-                });
+                    using var dxgiDev = device.QueryInterface<SharpDX.DXGI.Device>();
+                    using var adapter = dxgiDev.GetParent<SharpDX.DXGI.Adapter>();
+                    dedicatedVram = (long)adapter.Description.DedicatedVideoMemory;
+                }
+                catch (Exception ex) { AppLogger.Debug($"GpuStressService: video memory size: {ex.Message}"); }
+                int bufMB = 64;
+                if (!usedWarp && !sharedMemoryGpu)
+                    while (bufMB < 512 && (long)bufMB * 2 * 4 * 1024 * 1024 <= dedicatedVram) bufMB *= 2;
+                if (usedWarp) bufMB = 16;
+                while (uavBuf == null)
+                {
+                    try
+                    {
+                        uavBuf = new SharpDX.Direct3D11.Buffer(device, new BufferDescription
+                        {
+                            SizeInBytes = bufMB * 1024 * 1024,
+                            Usage = ResourceUsage.Default,
+                            BindFlags = BindFlags.UnorderedAccess | BindFlags.ShaderResource,
+                            CpuAccessFlags = CpuAccessFlags.None,
+                            OptionFlags = ResourceOptionFlags.BufferAllowRawViews,
+                            StructureByteStride = 0
+                        });
+                    }
+                    catch (Exception ex) when (bufMB > 16)
+                    {
+                        AppLogger.Debug($"GpuStressService: {bufMB} MB buffer refused ({ex.Message}) — trying half");
+                        bufMB /= 2;
+                    }
+                }
                 uav = new UnorderedAccessView(device, uavBuf, new UnorderedAccessViewDescription
                 {
                     Format = Format.R32_Typeless,
                     Dimension = UnorderedAccessViewDimension.Buffer,
                     Buffer = new UnorderedAccessViewDescription.BufferResource
                     {
-                        FirstElement = 0, ElementCount = 4 * 1024 * 1024,
+                        FirstElement = 0, ElementCount = bufMB * 1024 * 1024 / 4,
                         Flags = UnorderedAccessViewBufferFlags.Raw
                     }
                 });
+                AppLogger.Info($"GpuStressService: compute buffer {bufMB} MB (dedicated video memory {dedicatedVram / 1048576} MB)");
+
+                // Draw pass: a full-screen triangle whose pixel shader samples a texture several times — the texture units,
+                // the pixel writers and the memory work like in a game. Skipped when the shaders do not compile (feature level 10).
+                if (!usedWarp)
+                {
+                    try
+                    {
+                        var vsCode = SharpDX.D3DCompiler.ShaderBytecode.Compile(DrawHlsl, "VSMain", "vs_5_0",
+                            SharpDX.D3DCompiler.ShaderFlags.OptimizationLevel3, SharpDX.D3DCompiler.EffectFlags.None).Bytecode?.Data;
+                        var psCode = SharpDX.D3DCompiler.ShaderBytecode.Compile(DrawHlsl, "PSMain", "ps_5_0",
+                            SharpDX.D3DCompiler.ShaderFlags.OptimizationLevel3, SharpDX.D3DCompiler.EffectFlags.None).Bytecode?.Data;
+                        if (vsCode != null && psCode != null)
+                        {
+                            vs = new VertexShader(device, vsCode);
+                            ps = new PixelShader(device, psCode);
+                            var rnd = new Random(1234);
+                            var pixels = new byte[TexSize * TexSize * 4];
+                            rnd.NextBytes(pixels);
+                            var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+                            try
+                            {
+                                tex = new Texture2D(device, new Texture2DDescription
+                                {
+                                    Width = TexSize, Height = TexSize, MipLevels = 1, ArraySize = 1,
+                                    Format = Format.R8G8B8A8_UNorm, SampleDescription = new SampleDescription(1, 0),
+                                    Usage = ResourceUsage.Immutable, BindFlags = BindFlags.ShaderResource,
+                                }, new SharpDX.DataRectangle(handle.AddrOfPinnedObject(), TexSize * 4));
+                            }
+                            finally { handle.Free(); }
+                            texSrv  = new ShaderResourceView(device, tex);
+                            sampler = new SamplerState(device, new SamplerStateDescription
+                            {
+                                Filter = Filter.MinMagMipLinear,
+                                AddressU = TextureAddressMode.Wrap, AddressV = TextureAddressMode.Wrap, AddressW = TextureAddressMode.Wrap,
+                                MaximumLod = float.MaxValue,
+                            });
+                            rsState = new RasterizerState(device, new RasterizerStateDescription { CullMode = CullMode.None, FillMode = FillMode.Solid });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Debug($"GpuStressService: draw pass unavailable ({ex.Message}) — compute only");
+                        vs?.Dispose(); vs = null; ps?.Dispose(); ps = null;
+                        texSrv?.Dispose(); texSrv = null; tex?.Dispose(); tex = null;
+                        sampler?.Dispose(); sampler = null; rsState?.Dispose(); rsState = null;
+                    }
+                }
+                bool canDraw = vs != null && ps != null && texSrv != null && sampler != null;
 
                 cs = CompileComputeShader(device);
-                ctx.Rasterizer.SetViewport(0, 0, 4096, 4096);
+                ctx.Rasterizer.SetViewport(0, 0, RtSize, RtSize);
                 ctx.OutputMerger.SetRenderTargets(rtv);
+                if (canDraw)
+                {
+                    ctx.Rasterizer.State = rsState;
+                    ctx.InputAssembler.InputLayout = null;
+                    ctx.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+                    ctx.VertexShader.Set(vs);
+                    ctx.PixelShader.Set(ps);
+                    ctx.PixelShader.SetShaderResource(0, texSrv);
+                    ctx.PixelShader.SetSampler(0, sampler);
+                }
 
                 verifyShader = CompileVerifyShader(device);
                 if (verifyShader != null)
@@ -337,11 +430,12 @@ namespace SMDWin.Services
                 StatusText = cs != null ? "Running" : "Running (render only)";
 
                 bool onWarp = usedWarp;
+                // one dispatch = 16 M threads, each with 8 independent chains of 4-wide multiply-adds (the units never wait for the
+                // previous result) and a read + write in the big buffer. It starts with one dispatch + one draw per frame and the work
+                // per frame doubles while frames are short — slow cards stay far from the 2 s limit after which Windows resets the driver.
                 int dispatchGroups   = onWarp ? 512 : 65536;
-                int dispatchesPerFrm = onWarp ? 1   : 4;
-                // 16 fills × 64 MB = 1 GB of memory writes per frame: fine on a card with its own memory, but on integrated graphics
-                // it occupies the whole computer's memory bus (the processor and the interface are left without it)
-                int clearsPerFrame = sharedMemoryGpu ? 2 : 16;
+                int dispatchesPerFrm = 1;
+                int maxPerFrame      = sharedMemoryGpu ? 2 : 64;
 
                 long count = 0;
                 var  timer = DateTime.UtcNow;
@@ -380,15 +474,19 @@ namespace SMDWin.Services
                     }
 
                     if (run.StopRequested) break;
-                    for (int i = 0; i < clearsPerFrame; i++)
+                    if (canDraw && !(EnduranceMode && (frame % 5 == 0)))
                     {
-                        if ((i & 7) == 0 && run.StopRequested) goto stressLoopExit;
-                        ctx.ClearRenderTargetView(rtv,
-                            new SharpDX.Mathematics.Interop.RawColor4(
-                                0.5f + 0.5f * MathF.Sin(ft + i * 0.07f),
-                                0.5f + 0.5f * MathF.Cos(ft + i * 0.05f),
-                                0.5f + 0.5f * MathF.Sin(ft * 1.3f + i * 0.09f),
-                                1f));
+                        for (int i = 0; i < dispatchesPerFrm; i++)
+                        {
+                            if (run.StopRequested) goto stressLoopExit;
+                            ctx.Draw(3, 0);
+                        }
+                    }
+                    else if (!canDraw)
+                    {
+                        // no draw pass (old card / WARP): a few fills keep the pixel writers from idling
+                        ctx.ClearRenderTargetView(rtv, new SharpDX.Mathematics.Interop.RawColor4(
+                            0.5f + 0.5f * MathF.Sin(ft), 0.5f + 0.5f * MathF.Cos(ft), 0.5f, 1f));
                     }
                     if (run.StopRequested) break;
 
@@ -423,9 +521,9 @@ namespace SMDWin.Services
                         timer = now;
                         // frames are too short (fast card): more work is put into one frame until a frame takes ~25-50 ms.
                         // Still well under the 2 s limit after which Windows resets the driver.
-                        if (!onWarp && !sharedMemoryGpu && framesThisSecond > 40 && dispatchesPerFrm < 64)
+                        if (!onWarp && framesThisSecond > 40 && dispatchesPerFrm < maxPerFrame)
                         {
-                            dispatchesPerFrm = Math.Min(64, dispatchesPerFrm * 2);
+                            dispatchesPerFrm = Math.Min(maxPerFrame, dispatchesPerFrm * 2);
                             AppLogger.Debug($"GpuStress: {framesThisSecond} frames/s — dispatches per frame: {dispatchesPerFrm}");
                         }
                         framesThisSecond = 0;
@@ -466,6 +564,12 @@ namespace SMDWin.Services
             {
                 foreach (var pq in pacingQueries) { try { pq.Dispose(); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); } }
                 cs?.Dispose();
+                vs?.Dispose();
+                ps?.Dispose();
+                texSrv?.Dispose();
+                tex?.Dispose();
+                sampler?.Dispose();
+                rsState?.Dispose();
                 uav?.Dispose();
                 uavBuf?.Dispose();
                 rtv?.Dispose();
@@ -595,29 +699,78 @@ void CSVerify(uint3 id : SV_DispatchThreadID)
             }
         }
 
-        private static ComputeShader? CompileComputeShader(D3D11Device device)
-        {
-            const string hlsl = @"
+        private const int RtSize  = 4096;   // draw target: 4096 × 4096 = 16.7 M pixels per draw
+        private const int TexSize = 1024;   // the sampled texture
+
+        /// <summary>
+        /// Each thread: one 16-byte read from a pseudo-random place in the big buffer (the memory works), 64 rounds of 8 independent
+        /// 4-wide multiply-add chains (the calculation units are always busy, none waits for the previous result), a sine and a
+        /// square root now and then (the special-function units), and a write back to the same place.
+        /// </summary>
+        private const string ComputeHlsl = @"
 RWByteAddressBuffer Output : register(u0);
 [numthreads(256,1,1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    uint addr = (id.x & 0xFFFFF) * 4;
-    float v = asfloat(Output.Load(addr));
-    [unroll(512)]
-    for (int i = 0; i < 512; i++)
-        v = mad(v, 1.0000003f, 0.000001f);
-    Output.Store(addr, asuint(v));
+    uint bytes; Output.GetDimensions(bytes);
+    uint n = bytes / 16;
+    uint addr = ((id.x * 2654435761u) & (n - 1)) * 16;
+    float4 a = asfloat(Output.Load4(addr));
+    a = (a == a && abs(a) < 1e6) ? a : 1.0;
+    float4 v0 = a,       v1 = a + 0.1, v2 = a + 0.2, v3 = a + 0.3;
+    float4 v4 = a + 0.4, v5 = a + 0.5, v6 = a + 0.6, v7 = a + 0.7;
+    const float4 m = float4(1.0000003, 0.9999997, 1.0000001, 0.9999999);
+    const float4 c = 0.000001;
+    [loop]
+    for (int i = 0; i < 64; i++)
+    {
+        v0 = mad(v0, m, c); v1 = mad(v1, m, c); v2 = mad(v2, m, c); v3 = mad(v3, m, c);
+        v4 = mad(v4, m, c); v5 = mad(v5, m, c); v6 = mad(v6, m, c); v7 = mad(v7, m, c);
+        if ((i & 15) == 15)
+        {
+            v0 += sin(v1) * 1e-7;
+            v4 += rsqrt(abs(v5) + 1.0) * 1e-7;
+        }
+    }
+    float4 r = (v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7) * 0.125;
+    Output.Store4(addr, asuint(r));
 }";
+
+        /// <summary>A full-screen triangle (no vertex buffer) and a pixel shader that samples the texture 8 times with filtering
+        /// and mixes the results — the texture units, the pixel writers and the memory, as in a game.</summary>
+        private const string DrawHlsl = @"
+Texture2D Tex : register(t0);
+SamplerState Smp : register(s0);
+float4 VSMain(uint id : SV_VertexID) : SV_Position
+{
+    float2 uv = float2((id << 1) & 2, id & 2);
+    return float4(uv * float2(2, -2) + float2(-1, 1), 0, 1);
+}
+float4 PSMain(float4 pos : SV_Position) : SV_Target
+{
+    float2 uv = pos.xy / 1024.0;
+    float4 acc = 0.25;
+    [unroll]
+    for (int i = 0; i < 8; i++)
+    {
+        float4 t = Tex.Sample(Smp, uv * (1.0 + i * 0.37) + i * 0.13 + acc.xy * 0.01);
+        acc = mad(acc, t, t * 0.5 + 0.25);
+        acc = acc * 0.5 + sin(acc.yzwx) * 0.05;
+    }
+    return frac(acc);
+}";
+
+        private static ComputeShader? CompileComputeShader(D3D11Device device)
+        {
             try
             {
                 var bc = SharpDX.D3DCompiler.ShaderBytecode.Compile(
-                    hlsl, "CSMain", "cs_5_0",
+                    ComputeHlsl, "CSMain", "cs_5_0",
                     SharpDX.D3DCompiler.ShaderFlags.OptimizationLevel3,
                     SharpDX.D3DCompiler.EffectFlags.None);
                 return bc.Bytecode == null ? null : new ComputeShader(device, bc.Bytecode);
             }
-            catch { return null; }
+            catch (Exception ex) { AppLogger.Debug($"GpuStressService: compute shader compilation failed ({ex.Message})."); return null; }
         }
 
         private static string GetAdapterName(D3D11Device device)

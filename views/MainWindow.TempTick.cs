@@ -447,6 +447,20 @@ namespace SMDWin.Views
                     if (FindName("TxtGpuLoadMax") is TextBlock glMax) { glMax.Text = FmtPct(_gpuLoadMax); glMax.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush"); }
                     if (FindName("TxtGpuLoadAvg") is TextBlock glAvg && _gpuLoadCnt > 0) glAvg.Text = FmtPct(_gpuLoadSum / _gpuLoadCnt);
                 }
+                // GPU power (W) — the row appears only when the card reports it
+                if (FindName("RowGpuBoardPower") is FrameworkElement gpRow)
+                {
+                    float? gpw = _lastTempSnap?.GpuPowerW is float gw && gw > 0.05f ? gw : null;
+                    gpRow.Visibility = gpw.HasValue || _gpuPwMax > 0 ? Visibility.Visible : Visibility.Collapsed;
+                    if (gpw is float g)
+                    {
+                        if (g < _gpuPwMin) _gpuPwMin = g;
+                        if (g > _gpuPwMax) _gpuPwMax = g;
+                    }
+                    if (FindName("TxtGpuBoardPowerNow") is TextBlock gpNow) gpNow.Text = gpw.HasValue ? $"{gpw.Value:F0} W" : "—";
+                    if (FindName("TxtGpuBoardPowerMin") is TextBlock gpMin && _gpuPwMax > 0) gpMin.Text = $"{_gpuPwMin:F0} W";
+                    if (FindName("TxtGpuBoardPowerMax") is TextBlock gpMax && _gpuPwMax > 0) gpMax.Text = $"{_gpuPwMax:F0} W";
+                }
                 // RAM
                 if (_cachedTotalRamMB > 0 && _cachedAvailRamMB >= 0)
                 {

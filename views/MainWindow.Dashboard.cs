@@ -953,8 +953,11 @@ namespace SMDWin.Views
                     int health = _batteryWearPct >= 0 ? Math.Max(0, 100 - _batteryWearPct) : 0;
                     TxtDashBatHealth.Text = health > 0 ? $"{health}%" : "—";
                     // theme status colours (the fixed bright green had 2.3:1 contrast on Light)
-                    TxtDashBatHealth.SetResourceReference(TextBlock.ForegroundProperty,
-                        health >= 80 ? "StatusGoodBrush" : health >= 60 ? "StatusCheckBrush" : "StatusProblemBrush");
+                    // the brush itself, resolved now: this text sits in a hidden stub and the visible footer copies its Foreground
+                    // through a binding — with a resource reference the footer kept the red of the first pass ("—" before the battery
+                    // data arrived) and showed a 99 % battery in red.
+                    string bk = health <= 0 ? "TextSecondaryBrush" : health >= 80 ? "StatusGoodBrush" : health >= 60 ? "StatusCheckBrush" : "StatusProblemBrush";
+                    if (TryFindResource(bk) is Brush bb) TxtDashBatHealth.Foreground = bb;
                 }
             }
 
@@ -1450,8 +1453,15 @@ namespace SMDWin.Views
                     }
                     if (FindName("TxtDashRowDiskHealth") is System.Windows.Controls.TextBlock rowHealth)
                     {
-                        // the weakest health among the disks
-                        var healths = _allDisks.Where(d => d.HealthPercent > 0).Select(d => d.HealthPercent).ToList();
+                        // the health of the drive named on the card (the system drive). It used to be the weakest of all drives, so the
+                        // card of a Samsung SSD showed the 82 % of the second drive (an HDD). The other drives are listed in the tooltip.
+                        var withHealth = _allDisks.Where(d => d.HealthPercent > 0).ToList();
+                        var mainDisk = withHealth.FirstOrDefault(d => string.Equals(d.Model?.Trim(), mainGrp[0].model?.Trim(), StringComparison.OrdinalIgnoreCase))
+                                       ?? withHealth.OrderBy(d => d.DiskIndex).FirstOrDefault();
+                        var healths = mainDisk != null ? new List<int> { mainDisk.HealthPercent } : new List<int>();
+                        rowHealth.ToolTip = withHealth.Count > 1
+                            ? string.Join("\n", withHealth.Select(d => $"{d.Model?.Trim()}: {d.HealthPercent}%"))
+                            : null;
                         if (healths.Count > 0)
                         {
                             int worst = healths.Min();

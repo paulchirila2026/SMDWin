@@ -87,7 +87,7 @@ namespace SMDWin.Views
                 {
                     var label = new TextBlock
                     {
-                        Text = _driversAttnExpanded ? "Show fewer ▲" : $"Show all {rowsAll.Count} ▼",
+                        Text = _driversAttnExpanded ? PT("Show fewer") + " ▲" : PT("Show all ({0})", rowsAll.Count) + " ▼",
                         FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 0, 0),
                     };
                     label.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");

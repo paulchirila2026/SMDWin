@@ -173,7 +173,7 @@ namespace SMDWin.Views
             _cpuPowerMin = float.MaxValue; _cpuPowerMax = float.MinValue;
             _cpuVCoreMin = float.MaxValue; _cpuVCoreMax = float.MinValue; _cpuVCoreSum = 0f; _cpuVCoreCnt = 0;
             _gpuTempMin = float.MaxValue; _gpuTempMax = 0f; _gpuTempSum = 0f; _gpuTempCnt = 0;
-            _gpuLoadMin = float.MaxValue; _gpuLoadMax = 0f; _gpuLoadSum = 0f; _gpuLoadCnt = 0;
+            _gpuLoadMin = float.MaxValue; _gpuLoadMax = 0f; _gpuLoadSum = 0f; _gpuLoadCnt = 0; _gpuPwMin = float.MaxValue; _gpuPwMax = 0f;
             _gpuFreqMin = float.MaxValue; _gpuFreqMax = float.MinValue;
             _gpuMemFreqMin = float.MaxValue; _gpuMemFreqMax = float.MinValue;
             _gpuPowerMin = float.MaxValue; _gpuPowerMax = float.MinValue;

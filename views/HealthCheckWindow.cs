@@ -885,6 +885,8 @@ namespace SMDWin.Views
             g.Children.Add(Dot(brush));
             var sp = new StackPanel { VerticalAlignment = VAlign.Center, Margin = new Thickness(0, 0, 10, 0) };
             var t = Txt(title, "TextPrimaryBrush", Ui.FontM, FontWeights.SemiBold);
+            // a long finding ("Processor under load · Hot under load: 91 °C · 11 min test on …") wraps instead of being cut
+            t.TextWrapping = TextWrapping.Wrap; t.TextTrimming = TextTrimming.None;
             sp.Children.Add(t);
             if (why.Length > 0)
             {

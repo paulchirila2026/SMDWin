@@ -418,7 +418,7 @@ namespace SMDWin.Views
                 TxtSurfaceSpeedSubtitle.Text = complete ? "  ·  start → end of the drive"
                     : _surfaceChartWindowMin > 0 ? $"  ·  last {_surfaceChartWindowMin} min · right-click to change"
                     : _surfaceChartWindowMin == 0 ? "  ·  everything scanned so far · right-click to change"
-                    : "  ·  start → end of the drive · right-click to zoom in";
+                    : PT("  ·  start → end of the drive · right-click to zoom in");
                 UpdateSurfaceHistogram(hist, final);
                 RenderSurfaceProblems(probs, overflow);
                 SurfaceBlockMap.CurrentCell = final ? -1 : CellIndexForSector(currentSector);
@@ -634,7 +634,7 @@ namespace SMDWin.Views
             TxtSurfacePctLabel.Text   = "0%";
             SurfaceProgressFill.Width = 0;
             SurfaceProgressFill.SetResourceReference(Border.BackgroundProperty, "AccentBrush");
-            TxtSurfacePhase.Text      = "Scanning…";
+            TxtSurfacePhase.Text      = PT("Scanning…");
             TxtSurfaceEta.Text        = "calculating…";
             SetSurfaceVerdict(0, 0, SurfaceScanState.Running);
 
@@ -674,7 +674,7 @@ namespace SMDWin.Views
             finally
             {
                 BtnSurfaceStart.IsEnabled  = true;
-                if (TxtSurfaceStartLabel != null) TxtSurfaceStartLabel.Text = "Start Scan";
+                if (TxtSurfaceStartLabel != null) TxtSurfaceStartLabel.Text = PT("Start Scan");
                 SetStopLook(BtnSurfaceStart, running: false);
                 SetNavTaskBadge("TaskBadgeDisk", false);
                 // scan finished: without this, the next click on "Start Scan" would be taken as "Stop" (it would cancel the already
@@ -1085,7 +1085,7 @@ namespace SMDWin.Views
                             SetTaskbarProgress(pct / 100.0, error: badSnap > 0);   // the real % on the taskbar button (red if bad sectors)
                             // The visual progress bar — grows in proportion to the real %
                             SetSurfaceProgress(pct, badSnap > 0);
-                            TxtSurfacePhase.Text = "Scanning…";
+                            TxtSurfacePhase.Text = PT("Scanning…");
                             SetSurfaceVerdict(badSnap, slowSnap, SurfaceScanState.Running);
                             // TxtSurfaceStatus does not repeat the percentage/LBA/bad/slow every second — those have their fixed place on screen;
                             // the status message stays the one set at start (e.g. the SMART warning about already remapped sectors).
@@ -1165,7 +1165,7 @@ namespace SMDWin.Views
                 double finalPct = totalSectors > 0 ? Math.Min(100.0, processed * 100.0 / totalSectors) : 0;
                 SetSurfaceProgress(stopped ? finalPct : 100.0, finalBad > 0);
                 SetTaskbarProgress(null);   // back to the moving band while something else runs, otherwise nothing
-                TxtSurfacePhase.Text = disconnected ? PT("Drive disconnected") : stopped ? "Stopped" : "Complete";
+                TxtSurfacePhase.Text = disconnected ? PT("Drive disconnected") : stopped ? PT("Stopped") : PT("Complete");
                 TxtSurfaceEta.Text   = stopped ? $"stopped at {finalPct:F0}%" : "done";   // stopped: how much was scanned, not an empty box
                 SetSurfaceVerdict(finalBad, finalSlow, stopped ? SurfaceScanState.Stopped : SurfaceScanState.Complete);
                 if (TxtSurfaceScanned != null)

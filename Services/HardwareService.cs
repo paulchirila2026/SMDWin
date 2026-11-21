@@ -597,7 +597,7 @@ namespace SMDWin.Services
             {
                 if (a.Id < 1 || a.Id > 255) continue;
                 byte id = (byte)a.Id;
-                string name = GetSmartAttrName(id);
+                string name = SmartAttrNameFor(id, disk.Model, a.Name);
                 if (name.StartsWith("Vendor-Specific", StringComparison.Ordinal)
                     && !string.IsNullOrWhiteSpace(a.Name)
                     && !a.Name.StartsWith("Unknown", StringComparison.OrdinalIgnoreCase))
@@ -716,7 +716,7 @@ namespace SMDWin.Services
                         target.SmartAttributes.Add(new SMDWin.Models.SmartAttributeEntry
                         {
                             Id           = attrId,
-                            Name         = GetSmartAttrName(attrId),
+                            Name         = SmartAttrNameFor(attrId, target.Model, null),
                             CurrentValue = current,
                             WorstValue   = worst,
                             RawValue     = rawVal,
@@ -852,6 +852,30 @@ namespace SMDWin.Services
                         penalized.Add($"(informative, not scored) 0x{untrustedWear.Id:X2}={untrustedWear.CurrentValue}%, threshold=0 — no real commitment from the maker");
                     scoreSource = penalized.Count > 0 ? string.Join("; ", penalized) : "all critical attributes OK or without a real threshold";
                 }
+                // Bad blocks and lost data count even when the maker's normalized value is still far from its threshold: a Samsung
+                // SSD with 130 replaced blocks and 122 uncorrectable errors scored 88 % ("healthy") because the reallocation counter
+                // still read 86 against a threshold of 10. The raw count is scored here (attributes without a threshold were already
+                // scored by raw above, so only the ones with a threshold — or every one on the wear-based path — are added).
+                {
+                    var rawNotes = new List<string>();
+                    foreach (var attr in target.SmartAttributes)
+                    {
+                        bool badBlockKind = attr.Id is 0x05 or 0xC5 or 0xC6 or 0xBB || attr.IsRuntimeBadBlock;
+                        if (!badBlockKind || attr.RawValue <= 0) continue;
+                        bool alreadyScored = wearAttr == null && attr.ThresholdValue == 0 && attr.Id is 0x05 or 0xBB or 0xC5 or 0xC6;
+                        if (alreadyScored) continue;
+                        if (attr.IsRuntimeBadBlock && target.SmartAttributes.Any(a => a.Id == 0x05 && a.RawValue == attr.RawValue))
+                            continue;   // the same blocks as the reallocation counter (Samsung reports both) — counted once
+                        int penalty = attr.RawValue switch { <= 5 => 2, <= 20 => 4, <= 100 => 7, <= 500 => 12, _ => 18 };
+                        score -= penalty;
+                        rawNotes.Add($"0x{attr.Id:X2} raw={attr.RawValue} -{penalty}");
+                    }
+                    // data the drive could not recover: never "healthy"
+                    bool lostData = target.SmartAttributes.Any(a => a.Id is 0xBB or 0xC6 && a.RawValue > 0);
+                    if (lostData && score > 79) { score = 79; rawNotes.Add("uncorrectable errors → at most 79 %"); }
+                    if (rawNotes.Count > 0) scoreSource += "; raw counts: " + string.Join(", ", rawNotes);
+                }
+
                 score = Math.Max(0, Math.Min(100, score));
 
                 if (score < target.HealthPercent) target.HealthPercent = score;
@@ -891,6 +915,25 @@ namespace SMDWin.Services
             foreach (var d in disks)
                 if (string.IsNullOrWhiteSpace(d.PhysicalDevicePath))
                     d.PhysicalDevicePath = $@"\\.\PhysicalDrive{d.DiskIndex}";
+        }
+
+        /// <summary>
+        /// The attribute name for this drive. Attribute 183 (0xB7) is "SATA Downshift" on most drives, but on Samsung SSDs it counts
+        /// the blocks that went bad while in use ("Runtime Bad Block") — reading it as cable trouble sent users to change a cable on a
+        /// failing SSD. smartctl's own name wins when it has one.
+        /// </summary>
+        internal static string SmartAttrNameFor(byte id, string? model, string? smartctlName)
+        {
+            if (id == 0xB7)
+            {
+                if (!string.IsNullOrWhiteSpace(smartctlName)
+                    && smartctlName.IndexOf("bad_block", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return "Runtime Bad Block";
+                if ((model ?? "").IndexOf("Samsung", StringComparison.OrdinalIgnoreCase) >= 0
+                    && (model ?? "").IndexOf("SSD", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return "Runtime Bad Block";
+            }
+            return GetSmartAttrName(id);
         }
 
         private static string GetSmartAttrName(byte id)

@@ -257,7 +257,7 @@ namespace SMDWin.Views
                         tt.SetResourceReference(TextBlock.ForegroundProperty, _stThrottledSec > 0 || turboOff ? "StatusWarnBrush" : "TextPrimaryBrush");   // colour only when it needs attention
                     }
                 }
-                StSetStatus("TxtStCpuStatus", ct, warnC, throttled, cl);
+                StSetStatus("TxtStCpuStatus", ct, warnC, throttled, cl, _cpuStress.Running);
 
                 // ── GPU ──
                 StSetDial("StGpu", gt, warnG);
@@ -286,7 +286,7 @@ namespace SMDWin.Views
                 if (snap.GpuHotSpot is float hs && hs > 0) { StSetText("TxtStGpuHotKey", "Hot spot"); StSetText("TxtStGpuHot", $"{TempUnit.Fmt(hs, 0, true)}"); }
                 else if (FindName("StGpuChartLoad") is MiniLineChart gl2 && double.IsFinite(gl2.Peak)) { StSetText("TxtStGpuHotKey", "Max load"); StSetText("TxtStGpuHot", $"{gl2.Peak:F0}%"); }
                 else { StSetText("TxtStGpuHotKey", "Hot spot"); StSetText("TxtStGpuHot", "—"); }
-                StSetStatus("TxtStGpuStatus", gt, warnG, false, gl);
+                StSetStatus("TxtStGpuStatus", gt, warnG, false, gl, _gpuStress.IsRunning);
             }
             catch (Exception ex) { AppLogger.Debug($"UpdateStressCards: {ex.Message}"); }
         }
@@ -358,14 +358,16 @@ namespace SMDWin.Views
             if (name.EndsWith("Note", StringComparison.Ordinal)) t.ToolTip = string.IsNullOrEmpty(text) ? null : text;
         }
 
-        private void StSetStatus(string name, float? temp, float warn, bool throttled, float? load)
+        private void StSetStatus(string name, float? temp, float warn, bool throttled, float? load, bool underTest = false)
         {
             if (FindName(name) is not TextBlock t) return;
             (string txt, string key) = throttled ? (PT("Throttling"), "StatusWarnBrush")
                 : temp >= warn ? (T4("Hot", "Fierbinte", "Heiß", "Chaud"), "StatusCritBrush")
                 : temp >= warn - 10 ? (T4("Warm", "Cald", "Warm", "Tiède"), "StatusWarnBrush")
                 : !temp.HasValue ? (T4("No sensor", "Fără senzor", "Kein Sensor", "Pas de capteur"), "TextSecondaryBrush")
-                : load is float l && l < 10 ? (T4("Idle", "Inactiv", "Leerlauf", "Inactif"), "AccentBrush")
+                // never "Idle" while its stress test runs (the load sensor lags a few seconds behind, and a laptop graphics chip
+                // that was asleep reads 0 % at first)
+                : !underTest && load is float l && l < 10 ? (T4("Idle", "Inactiv", "Leerlauf", "Inactif"), "AccentBrush")
                 : ("OK", "StatusOkBrush");
             t.Text = txt;
             t.SetResourceReference(TextBlock.ForegroundProperty, key);

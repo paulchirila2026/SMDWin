@@ -73,7 +73,22 @@ namespace SMDWin.Views
                 bool warm = c.R > c.G + 25 && c.R > c.B + 25;     // red, orange, amber
                 if (warm) return b;
             }
-            return (System.Windows.Application.Current?.TryFindResource("TextPrimaryBrush") as System.Windows.Media.Brush) ?? System.Windows.Media.Brushes.White;
+            SyncTheme(null);
+            return Neutral;
+        }
+
+        /// <summary>
+        /// One shared brush for the neutral text, recoloured when the theme changes. The converter runs only when the source brush
+        /// changes, so returning the theme brush of that moment left "Connected" in the Light text colour (near-black) after a
+        /// switch to Dark — invisible on the dark card.
+        /// </summary>
+        private static readonly System.Windows.Media.SolidColorBrush Neutral = new(System.Windows.Media.Colors.White);
+
+        public static void SyncTheme(System.Windows.ResourceDictionary? resources)
+        {
+            var src = (resources?["TextPrimaryBrush"] ?? System.Windows.Application.Current?.TryFindResource("TextPrimaryBrush"))
+                      as System.Windows.Media.SolidColorBrush;
+            if (src != null && !Neutral.IsFrozen && Neutral.Color != src.Color) Neutral.Color = src.Color;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

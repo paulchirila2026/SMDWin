@@ -251,6 +251,7 @@ namespace SMDWin.Models
             0xAE or 0xC0 => RawValue == 0 ? "No unsafe shutdowns" : $"{RawValue:N0} unsafe shutdown(s) — power lost while running (not an error by itself)",
             0xB1 => $"Wear spread between blocks: normalized {CurrentValue}/100",
             0xB3 or 0xB4 => $"Unused reserve blocks: normalized {CurrentValue}/100 — {(CurrentValue > 20 ? "OK" : "⚠ low")}",
+            0xB7 when IsRuntimeBadBlock => RawValue == 0 ? "No bad blocks appeared in use — OK" : $"⚠ {RawValue:N0} block(s) went bad in use and were replaced from the reserve",
             0xB7 => RawValue == 0 ? "No SATA speed drops — OK" : $"{RawValue:N0} SATA speed drop(s) — check cable/port",
             0xB8 => RawValue == 0 ? "No internal data errors — OK" : $"⚠ {RawValue:N0} internal data error(s)",
             0xC1 => $"{RawValue:N0} head park cycles",
@@ -268,6 +269,9 @@ namespace SMDWin.Models
                : RawValue == 0 ? "0 — OK"
                : $"Maker-specific counter: {RawValue:N0} (normalized {CurrentValue}/100, within limits)"
         };
+
+        /// <summary>Attribute 183 on Samsung SSDs: blocks that went bad while in use (not SATA speed drops).</summary>
+        public bool IsRuntimeBadBlock => Id == 0xB7 && (Name ?? "").IndexOf("bad block", StringComparison.OrdinalIgnoreCase) >= 0;
 
         /// <summary>The attribute name (from the database / smartctl) says life left or wear.</summary>
         private bool NameSaysLife => (Name ?? "").IndexOf("life", StringComparison.OrdinalIgnoreCase) >= 0
@@ -298,6 +302,7 @@ namespace SMDWin.Models
             {
                 var desc = Id switch
                 {
+                    0xB7 when IsRuntimeBadBlock => "Runtime Bad Block — blocks of flash memory that failed while the drive was in use and were replaced from the reserve. A count that keeps growing means the drive is wearing out or faulty.",
                     0x01 => "Read Error Rate — Rate of hardware read errors. High raw value = possible disk failure.",
                     0x02 => "Throughput Performance — Overall drive throughput. Low = degraded performance.",
                     0x03 => "Spin-Up Time — Time needed to spin disk platters to full speed (HDDs only).",

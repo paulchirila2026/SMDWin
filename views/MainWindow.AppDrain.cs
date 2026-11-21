@@ -411,7 +411,7 @@ namespace SMDWin.Views
         {
             _appDrainExpanded = !_appDrainExpanded;
             if (LstAppDrain != null) LstAppDrain.MaxHeight = _appDrainExpanded ? 2000 : 205;
-            if (TxtToggleAppDrainExpand != null) TxtToggleAppDrainExpand.Text = _appDrainExpanded ? "Show less" : "Show all";
+            if (TxtToggleAppDrainExpand != null) TxtToggleAppDrainExpand.Text = _appDrainExpanded ? PT("Show less") : PT("Show all");
         }
 
         private void OpenProcessAnalyzer(string procName)

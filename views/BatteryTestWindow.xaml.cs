@@ -600,10 +600,9 @@ namespace SMDWin
                     if (TxtTestBatPct != null)
                     {
                         TxtTestBatPct.Text = $"{pct}%";
-                        TxtTestBatPct.Foreground = new SolidColorBrush(
-                            pct >= 50 ? WpfColor.FromRgb(46, 229, 90)
-                          : pct >= 20 ? WpfColor.FromRgb(245, 158, 11)
-                                      : WpfColor.FromRgb(239, 68, 68));
+                        // theme status colours: the bright fixed green had 1.6 : 1 contrast on the light theme
+                        TxtTestBatPct.SetResourceReference(TextBlock.ForegroundProperty,
+                            pct >= 50 ? "StatusGoodBrush" : pct >= 20 ? "StatusCheckBrush" : "StatusProblemBrush");
                     }
                     if (_startBatPct < 0) _startBatPct = pct;
                     _batHistory.Add((DateTime.Now, pct));

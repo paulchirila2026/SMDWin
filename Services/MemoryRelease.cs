@@ -25,8 +25,14 @@ namespace SMDWin.Services
                     GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                     GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
                     GC.WaitForPendingFinalizers();
+                    // "Aggressive" also gives the freed space back to Windows: after a forced collection alone .NET keeps the
+                    // emptied memory reserved for later — the laptop report showed only 111 MB of live objects but 2.8 GB still
+                    // held by the app after the memory test and the benchmark.
+                    GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
                     long after = Environment.WorkingSet;
-                    AppLogger.Info($"Memory released after {what}: {before / 1048576} MB → {after / 1048576} MB");
+                    long privateMb;
+                    using (var p = System.Diagnostics.Process.GetCurrentProcess()) { p.Refresh(); privateMb = p.PrivateMemorySize64 >> 20; }
+                    AppLogger.Info($"Memory released after {what}: {before / 1048576} MB → {after / 1048576} MB (private {privateMb} MB, live objects {GC.GetTotalMemory(false) >> 20} MB)");
                 }
                 catch (Exception ex) { AppLogger.Debug($"MemoryRelease ({what}): {ex.Message}"); }
                 finally { System.Threading.Interlocked.Exchange(ref _busy, 0); }

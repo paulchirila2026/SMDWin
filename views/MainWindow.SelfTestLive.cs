@@ -75,6 +75,12 @@ namespace SMDWin.Views
                 {
                     await Task.Delay(1500, ct);
                     Shoot(what + "-after");
+                    try
+                    {
+                        var r = SampleResources("after " + what, collect: true);
+                        data.ToolMemory.Add((what, r.PrivateMB, r.ManagedMB));
+                    }
+                    catch (Exception ex) { AppLogger.Debug($"Self-test tool memory {what}: {ex.Message}"); }
                 }
             }
 
@@ -156,6 +162,12 @@ namespace SMDWin.Views
                     // the finale: each part pulses, then the general mark counts up (~3 s) — the picture shows the final numbers
                     await Task.Delay(4500, ct);
                     Shoot("Benchmark-done");
+                    try
+                    {
+                        var r = SampleResources("after Benchmark", collect: true);
+                        data.ToolMemory.Add(("Benchmark", r.PrivateMB, r.ManagedMB));
+                    }
+                    catch (Exception ex) { AppLogger.Debug($"Self-test tool memory Benchmark: {ex.Message}"); }
                 }
                 done++;
             }

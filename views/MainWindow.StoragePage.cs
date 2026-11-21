@@ -309,7 +309,7 @@ namespace SMDWin.Views
             string modelText = string.IsNullOrWhiteSpace(d.Model) ? $"Disk {d.DiskIndex}" : d.Model.Trim();
             info.Children.Add(new TextBlock { Text = modelText, Style = TryFindResource("DashRowName") as Style, FontSize = 20, Margin = new Thickness(0, 2, 0, 2),
                                               TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis, MaxHeight = 56, ToolTip = modelText });
-            string style = d.Partitions.Count > 0 ? "" : " · no volumes";
+            string style = d.Partitions.Count > 0 ? "" : " · " + PT("no volumes");
             info.Children.Add(Txt2($"{d.Size}{style}", "TextSecondaryBrush", Ui.FontM));
             var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Needs attention"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
             var stRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
@@ -332,7 +332,7 @@ namespace SMDWin.Views
             // 4. partitiile
             var parts = new StackPanel { VerticalAlignment = VAlign.Center, Margin = new Thickness(18, 0, 0, 0) };
             foreach (var p in d.Partitions.Take(4)) parts.Children.Add(MakePartitionRow(p));
-            if (d.Partitions.Count == 0) parts.Children.Add(Txt2("No volumes Windows can read (unformatted or other file system).", "TextSecondaryBrush", Ui.FontS));
+            if (d.Partitions.Count == 0) parts.Children.Add(Txt2(PT("No volumes Windows can read (unformatted or other file system)."), "TextSecondaryBrush", Ui.FontS));
             if (d.Partitions.Count > 4) parts.Children.Add(Txt2($"+{d.Partitions.Count - 4} more", "TextSecondaryBrush", Ui.FontS));
             Grid.SetColumn(parts, 3); body.Children.Add(parts);
 

@@ -733,6 +733,7 @@ namespace SMDWin.Services
             foreach (var n in StatusProblemNames) Set(n, problem);
             Set("StatusInfo", info);
             Set("StatusNa", isLight ? "#6B7280" : "#8B939E");
+            try { SMDWin.Views.NeutralUnlessAlertConverter.SyncTheme(resources); } catch (System.Exception ex) { AppLogger.Debug($"NeutralUnlessAlert sync: {ex.Message}"); }
 
             // Semi-transparent overlay (replaces Background="#15FFFFFF" inline usages)
             var overlayAlpha = isLight ? (byte)20 : (byte)21;

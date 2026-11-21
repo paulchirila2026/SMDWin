@@ -512,7 +512,7 @@ namespace SMDWin.Views
         {
             if (FindName("BtnSmartShowAll") is not TextBlock link) return;
             link.Visibility = hidden > 0 ? Visibility.Visible : Visibility.Collapsed;
-            link.Text = _smartShowAll ? "Show fewer" : $"Show all (+{hidden})";
+            link.Text = _smartShowAll ? PT("Show fewer") : PT("Show all (+{0})", hidden);
             link.ToolTip = "Values with no standard meaning that are 0 (vendor counters)";
         }
 

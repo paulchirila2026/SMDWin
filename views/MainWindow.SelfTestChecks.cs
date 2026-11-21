@@ -40,6 +40,8 @@ namespace SMDWin.Views
             public readonly List<UiIssue> Issues = new();
             public readonly List<PageTime> Times = new();
             public readonly List<ResourceSample> Resources = new();
+            /// <summary>Private memory after each running tool (after a clean-up) — shows which tool keeps memory.</summary>
+            public readonly List<(string What, long PrivateMB, long ManagedMB)> ToolMemory = new();
             public readonly List<(string Theme, long Ms)> ThemeSwitch = new();
             public readonly List<string> DataChecks = new();
             public Dictionary<string, int> SwallowedAtStart = new();
@@ -56,7 +58,7 @@ namespace SMDWin.Views
             {
                 // the same compacting collection the app does after a large test (MemoryRelease), so the row shows what stays
                 System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+                GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
             }
             using var p = Process.GetCurrentProcess();
             p.Refresh();
@@ -391,6 +393,16 @@ namespace SMDWin.Views
                     var c = d.Resources[^1];
                     sb.AppendLine($"  after the running tools: private {c.PrivateMB - b.PrivateMB:+0;-0} MB compared with tour 2" +
                                   (c.PrivateMB - b.PrivateMB > 300 ? "   ⚠ the test buffers were not given back" : "   (given back)"));
+                }
+                if (d.ToolMemory.Count > 0)
+                {
+                    sb.AppendLine("  private memory after each running tool (after a clean-up):");
+                    long prev = b.PrivateMB;
+                    foreach (var (what, priv, managed) in d.ToolMemory)
+                    {
+                        sb.AppendLine($"    {what,-22} {priv,6} MB  ({priv - prev:+0;-0} MB, live objects {managed} MB){(priv - prev > 200 ? "   ⚠ kept" : "")}");
+                        prev = priv;
+                    }
                 }
             }
             sb.AppendLine();

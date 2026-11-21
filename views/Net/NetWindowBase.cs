@@ -653,8 +653,9 @@ namespace SMDWin.Views.Net
             {
                 bool running = stop.IsEnabled; // true = running now (Stop active)
                 var src = running ? stop : start;
-                toggle.Content = src.Content;
-                toggle.ToolTip = src.ToolTip;
+                // the two source buttons are never shown, so the page translation never reaches them: the text is translated here
+                toggle.Content = src.Content is string sc ? SMDWin.Views.MainWindow.PT(sc) : src.Content;
+                toggle.ToolTip = src.ToolTip is string st ? SMDWin.Views.MainWindow.PT(st) : src.ToolTip;
                 toggle.Style   = src.Style;
                 if (src is Wpf.Ui.Controls.Button srcUi)
                     toggle.Appearance = srcUi.Appearance;

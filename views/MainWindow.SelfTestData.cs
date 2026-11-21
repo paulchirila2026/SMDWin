@@ -176,8 +176,12 @@ namespace SMDWin.Views
                 var (lo, hi) = limits.TryGetValue(name, out var l) ? l : (float.MinValue, float.MaxValue);
                 if (mn < lo || mx > hi) Fail($"{name}: {range} — outside what is possible ({lo:0.##}–{hi:0.##})");
                 else if (missing > vals.Count / 2) Warn($"{name}: {range} — missing in {missing} of {vals.Count} readings");
-                else if (mx - mn < 0.001f && loadMoved && !name.StartsWith("CPU load") && !name.Contains("voltage"))
+                // only the processor sensors are compared with the processor load: an idle graphics card (on a laptop, often
+                // switched off by Windows) rightly keeps the same values while the processor works
+                else if (mx - mn < 0.001f && loadMoved && name.StartsWith("CPU") && !name.StartsWith("CPU load") && !name.Contains("voltage"))
                     Warn($"{name}: stuck on {mn:0.##} for 20 s while the load moved ({loadVals.Min():0}–{loadVals.Max():0} %)");
+                else if (mx - mn < 0.001f && name.StartsWith("GPU") && !name.StartsWith("GPU load"))
+                    Ok($"{name}: {range} — unchanged for 20 s (the graphics card was idle; on a laptop it may be switched off)");
                 else Ok($"{name}: {range}{(missing > 0 ? $" ({missing} missing)" : "")}");
             }
 
