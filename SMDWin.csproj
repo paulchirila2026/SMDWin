@@ -41,6 +41,7 @@
     <None Remove="SMDWin.Tests\**\*.cs" />
     <!-- private working files are never part of the build -->
     <Compile Remove="_private\**" />
+    <Compile Remove="tools\**" />
     <None Remove="_private\**" />
     <Page Remove="_private\**" />
   </ItemGroup>

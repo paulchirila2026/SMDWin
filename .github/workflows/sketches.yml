@@ -1,0 +1,22 @@
+# Renders the benchmark drawings to PNG (helper branch only; not part of the app).
+name: Render sketches
+on:
+  push:
+    branches: [sketch-render]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Render
+        run: dotnet run --project tools/SketchRender/SketchRender.csproj -c Release -- sketches
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sketches
+          path: sketches/*.png
