@@ -78,6 +78,30 @@ namespace SMDWin.Views
         /// <summary>The computer has a dedicated graphics card (drawn on desktops and laptops; never on all-in-ones and mini PCs).</summary>
         public bool DedicatedGpu { get => _dgpu; set { if (_dgpu != value) { _dgpu = value; InvalidateVisual(); } } }
 
+        /// <summary>
+        /// What is fitted in this computer, so the drawing shows the real parts: memory modules (and empty slots), the M.2 drive on
+        /// the board, the 2.5" / 3.5" drives in their bays and the optical drive. The drawing has room for: desktop — 2 or 4 slots,
+        /// 1 M.2, 3 bays; laptop, all-in-one and mini PC — 2 slots, 1 M.2, 1 x 2.5" bay, the optical drive (not on mini PCs).
+        /// </summary>
+        public sealed class Hardware
+        {
+            public int RamModules = 2, RamSlots = 2;
+            public bool Nvme = true;
+            /// <summary>The drives in bays, in order: true = 3.5" hard disk, false = 2.5" (SSD or laptop disk).</summary>
+            public List<bool> BayDrives = new();
+            public bool Optical;
+            /// <summary>Windows runs from the M.2 drive (otherwise from the first bay drive): the storage line points at it.</summary>
+            public bool SystemOnNvme = true;
+            public string Key => $"{RamModules}/{RamSlots}/{Nvme}/{string.Join(",", BayDrives)}/{Optical}/{SystemOnNvme}";
+        }
+
+        private Hardware _hw = new();
+        public Hardware Fitted
+        {
+            get => _hw;
+            set { var v = value ?? new Hardware(); if (v.Key != _hw.Key) { _hw = v; _model = null; InvalidateVisual(); } else _hw = v; }
+        }
+
         /// <summary>Formats a mark in the app language (decimal comma in ro / de / fr).</summary>
         public Func<double, string> Format { get; set; } = v => v.ToString("0.0", CultureInfo.InvariantCulture);
 
@@ -276,6 +300,40 @@ namespace SMDWin.Views
             public void Led(double x, double y) => Add(new Op { T = OpT.Led, X = x, Y = y, Part = 2 });
             public void Dot(double x, double y, double r) => Add(new Op { T = OpT.Dot, X = x, Y = y, R = r });
             public void Fins(double x0, double step, int n, double y1, double y2) { for (int i = 0; i < n; i++) Line(x0 + i * step, y1, x0 + i * step, y2, Sty.Faint); }
+            /// <summary>
+            /// The faint outline of a blower's housing (as on a laptop fan): around the fan, opening towards the fin stack it blows
+            /// through. up = the fins are above the fan, between x1 and x2, with their lower edge at y.
+            /// </summary>
+            public void Blower(double cx, double cy, double r, double x1, double x2, double finY)
+            {
+                double rl = cx - x1, rr = x2 - cx;   // the housing widens towards the outlet side (a volute)
+                Path(string.Format(CultureInfo.InvariantCulture,
+                    "M{0},{1} V{2} A{3},{3} 0 0 0 {4},{5} A{6},{6} 0 0 0 {7},{8} V{1}",
+                    x1, finY, cy, rl, cx, cy + rl, (rl + rr) / 2, x2, cy - (rr - rl) / 2), Sty.Faint);
+            }
+            /// <summary>A memory slot with no module: only its socket, faint.</summary>
+            public void EmptySlot(double x, double y, double w, double h) => Rect(x, y, w, h, 1, Sty.Faint);
+            /// <summary>A 3.5" hard disk seen from the side in its bay (platters hinted by a circle) or a 2.5" drive in a sled.</summary>
+            public void BayDrive(double x, double y, double w, double h, bool hdd, int part)
+            {
+                if (hdd) { Rect(x, y, w, h, 2, Sty.Ln, part); Circ(x + w - h * 0.9, y + h / 2, h * 0.32, Sty.Faint); Rect(x + 6, y + h / 2 - 2, w * 0.35, 4, 1, Sty.Faint); }
+                else { Rect(x, y, w, h, 2, Sty.Faint); Rect(x + 4, y + 3, w * 0.66, h - 6, 1.5, Sty.Ln, part); Rect(x + 9, y + h / 2 - 2, w * 0.3, 4, 1, Sty.Faint); }
+            }
+            /// <summary>A 2.5" drive seen from above (laptop, all-in-one, mini PC): its label and the connector.</summary>
+            public void Drive25(double x, double y, double w, double h, int part)
+            {
+                Rect(x, y, w, h, 3, Sty.Ln, part);
+                bool tall = h > w;
+                if (tall) { Rect(x + 6, y + 8, w - 12, h * 0.4, 1.5, Sty.Faint); Rect(x + w * 0.25, y + h - 6, w * 0.5, 3, 1, Sty.Faint); }
+                else { Rect(x + 8, y + 6, w * 0.4, h - 12, 1.5, Sty.Faint); Rect(x + w - 6, y + h * 0.25, 3, h * 0.5, 1, Sty.Faint); }
+            }
+            /// <summary>An optical drive seen from above: the disc and its hub, faint.</summary>
+            public void Optical(double x, double y, double w, double h)
+            {
+                Rect(x, y, w, h, 3);
+                double r = Math.Min(w, h) * 0.38;
+                Circ(x + w / 2, y + h / 2, r, Sty.Faint); Circ(x + w / 2, y + h / 2, r * 0.22, Sty.Faint);
+            }
             /// <summary>A still, very faint diagonal reflection (the glass panel, the screen, the cover): gives the drawing depth.</summary>
             public void Sheen(string d) => Add(new Op { T = OpT.Sheen, G = Fz(Geometry.Parse(d)) });
             /// <summary>The memory chips on a module (vertical module: chips down its length; horizontal: along it).</summary>
@@ -292,17 +350,18 @@ namespace SMDWin.Views
         private Model? _model;
         private Model Current => _model ??= _kind switch
         {
-            Kind.Laptop   => BuildLaptop(),
-            Kind.AllInOne => BuildAllInOne(),
-            Kind.MiniPc   => BuildMini(),
-            _             => BuildDesktop(),
+            Kind.Laptop   => BuildLaptop(_hw),
+            Kind.AllInOne => BuildAllInOne(_hw),
+            Kind.MiniPc   => BuildMini(_hw),
+            _             => BuildDesktop(_hw),
         };
 
         // fan sources
         private const int FanCpu = 0, FanGpu = 3, FanCase = 1, FanPsu = 2;
 
-        /// <summary>A tower seen from the side with the glass panel off: rear exhaust, CPU cooler, 4 DIMMs, the card, PSU at the bottom.</summary>
-        private static Model BuildDesktop()
+        /// <summary>A tower seen from the side with the glass panel off: rear exhaust, CPU cooler, 2 or 4 DIMM slots, the card,
+        /// the M.2 drive, PSU and the drive cage at the bottom, the optical drive at the top front.</summary>
+        private static Model BuildDesktop(Hardware hw)
         {
             var b = new Builder();
             var m = b.M; m.Dx = -30; m.CanDGpu = true;
@@ -315,7 +374,19 @@ namespace SMDWin.Views
             b.Rect(134, 44, 12, 80, 2); b.Edge(140, 47, 140, 121, FanCase);
             b.Air("M132 60 C110 58 96 54 80 48", true); b.Air("M132 84 C108 84 94 86 76 88", true); b.Air("M132 108 C110 112 96 118 80 126", true);
             b.Rect(152, 44, 204, 252, 4, Sty.Ln2); b.Path("M162 54 h80 v12 h-66 v52 h-14 z");
-            foreach (var x in new[] { 270, 282, 294, 306 }) { b.Rect(x, 68, 7, 104, 1.5, Sty.Ln, 1); b.Chips(x, 68, 7, 104, 6, true); }
+            // memory: the fitted modules, the other slots empty (two modules in a 4-slot board go in the 2nd and 4th slot)
+            int slots = hw.RamSlots >= 4 ? 4 : 2;
+            double[] slotX = slots == 4 ? new double[] { 270, 282, 294, 306 } : new double[] { 282, 306 };
+            int[] fillOrder = slots == 4 ? new[] { 1, 3, 0, 2 } : new[] { 0, 1 };
+            int mods = Math.Clamp(hw.RamModules, 1, slots);
+            var filled = new bool[slots];
+            for (int i = 0; i < mods; i++) filled[fillOrder[i]] = true;
+            double ramRight = 0;
+            for (int i = 0; i < slots; i++)
+            {
+                if (filled[i]) { b.Rect(slotX[i], 68, 7, 104, 1.5, Sty.Ln, 1); b.Chips(slotX[i], 68, 7, 104, 6, true); ramRight = Math.Max(ramRight, slotX[i] + 7); }
+                else b.EmptySlot(slotX[i] + 1.5, 70, 4, 100);
+            }
             b.Rect(338, 110, 9, 40, 1.5, Sty.Ln2);
             b.Glow(214, 128, 72, 0);
             b.Rect(178, 92, 72, 72, 6, Sty.Ln, 0); b.Fan(214, 128, 28, FanCpu);
@@ -329,23 +400,46 @@ namespace SMDWin.Views
             b.Line(158, 207, 250, 207);
             b.Edge(170, 228, 236, 228, FanGpu); b.Edge(262, 228, 328, 228, FanGpu);
             b.DGpu = false;
-            b.Rect(290, 254, 40, 30, 4, Sty.Ln2); b.Rect(176, 258, 88, 12, 2, Sty.Ln, 2); b.Chips(176, 258, 70, 12, 3, false); b.Led(258, 264);
+            b.Rect(290, 254, 40, 30, 4, Sty.Ln2);
+            // the M.2 drive on the board (or its empty slot)
+            bool sysNvme = hw.Nvme && (hw.SystemOnNvme || hw.BayDrives.Count == 0);
+            if (hw.Nvme) { b.Rect(176, 258, 88, 12, 2, Sty.Ln, sysNvme ? 2 : -1); b.Chips(176, 258, 70, 12, 3, false); if (sysNvme) b.Led(258, 264); }
+            else b.Rect(176, 258, 88, 12, 2, Sty.Faint);
             b.Path("M132 304 H400"); b.Rect(136, 318, 128, 58, 4); b.Fins(150, 8, 13, 326, 368);
             b.Edge(154, 380, 246, 380, FanPsu); b.Rect(150, 376, 100, 8, 2, Sty.Ln2);
             b.Air("M132 334 C112 334 100 336 86 340", true); b.Air("M132 356 C112 358 100 362 86 368", true);
-            b.Rect(300, 318, 92, 24, 3); b.Rect(300, 348, 92, 24, 3);
+            // the drive cage: up to 3 drives, 3.5" disks fill a bay, 2.5" drives sit in a sled
+            b.Rect(294, 310, 102, 74, 4, Sty.Faint);
+            int bays = Math.Min(3, hw.BayDrives.Count);
+            Point bayAnchor = new(392, 324);
+            for (int i = 0; i < bays; i++)
+            {
+                double y = 314 + i * 23;
+                bool sys = !sysNvme && i == 0;
+                b.BayDrive(300, y, 90, 19, hw.BayDrives[i], sys ? 2 : -1);
+                if (sys) { b.Led(hw.BayDrives[i] ? 384 : 358, y + 9.5); bayAnchor = new Point(hw.BayDrives[i] ? 390 : 363.4, y + 9.5); }
+            }
+            // the optical drive at the top front (5.25" bay), drawn over the board's corner
+            if (hw.Optical)
+            {
+                b.Rect(296, 35, 106, 13, 2, Sty.LnFill);
+                b.Line(304, 41.5, 380, 41.5, Sty.Faint); b.Rect(388, 39, 8, 5, 1.5, Sty.Faint);
+            }
             // the front intake fans are drawn over the callout lines
             b.Front = true;
             b.Rect(390, 56, 12, 80, 2, Sty.LnFill); b.Rect(390, 150, 12, 80, 2, Sty.LnFill);
             b.Edge(396, 59, 396, 133, FanCase); b.Edge(396, 153, 396, 227, FanCase);
             b.Air("M430 84 C424 86 418 90 410 96", false); b.Air("M432 140 C424 140 418 140 410 140", false); b.Air("M430 196 C424 194 418 190 410 186", false);
-            m.Anchor[0] = new Point(214, 92); m.Lane[0] = 49;
-            m.Anchor[1] = new Point(313, 120); m.Anchor[2] = new Point(264, 264); m.Anchor[3] = new Point(374, 207);
+            m.Anchor[0] = new Point(214, 92); m.Lane[0] = hw.Optical ? 51 : 49;   // under the optical drive, above the board's heatsink
+            m.Anchor[1] = new Point(ramRight > 0 ? ramRight : 313, 120);
+            m.Anchor[2] = sysNvme || bays == 0 ? new Point(264, 264) : bayAnchor;
+            m.Anchor[3] = new Point(374, 207);
             return m;
         }
 
-        /// <summary>A 15.6" laptop seen from below with the cover off: blowers and fin stacks at the rear, heat pipes, SO-DIMMs, M.2, battery.</summary>
-        private static Model BuildLaptop()
+        /// <summary>A 15.6" laptop seen from below with the cover off: blowers (with their housing) and fin stacks at the rear,
+        /// heat pipes along the fins, SO-DIMMs, M.2, battery, and — when fitted — the 2.5" bay and the optical drive.</summary>
+        private static Model BuildLaptop(Hardware hw)
         {
             var b = new Builder();
             var m = b.M; m.S = 0.85; m.Dx = -40; m.Dy = 39; m.CanDGpu = true;
@@ -361,8 +455,9 @@ namespace SMDWin.Views
             b.Air("M428 64 C424 50 420 40 414 30", true); b.Air("M450 64 C450 50 450 40 450 30", true); b.Air("M472 64 C476 50 480 40 486 30", true);
             b.DGpu = false;
             b.Path("M104 92 H496 V214 H404 V232 H196 V214 H104 Z");
-            b.Fan(150, 124, 32, FanCpu);
-            b.DGpu = true; b.Fan(450, 124, 32, FanGpu); b.DGpu = false;
+            // the blowers sit right under their fin stacks, inside a faint housing that opens towards the fins
+            b.Blower(150, 124, 33, 114, 186, 84); b.Fan(150, 124, 30, FanCpu);
+            b.DGpu = true; b.Blower(450, 124, 33, 414, 486, 84); b.Fan(450, 124, 30, FanGpu); b.DGpu = false;
             b.Glow(252, 134, 58, 0);
             b.Rect(238, 120, 30, 30, 2, Sty.Ln, 0); b.Rect(246, 128, 14, 14, 1, Sty.Ln2);
             b.Heat(253, 112, 0);
@@ -372,30 +467,47 @@ namespace SMDWin.Views
             foreach (var (x, y) in new[] { (312, 112), (312, 140), (370, 112), (370, 140) }) b.Rect(x, y, 12, 14, 1, Sty.Ln2);
             b.Heat(346, 108, 3);
             b.DGpu = false;
-            b.Pipe("M244 128 C214 128 200 86 170 84", 0); b.Pipe("M244 142 C206 142 196 88 150 84", 0);
+            // the heat pipes go round the housing and run along the fin stack (the fan blows through the fins, not onto the pipes)
+            b.Pipe("M240 128 C222 124 210 77 190 77 H122", 0); b.Pipe("M240 142 C216 138 204 81 190 81 H122", 0);
             b.DGpu = true;
-            b.Pipe("M362 128 C392 128 402 86 430 84", 3); b.Pipe("M362 142 C400 142 406 88 450 84", 3);
+            b.Pipe("M364 128 C382 124 394 77 410 77 H478", 3); b.Pipe("M364 142 C388 138 400 81 410 81 H478", 3);
             b.DGpu = false;
-            // two SO-DIMMs side by side (as in many laptops), not stacked
+            // two SO-DIMM slots stacked; an empty one shows only its socket
+            int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(206, 158, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 158, 82, 30, 4, false);
-            b.Rect(206, 192, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 192, 82, 30, 4, false);
+            if (mods >= 2) { b.Rect(206, 192, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 192, 82, 30, 4, false); }
+            else b.EmptySlot(210, 196, 74, 22);
             b.Trace("M253 150 L253 158");
-            b.Rect(300, 196, 94, 26, 2, Sty.Ln, 2); b.Rect(306, 203, 22, 12, 1, Sty.Ln2); b.Rect(334, 203, 22, 12, 1, Sty.Ln2); b.Led(388, 209);
+            bool bay = hw.BayDrives.Count > 0;
+            bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
+            if (hw.Nvme) { b.Rect(300, 196, 94, 26, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(306, 203, 22, 12, 1, Sty.Ln2); b.Rect(334, 203, 22, 12, 1, Sty.Ln2); if (sysNvme) b.Led(388, 209); }
+            else b.Rect(300, 196, 94, 26, 2, Sty.Faint);
             b.Rect(168, 176, 26, 30, 2, Sty.Ln2);
-            b.Rect(138, 246, 324, 92, 7);
-            foreach (var x in new[] { 219, 300, 381 }) b.Line(x, 250, x, 334);
-            b.Rect(282, 232, 36, 14, 2, Sty.Ln2);
-            b.Rect(104, 250, 26, 80, 6, Sty.Ln2); b.Rect(470, 250, 26, 80, 6, Sty.Ln2);
-            // the processor line leaves above the chips, the graphics line under its chip (above the memory), memory and storage
-            // straight right — four separate heights, so the lines do not cross
+            // bottom row: [2.5" bay] [battery] [optical drive]
+            double left = 138, right = 462;
+            if (bay)
+            {
+                b.Drive25(108, 248, 80, 88, sysNvme ? -1 : 2);
+                if (!sysNvme) b.Led(180, 256);
+                left = 198;
+            }
+            else b.Rect(104, 250, 26, 80, 6, Sty.Ln2);
+            if (hw.Optical) { b.Optical(384, 246, 110, 92); right = 374; }
+            else b.Rect(470, 250, 26, 80, 6, Sty.Ln2);
+            b.Rect(left, 246, right - left, 92, 7);
+            for (int i = 1; i < 4; i++) { double x = left + (right - left) * i / 4; b.Line(x, 250, x, 334); }
+            b.Rect((left + right) / 2 - 18, 232, 36, 9, 2, Sty.Ln2);
             m.Anchor[0] = new Point(253, 116); m.Lane[0] = 101;
-            m.Anchor[1] = new Point(288, 173); m.Anchor[2] = new Point(394, 209);
+            m.Anchor[1] = new Point(288, 173);
+            if (sysNvme || !bay) m.Anchor[2] = new Point(394, 209);
+            else { m.Anchor[2] = new Point(188, 262); m.Lane[2] = 243.5; }   // between the board and the battery
             m.Anchor[3] = new Point(346, 152); m.Lane[3] = 161;
             return m;
         }
 
-        /// <summary>A 24" all-in-one from the front, the parts behind the panel drawn through it: exhaust at the top, board, power board.</summary>
-        private static Model BuildAllInOne()
+        /// <summary>A 24" all-in-one from the front, the parts behind the panel drawn through it: fin stack under the top vent with
+        /// the blower right under it, board, power board, and — when fitted — the 2.5" drive and the slim optical drive.</summary>
+        private static Model BuildAllInOne(Hardware hw)
         {
             var b = new Builder();
             var m = b.M; m.S = 0.82; m.Dx = -26; m.Dy = 41;
@@ -408,29 +520,40 @@ namespace SMDWin.Views
             for (int i = 0; i < 22; i++) { b.Circ(112 + i * 4, 302, 0.9); b.Circ(400 + i * 4, 302, 0.9); }
             b.Rect(300, 38, 96, 10, 2, Sty.Ln2);
             b.Air("M314 22 C312 12 308 6 302 -2", true); b.Air("M348 22 C348 12 348 6 348 -2", true); b.Air("M382 22 C384 12 388 6 394 -2", true);
-            // blower at the left, fin stack under the top vent: the heat pipes carry the heat from the processor to the fins and the
-            // fan blows through them (the pipes used to end in the fan's hub)
+            // fin stack under the vent, the blower right under it: its air goes through the fins and out of the vent
             b.Rect(312, 50, 72, 14, 2, Sty.Ln2); b.Fins(318, 8, 9, 51, 63);
-            b.Fan(262, 88, 30, FanCpu);
-            b.Path("M190 132 H420 V272 H190 Z");
-            b.Pipe("M270 182 C272 140 318 112 332 64", 0); b.Pipe("M284 182 C292 146 336 118 348 64", 0);
+            b.Blower(348, 100, 33, 312, 384, 64); b.Fan(348, 100, 30, FanCpu);
+            b.Path("M190 140 H420 V272 H190 Z");
+            // the heat pipes go up past the left of the housing and run along the fin stack
+            b.Pipe("M268 182 C264 118 282 55 308 55 H380", 0); b.Pipe("M282 182 C280 126 294 59 308 59 H380", 0);
             b.Glow(276, 196, 62, 0);
             b.Rect(260, 180, 32, 32, 2, Sty.Ln, 0); b.Rect(268, 188, 16, 16, 1, Sty.Ln2);
             b.Heat(276, 170, 0); b.Trace("M292 196 L314 196");
+            int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 160, 82, 35, 4, false);
-            b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false);
-            b.Rect(204, 236, 94, 26, 2, Sty.Ln, 2); b.Rect(210, 243, 22, 12, 1, Sty.Ln2); b.Led(292, 249);
+            if (mods >= 2) { b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false); }
+            else b.EmptySlot(322, 204, 74, 27);
+            bool bay = hw.BayDrives.Count > 0;
+            bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
+            if (hw.Nvme) { b.Rect(204, 236, 94, 26, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(210, 243, 22, 12, 1, Sty.Ln2); if (sysNvme) b.Led(292, 249); }
+            else b.Rect(204, 236, 94, 26, 2, Sty.Faint);
             b.Rect(318, 244, 26, 22, 2, Sty.Ln2);
             b.Rect(104, 140, 72, 128, 4);
             b.Circ(124, 166, 9); b.Circ(150, 166, 9); b.Rect(116, 190, 42, 30, 3, Sty.Ln2); b.Circ(126, 240, 6); b.Circ(148, 240, 6);
+            // right column behind the panel: slim optical drive at the top, 2.5" drive under it
+            if (hw.Optical) b.Optical(432, 56, 66, 66);
+            if (bay) { b.Drive25(438, 150, 54, 78, sysNvme ? -1 : 2); if (!sysNvme) b.Led(465, 220); }
             b.Air("M226 336 C226 326 226 318 226 308", false); b.Air("M374 336 C374 326 374 318 374 308", false);
             m.Anchor[0] = new Point(276, 180); m.Lane[0] = 144;
-            m.Anchor[1] = new Point(400, 178); m.Anchor[2] = new Point(298, 249); m.Anchor[3] = m.Anchor[0];
+            m.Anchor[1] = new Point(400, 178);
+            m.Anchor[2] = sysNvme || !bay ? new Point(298, 249) : new Point(492, 189);
+            m.Anchor[3] = m.Anchor[0];
             return m;
         }
 
-        /// <summary>A mini PC from the front and above, lid off: blower and fin stack at the rear, two SO-DIMMs, M.2, ports in front.</summary>
-        private static Model BuildMini()
+        /// <summary>A mini PC from the front and above, lid off: fin stack at the rear with the blower right in front of it, two
+        /// SO-DIMM slots, M.2, ports in front, and — when fitted — the 2.5" drive.</summary>
+        private static Model BuildMini(Hardware hw)
         {
             var b = new Builder();
             var m = b.M; m.Dx = -70; m.Dy = 3;
@@ -442,23 +565,35 @@ namespace SMDWin.Views
             b.Rect(204, 322, 22, 10, 2); b.Rect(234, 322, 22, 10, 2);
             b.Rect(266, 323, 14, 7, 3.5); b.Circ(294, 327, 4, Sty.Ln);
             b.Circ(394, 327, 7, Sty.Ln); b.Dot(394, 327, 2.2);
-            b.Rect(230, 84, 110, 8, 2, Sty.Ln2);
-            b.Air("M246 80 C242 64 238 54 232 42", true); b.Air("M284 80 C284 64 284 54 284 42", true); b.Air("M322 80 C326 64 330 54 336 42", true);
+            b.Rect(200, 84, 80, 8, 2, Sty.Ln2);
+            b.Air("M214 80 C210 64 206 54 200 42", true); b.Air("M240 80 C240 64 240 54 240 42", true); b.Air("M266 80 C270 64 274 54 280 42", true);
             b.Air("M140 170 C156 170 168 172 180 176", false); b.Air("M140 210 C156 210 168 208 180 204", false);
             b.Air("M460 170 C444 170 432 172 420 176", false); b.Air("M460 210 C444 210 432 208 420 204", false);
-            b.Fan(240, 142, 40, FanCpu);
-            b.Rect(282, 94, 60, 16, 2, Sty.Ln2); b.Fins(288, 8, 7, 96, 108);
-            b.Pipe("M300 170 C300 146 306 126 312 110", 0); b.Pipe("M312 170 C314 148 322 128 328 110", 0);
+            b.Rect(204, 94, 72, 14, 2, Sty.Ln2); b.Fins(210, 8, 8, 95, 107);
+            b.Blower(240, 146, 33, 204, 276, 108); b.Fan(240, 146, 30, FanCpu);
+            b.Pipe("M300 168 C302 128 296 98 280 98 H212", 0); b.Pipe("M312 168 C314 124 306 102 280 102 H212", 0);
             b.Glow(306, 186, 58, 0);
             b.Rect(288, 168, 36, 36, 2, Sty.Ln, 0); b.Rect(297, 177, 18, 18, 1, Sty.Ln2);
             b.Heat(306, 160, 0); b.Trace("M300 204 L284 212");
-            // two SO-DIMMs side by side, each with its chips (stacked ones hid the chips of the one underneath)
+            int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(202, 212, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 212, 110, 30, 4, false);
-            b.Rect(202, 248, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 248, 110, 30, 4, false);
-            b.Rect(352, 130, 34, 150, 2, Sty.Ln, 2); b.Rect(359, 140, 20, 28, 1, Sty.Ln2); b.Rect(359, 176, 20, 28, 1, Sty.Ln2); b.Led(369, 270);
+            if (mods >= 2) { b.Rect(202, 248, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 248, 110, 30, 4, false); }
+            else b.EmptySlot(206, 252, 102, 22);
+            bool bay = hw.BayDrives.Count > 0;
+            bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
+            double m2h = bay ? 76 : 150;
+            if (hw.Nvme)
+            {
+                b.Rect(352, 130, 34, m2h, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(359, 140, 20, 28, 1, Sty.Ln2);
+                if (!bay) b.Rect(359, 176, 20, 28, 1, Sty.Ln2);
+                if (sysNvme) b.Led(369, 130 + m2h - 10);
+            }
+            else b.Rect(352, 130, 34, m2h, 2, Sty.Faint);
+            if (bay) { b.Drive25(336, 214, 66, 74, sysNvme ? -1 : 2); if (!sysNvme) b.Led(394, 222); }
             m.Anchor[0] = new Point(306, 168); m.Lane[0] = 121;
             m.Anchor[1] = new Point(312, 263); m.Lane[1] = 287;
-            m.Anchor[2] = new Point(386, 210); m.Anchor[3] = m.Anchor[0];
+            m.Anchor[2] = sysNvme || !bay ? new Point(386, bay ? 180 : 210) : new Point(402, 251);
+            m.Anchor[3] = m.Anchor[0];
             return m;
         }
 
