@@ -311,21 +311,37 @@ namespace SMDWin.Views
                     "M{0},{1} V{2} A{3},{3} 0 0 0 {4},{5} A{6},{6} 0 0 0 {7},{8} V{1}",
                     x1, finY, cy, rl, cx, cy + rl, (rl + rr) / 2, x2, cy - (rr - rl) / 2), Sty.Faint);
             }
-            /// <summary>A memory slot with no module: only its socket, faint.</summary>
-            public void EmptySlot(double x, double y, double w, double h) => Rect(x, y, w, h, 1, Sty.Faint);
+            /// <summary>A memory slot with no module: the same size as a module, faint and without chips.</summary>
+            public void EmptySlot(double x, double y, double w, double h) => Rect(x, y, w, h, 1.5, Sty.Faint);
+            /// <summary>A screw / standoff: a tiny faint ring.</summary>
+            public void Screw(double x, double y) => Circ(x, y, 1.7, Sty.Faint);
+            /// <summary>A speaker: its box and the membranes (a ring with the centre cap).</summary>
+            public void Speaker(double x, double y, double w, double h)
+            {
+                Rect(x, y, w, h, 6, Sty.Ln2);
+                double r = Math.Min(w, h) * 0.32;
+                int n = h > w * 2 ? 2 : 1;
+                for (int i = 0; i < n; i++)
+                {
+                    double cy = n == 1 ? y + h / 2 : y + h * (i == 0 ? 0.28 : 0.72);
+                    Circ(x + w / 2, cy, r, Sty.Faint); Circ(x + w / 2, cy, r * 0.32, Sty.Faint);
+                }
+            }
             /// <summary>A 3.5" hard disk seen from the side in its bay (platters hinted by a circle) or a 2.5" drive in a sled.</summary>
             public void BayDrive(double x, double y, double w, double h, bool hdd, int part)
             {
                 if (hdd) { Rect(x, y, w, h, 2, Sty.Ln, part); Circ(x + w - h * 0.9, y + h / 2, h * 0.32, Sty.Faint); Rect(x + 6, y + h / 2 - 2, w * 0.35, 4, 1, Sty.Faint); }
                 else { Rect(x, y, w, h, 2, Sty.Faint); Rect(x + 4, y + 3, w * 0.66, h - 6, 1.5, Sty.Ln, part); Rect(x + 9, y + h / 2 - 2, w * 0.3, 4, 1, Sty.Faint); }
+                Rect(x - 4, y + h / 2 - 3, 4, 6, 1, Sty.Ln2);   // the SATA plug at the back
             }
             /// <summary>A 2.5" drive seen from above (laptop, all-in-one, mini PC): its label and the connector.</summary>
             public void Drive25(double x, double y, double w, double h, int part)
             {
                 Rect(x, y, w, h, 3, Sty.Ln, part);
                 bool tall = h > w;
-                if (tall) { Rect(x + 6, y + 8, w - 12, h * 0.4, 1.5, Sty.Faint); Rect(x + w * 0.25, y + h - 6, w * 0.5, 3, 1, Sty.Faint); }
-                else { Rect(x + 8, y + 6, w * 0.4, h - 12, 1.5, Sty.Faint); Rect(x + w - 6, y + h * 0.25, 3, h * 0.5, 1, Sty.Faint); }
+                if (tall) { Rect(x + 6, y + 8, w - 12, h * 0.4, 1.5, Sty.Faint); Rect(x + w * 0.22, y + h - 6, w * 0.56, 4, 1, Sty.Ln2); }
+                else { Rect(x + 8, y + 6, w * 0.4, h - 12, 1.5, Sty.Faint); Rect(x + w - 6, y + h * 0.22, 4, h * 0.56, 1, Sty.Ln2); }
+                Screw(x + 4, y + 4); Screw(x + w - 4, y + 4); Screw(x + 4, y + h - 4); Screw(x + w - 4, y + h - 4);
             }
             /// <summary>An optical drive seen from above: the disc and its hub, faint.</summary>
             public void Optical(double x, double y, double w, double h)
@@ -341,8 +357,9 @@ namespace SMDWin.Views
             {
                 for (int i = 0; i < n; i++)
                 {
-                    if (vertical) Rect(x + w * 0.22, y + 6 + i * (h - 12) / n, w * 0.56, (h - 12) / n - 4, 0.8, Sty.Faint);
-                    else Rect(x + 5 + i * (w - 10) / n, y + h * 0.25, (w - 10) / n - 4, h * 0.5, 0.8, Sty.Faint);
+                    // square chips, as the real memory chips are
+                    if (vertical) { double c = w * 0.56; Rect(x + (w - c) / 2, y + 6 + i * (h - 12) / n + ((h - 12) / n - c) / 2, c, c, 0.6, Sty.Faint); }
+                    else { double c = Math.Min((w - 10) / n - 4, h * 0.55); Rect(x + 5 + i * (w - 10) / n + ((w - 10) / n - 4 - c) / 2, y + (h - c) / 2, c, c, 0.8, Sty.Faint); }
                 }
             }
         }
@@ -368,12 +385,13 @@ namespace SMDWin.Views
             b.Shadow(270, 414, 175, 7);
             b.Rect(120, 22, 300, 378, 12, Sty.Case, -1, 2.2); b.Rect(132, 34, 268, 354, 7, Sty.Ln2);
             b.Sheen("M176 34 H246 L166 388 H132 V246 Z");
-            b.Rect(120, 400, 34, 8, 2); b.Rect(386, 400, 34, 8, 2);
+            b.Rect(134, 400, 30, 6, 2); b.Rect(376, 400, 30, 6, 2);   // feet under the case
             b.Line(408, 34, 408, 388); b.Rect(372, 17, 22, 5, 2); b.Dot(383, 19.5, 1.6);
-            b.Rect(124, 64, 6, 56, 1, Sty.Ln2);
             b.Rect(134, 44, 12, 80, 2); b.Edge(140, 47, 140, 121, FanCase);
             b.Air("M132 60 C110 58 96 54 80 48", true); b.Air("M132 84 C108 84 94 86 76 88", true); b.Air("M132 108 C110 112 96 118 80 126", true);
             b.Rect(152, 44, 204, 252, 4, Sty.Ln2); b.Path("M162 54 h80 v12 h-66 v52 h-14 z");
+            foreach (var (sx, sy) in new[] { (157, 49), (157, 291), (351, 291), (254, 291), (351, 104) }) b.Screw(sx, sy);   // (none on the top edge: the processor line runs there)
+            b.Rect(196, 46, 16, 6, 1.5, Sty.Ln2);   // processor power (8-pin)
             // memory: the fitted modules, the other slots empty (two modules in a 4-slot board go in the 2nd and 4th slot)
             int slots = hw.RamSlots >= 4 ? 4 : 2;
             double[] slotX = slots == 4 ? new double[] { 270, 282, 294, 306 } : new double[] { 282, 306 };
@@ -397,14 +415,21 @@ namespace SMDWin.Views
             b.DGpu = true;
             b.Glow(260, 207, 90, 3);
             b.Rect(146, 190, 228, 34, 5, Sty.Ln, 3); b.Rect(146, 186, 228, 4, 1.5, Sty.Ln2);
+            b.Rect(334, 180, 18, 6, 1.5, Sty.Ln2);   // the card's power plug
             b.Line(158, 207, 250, 207);
             b.Edge(170, 228, 236, 228, FanGpu); b.Edge(262, 228, 328, 228, FanGpu);
             b.DGpu = false;
             b.Rect(290, 254, 40, 30, 4, Sty.Ln2);
             // the M.2 drive on the board (or its empty slot)
             bool sysNvme = hw.Nvme && (hw.SystemOnNvme || hw.BayDrives.Count == 0);
-            if (hw.Nvme) { b.Rect(176, 258, 88, 12, 2, Sty.Ln, sysNvme ? 2 : -1); b.Chips(176, 258, 70, 12, 3, false); if (sysNvme) b.Led(258, 264); }
-            else b.Rect(176, 258, 88, 12, 2, Sty.Faint);
+            // an M.2 2280 drive: about 3.6 times as long as wide, two square memory chips and the controller
+            if (hw.Nvme)
+            {
+                b.Rect(180, 254, 68, 19, 2.5, Sty.Ln, sysNvme ? 2 : -1);
+                b.Rect(186, 258.5, 10, 10, 0.8, Sty.Faint); b.Rect(200, 258.5, 10, 10, 0.8, Sty.Faint); b.Rect(215, 259.5, 8, 8, 0.8, Sty.Faint);
+                b.Screw(244, 263.5); if (sysNvme) b.Led(236, 263.5);
+            }
+            else { b.Rect(180, 254, 68, 19, 2.5, Sty.Faint); b.Screw(244, 263.5); }
             b.Path("M132 304 H400"); b.Rect(136, 318, 128, 58, 4); b.Fins(150, 8, 13, 326, 368);
             b.Edge(154, 380, 246, 380, FanPsu); b.Rect(150, 376, 100, 8, 2, Sty.Ln2);
             b.Air("M132 334 C112 334 100 336 86 340", true); b.Air("M132 356 C112 358 100 362 86 368", true);
@@ -432,7 +457,7 @@ namespace SMDWin.Views
             b.Air("M430 84 C424 86 418 90 410 96", false); b.Air("M432 140 C424 140 418 140 410 140", false); b.Air("M430 196 C424 194 418 190 410 186", false);
             m.Anchor[0] = new Point(214, 92); m.Lane[0] = hw.Optical ? 51 : 49;   // under the optical drive, above the board's heatsink
             m.Anchor[1] = new Point(ramRight > 0 ? ramRight : 313, 120);
-            m.Anchor[2] = sysNvme || bays == 0 ? new Point(264, 264) : bayAnchor;
+            m.Anchor[2] = sysNvme || bays == 0 ? new Point(248, 263.5) : bayAnchor;
             m.Anchor[3] = new Point(374, 207);
             return m;
         }
@@ -447,7 +472,7 @@ namespace SMDWin.Views
             b.Rect(90, 46, 420, 16, 6, Sty.Ln2);
             b.Rect(90, 62, 420, 292, 16, Sty.Case, -1, 2.2); b.Rect(98, 70, 404, 276, 11, Sty.Ln2);
             b.Sheen("M150 70 H226 L156 346 H98 V250 Z");
-            b.Rect(122, 60, 38, 16, 3); b.Rect(440, 60, 38, 16, 3);
+            b.Rect(204, 62, 26, 8, 2, Sty.Ln2); b.Rect(370, 62, 26, 8, 2, Sty.Ln2);   // small hinges, clear of the fin stacks
             b.Rect(114, 72, 72, 12, 2, Sty.Ln2); b.Fins(120, 8, 8, 73, 83);
             b.Air("M128 64 C124 50 120 40 114 30", true); b.Air("M150 64 C150 50 150 40 150 30", true); b.Air("M172 64 C176 50 180 40 186 30", true);
             b.DGpu = true;
@@ -476,13 +501,23 @@ namespace SMDWin.Views
             int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(206, 158, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 158, 82, 30, 4, false);
             if (mods >= 2) { b.Rect(206, 192, 82, 30, 2, Sty.Ln, 1); b.Chips(206, 192, 82, 30, 4, false); }
-            else b.EmptySlot(210, 196, 74, 22);
+            else b.EmptySlot(206, 192, 82, 30);
+            // the coin battery that keeps the clock and the BIOS settings
+            b.Circ(302, 178, 8); b.Circ(302, 178, 5, Sty.Faint);
             b.Trace("M253 150 L253 158");
             bool bay = hw.BayDrives.Count > 0;
             bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
-            if (hw.Nvme) { b.Rect(300, 196, 94, 26, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(306, 203, 22, 12, 1, Sty.Ln2); b.Rect(334, 203, 22, 12, 1, Sty.Ln2); if (sysNvme) b.Led(388, 209); }
-            else b.Rect(300, 196, 94, 26, 2, Sty.Faint);
-            b.Rect(168, 176, 26, 30, 2, Sty.Ln2);
+            if (hw.Nvme)
+            {
+                b.Rect(314, 196, 80, 24, 2.5, Sty.Ln, sysNvme ? 2 : -1);
+                b.Rect(321, 202, 12, 12, 0.8, Sty.Faint); b.Rect(337, 202, 12, 12, 0.8, Sty.Faint); b.Rect(354, 203, 10, 10, 0.8, Sty.Faint);
+                b.Screw(389, 208); if (sysNvme) b.Led(380, 208);
+            }
+            else { b.Rect(314, 196, 80, 24, 2.5, Sty.Faint); b.Screw(389, 208); }
+            // the Wi-Fi card (M.2, replaceable) with its two antenna wires
+            b.Rect(160, 172, 32, 36, 2); b.Rect(166, 186, 12, 12, 0.8, Sty.Faint);
+            b.Circ(167, 178, 2.4, Sty.Ln2); b.Circ(184, 178, 2.4, Sty.Ln2); b.Screw(176, 204);
+            b.Path("M167 178 C152 172 130 170 108 168", Sty.Faint); b.Path("M184 178 C170 186 136 186 108 184", Sty.Faint);
             // bottom row: [2.5" bay] [battery] [optical drive]
             double left = 138, right = 462;
             if (bay)
@@ -491,15 +526,15 @@ namespace SMDWin.Views
                 if (!sysNvme) b.Led(180, 256);
                 left = 198;
             }
-            else b.Rect(104, 250, 26, 80, 6, Sty.Ln2);
+            else b.Speaker(104, 250, 26, 80);
             if (hw.Optical) { b.Optical(384, 246, 110, 92); right = 374; }
-            else b.Rect(470, 250, 26, 80, 6, Sty.Ln2);
+            else b.Speaker(470, 250, 26, 80);
             b.Rect(left, 246, right - left, 92, 7);
             for (int i = 1; i < 4; i++) { double x = left + (right - left) * i / 4; b.Line(x, 250, x, 334); }
             b.Rect((left + right) / 2 - 18, 232, 36, 9, 2, Sty.Ln2);
             m.Anchor[0] = new Point(253, 116); m.Lane[0] = 101;
             m.Anchor[1] = new Point(288, 173);
-            if (sysNvme || !bay) m.Anchor[2] = new Point(394, 209);
+            if (sysNvme || !bay) m.Anchor[2] = new Point(394, 208);
             else { m.Anchor[2] = new Point(188, 262); m.Lane[2] = 243.5; }   // between the board and the battery
             m.Anchor[3] = new Point(346, 152); m.Lane[3] = 161;
             return m;
@@ -518,35 +553,44 @@ namespace SMDWin.Views
             b.Sheen("M160 34 H262 L176 280 H90 V196 Z");
             b.Circ(300, 29, 2); b.Dot(490, 302, 2);
             for (int i = 0; i < 22; i++) { b.Circ(112 + i * 4, 302, 0.9); b.Circ(400 + i * 4, 302, 0.9); }
-            b.Rect(300, 38, 96, 10, 2, Sty.Ln2);
             b.Air("M314 22 C312 12 308 6 302 -2", true); b.Air("M348 22 C348 12 348 6 348 -2", true); b.Air("M382 22 C384 12 388 6 394 -2", true);
             // fin stack under the vent, the blower right under it: its air goes through the fins and out of the vent
-            b.Rect(312, 50, 72, 14, 2, Sty.Ln2); b.Fins(318, 8, 9, 51, 63);
-            b.Blower(348, 100, 33, 312, 384, 64); b.Fan(348, 100, 30, FanCpu);
+            b.Rect(312, 37, 72, 14, 2, Sty.Ln2); b.Fins(318, 8, 9, 38, 50);
+            b.Blower(348, 86, 33, 312, 384, 51); b.Fan(348, 86, 30, FanCpu);
             b.Path("M190 140 H420 V272 H190 Z");
             // the heat pipes go up past the left of the housing and run along the fin stack
-            b.Pipe("M268 182 C264 118 282 55 308 55 H380", 0); b.Pipe("M282 182 C280 126 294 59 308 59 H380", 0);
+            b.Pipe("M268 182 C264 112 282 42 308 42 H380", 0); b.Pipe("M282 182 C280 120 294 46 308 46 H380", 0);
             b.Glow(276, 196, 62, 0);
             b.Rect(260, 180, 32, 32, 2, Sty.Ln, 0); b.Rect(268, 188, 16, 16, 1, Sty.Ln2);
             b.Heat(276, 170, 0); b.Trace("M292 196 L314 196");
             int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(318, 160, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 160, 82, 35, 4, false);
             if (mods >= 2) { b.Rect(318, 200, 82, 35, 2, Sty.Ln, 1); b.Chips(318, 200, 82, 35, 4, false); }
-            else b.EmptySlot(322, 204, 74, 27);
+            else b.EmptySlot(318, 200, 82, 35);
             bool bay = hw.BayDrives.Count > 0;
             bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
-            if (hw.Nvme) { b.Rect(204, 236, 94, 26, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(210, 243, 22, 12, 1, Sty.Ln2); if (sysNvme) b.Led(292, 249); }
-            else b.Rect(204, 236, 94, 26, 2, Sty.Faint);
+            if (hw.Nvme)
+            {
+                b.Rect(212, 237, 80, 24, 2.5, Sty.Ln, sysNvme ? 2 : -1);
+                b.Rect(219, 243, 12, 12, 0.8, Sty.Faint); b.Rect(235, 243, 12, 12, 0.8, Sty.Faint); b.Rect(252, 244, 10, 10, 0.8, Sty.Faint);
+                b.Screw(287, 249); if (sysNvme) b.Led(278, 249);
+            }
+            else { b.Rect(212, 237, 80, 24, 2.5, Sty.Faint); b.Screw(287, 249); }
             b.Rect(318, 244, 26, 22, 2, Sty.Ln2);
+            // the power board: transformer (with its windings), two large capacitors, a heatsink, the mains and output plugs
             b.Rect(104, 140, 72, 128, 4);
-            b.Circ(124, 166, 9); b.Circ(150, 166, 9); b.Rect(116, 190, 42, 30, 3, Sty.Ln2); b.Circ(126, 240, 6); b.Circ(148, 240, 6);
+            b.Rect(114, 150, 30, 28, 2, Sty.Ln2); foreach (var y in new[] { 157.0, 164, 171 }) b.Line(117, y, 141, y, Sty.Faint);
+            b.Circ(159, 156, 7); b.Circ(159, 156, 3, Sty.Faint); b.Circ(159, 176, 7); b.Circ(159, 176, 3, Sty.Faint);
+            b.Rect(114, 192, 52, 22, 2, Sty.Ln2); b.Fins(119, 6, 8, 194, 212);
+            b.Rect(114, 240, 18, 16, 2, Sty.Ln2); b.Rect(148, 242, 18, 12, 2, Sty.Ln2);
+            b.Screw(109, 145); b.Screw(171, 145); b.Screw(109, 263); b.Screw(171, 263);
             // right column behind the panel: slim optical drive at the top, 2.5" drive under it
             if (hw.Optical) b.Optical(432, 56, 66, 66);
             if (bay) { b.Drive25(438, 150, 54, 78, sysNvme ? -1 : 2); if (!sysNvme) b.Led(465, 220); }
             b.Air("M226 336 C226 326 226 318 226 308", false); b.Air("M374 336 C374 326 374 318 374 308", false);
             m.Anchor[0] = new Point(289, 180); m.Lane[0] = 144;   // right of the heat pipes
             m.Anchor[1] = new Point(400, 178);
-            m.Anchor[2] = sysNvme || !bay ? new Point(298, 249) : new Point(492, 189);
+            m.Anchor[2] = sysNvme || !bay ? new Point(292, 249) : new Point(492, 189);
             m.Anchor[3] = m.Anchor[0];
             return m;
         }
@@ -578,15 +622,16 @@ namespace SMDWin.Views
             int mods = Math.Clamp(hw.RamModules, 1, 2);
             b.Rect(202, 212, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 212, 110, 30, 4, false);
             if (mods >= 2) { b.Rect(202, 248, 110, 30, 2, Sty.Ln, 1); b.Chips(202, 248, 110, 30, 4, false); }
-            else b.EmptySlot(206, 252, 102, 22);
+            else b.EmptySlot(202, 248, 110, 30);
             bool bay = hw.BayDrives.Count > 0;
             bool sysNvme = hw.Nvme && (hw.SystemOnNvme || !bay);
             double m2h = bay ? 76 : 150;
             if (hw.Nvme)
             {
-                b.Rect(352, 130, 34, m2h, 2, Sty.Ln, sysNvme ? 2 : -1); b.Rect(359, 140, 20, 28, 1, Sty.Ln2);
-                if (!bay) b.Rect(359, 176, 20, 28, 1, Sty.Ln2);
-                if (sysNvme) b.Led(369, 130 + m2h - 10);
+                b.Rect(352, 130, 34, m2h, 2.5, Sty.Ln, sysNvme ? 2 : -1);
+                b.Rect(363, 138, 12, 12, 0.8, Sty.Faint); b.Rect(363, 154, 12, 12, 0.8, Sty.Faint); b.Rect(364, 170, 10, 10, 0.8, Sty.Faint);
+                b.Screw(369, 130 + m2h - 4);
+                if (sysNvme) b.Led(369, 130 + m2h - 14);
             }
             else b.Rect(352, 130, 34, m2h, 2, Sty.Faint);
             if (bay) { b.Drive25(336, 214, 66, 68, sysNvme ? -1 : 2); if (!sysNvme) b.Led(394, 222); }
@@ -908,7 +953,7 @@ namespace SMDWin.Views
                             Brush hub = hot[part] ? B(Hot) : blade;
                             d.PushTransform(new TranslateTransform(op.X, op.Y));
                             d.PushTransform(new RotateTransform(_rot[src]));
-                            d.DrawGeometry(null, P(blade, 2, null, 0, true), Blades(op.R));
+                            d.DrawGeometry(null, P(blade, 1.3, null, 0, true), Blades(op.R));
                             d.Pop();
                             double hr = Math.Max(3, op.R * 0.14);
                             d.DrawEllipse(hub, null, new Point(0, 0), hr, hr);
@@ -988,11 +1033,13 @@ namespace SMDWin.Views
             var sg = new StreamGeometry();
             using (var c = sg.Open())
             {
-                (double cx, double cy, double ex, double ey)[] q = { (-.15, -.68, .32, -.9), (.68, -.15, .9, .32), (.15, .68, -.32, .9), (-.68, .15, -.9, -.32) };
-                foreach (var (cx, cy, ex, ey) in q)
+                // 7 thin curved blades from the hub to the rim, as on real fans
+                for (int k = 0; k < 7; k++)
                 {
-                    c.BeginFigure(new Point(0, 0), false, false);
-                    c.QuadraticBezierTo(new Point(cx * r, cy * r), new Point(ex * r, ey * r), true, true);
+                    double a = k * 2 * Math.PI / 7;
+                    Point At(double rr, double da) => new(Math.Cos(a + da) * rr * r, Math.Sin(a + da) * rr * r);
+                    c.BeginFigure(At(0.2, 0), false, false);
+                    c.QuadraticBezierTo(At(0.62, 0.18), At(0.9, 0.62), true, true);
                 }
             }
             sg.Freeze();
