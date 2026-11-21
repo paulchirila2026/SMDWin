@@ -738,13 +738,12 @@ namespace SMDWin.Views
         {
             var s = _summary;
             if (s == null || string.IsNullOrWhiteSpace(s.Cpu)) return "";
-            int threads = s.CpuThreads > 0 ? s.CpuThreads : Environment.ProcessorCount;
             // "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz" → "Intel Core i7-6700HQ": the full name did not fit the card or the drawing
             string name = s.Cpu.Replace("(R)", "").Replace("(TM)", "").Replace("(tm)", "").Replace("®", "").Replace("™", "");
             name = System.Text.RegularExpressions.Regex.Replace(name, @"\s+CPU\b", "");
             name = System.Text.RegularExpressions.Regex.Replace(name, @"\s*@\s*[\d.]+\s*GHz", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             name = System.Text.RegularExpressions.Regex.Replace(name, @"\s+", " ").Trim();
-            return $"{name} · {threads} {PT("threads")}";
+            return name;   // the thread count is in the line under it while the test runs ("4 threads · 100 %")
         }
 
         private static string SystemDriveLetter()
