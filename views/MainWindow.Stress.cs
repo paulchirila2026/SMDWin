@@ -248,21 +248,20 @@ namespace SMDWin.Views
             if (GpuStressRunPanel != null) GpuStressRunPanel.Visibility = Visibility.Visible;
             ShowToast(_LS("Stress", "GpuStressRunningWarning"), "🔥", 4000, ToastKind.Warning);
             if (FindName("GpuStressIndicator") is Border gind) gind.Visibility = Visibility.Visible;
-            // the load starts after the interface has drawn the button (no freeze on press)
-            Dispatcher.BeginInvoke(new Action(() =>
+            // started right away: Start() only launches the worker thread (the graphics device is created on that thread), so it
+            // does not freeze the window. It used to be queued at Background priority; with "CPU + GPU" the processor load
+            // delayed the queued start, the 1-second check (UpdateGpuStressUI) saw "UI says running, GPU not running" and
+            // stopped the GPU test silently — only the CPU test was left.
+            try
             {
-                try
-                {
-                    if (!_gpuStressUiRunning) return;
-                    _gpuStress.Start();
-                    BeginStressRun(gpu: true);
-                    ApplyStressAutoStopIfNeeded();
-                    SetNavTaskBadge("TaskBadgeStress", _cpuStress.Running || _gpuStress.IsRunning);
-                    SyncSensorLoggerWithStress();
-                    UpdateStressBanner();
-                }
-                catch (Exception ex) { AppLogger.Warning(ex, "StartGpuStress"); }
-            }), System.Windows.Threading.DispatcherPriority.Background);
+                _gpuStress.Start();
+                BeginStressRun(gpu: true);
+                ApplyStressAutoStopIfNeeded();
+                SetNavTaskBadge("TaskBadgeStress", _cpuStress.Running || _gpuStress.IsRunning);
+                SyncSensorLoggerWithStress();
+                UpdateStressBanner();
+            }
+            catch (Exception ex) { AppLogger.Warning(ex, "StartGpuStress"); }
         }
 
         /// <summary>Updates a stress toggle button: changes icon path, label text and style.
@@ -353,6 +352,7 @@ namespace SMDWin.Views
             {
                 string reason = _gpuStress.LastError;
                 bool tdr = _gpuStress.DriverResetDetected;
+                AppLogger.Warning("GPU stress: stopped by itself (driver reset={0}) — {1}", tdr, string.IsNullOrEmpty(reason) ? "no error reported" : reason);
                 StopGpuStress();
                 if (!string.IsNullOrEmpty(reason))
                     ShowToast((tdr ? _LS("Stress", "GpuDriverReset") : "GPU stress: ") + (tdr ? "" : reason),

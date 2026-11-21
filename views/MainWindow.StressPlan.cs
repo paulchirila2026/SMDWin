@@ -79,7 +79,7 @@ namespace SMDWin.Views
                 {
                     case StressWhat.Cpu:  StartCpuStress(); break;
                     case StressWhat.Gpu:  StartGpuStress(); break;
-                    case StressWhat.Both: StartCpuStress(); StartGpuStress(); break;
+                    case StressWhat.Both: StartGpuStress(); StartCpuStress(); break;   // the GPU first: its thread starts before the CPU load
                     case StressWhat.System: StartMaxLoad(); break;
                 }
             }

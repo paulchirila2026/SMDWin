@@ -894,126 +894,127 @@
                 <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
 
-              <!-- ① VERDICT + PROGRES -->
-              <Border Grid.Row="0" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="16,10" Margin="0,0,0,8">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="96"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                    <TextBlock x:Name="TxtSurfacePctLabel" Text="0%" FontSize="{StaticResource FontSizeHero}" FontWeight="Bold"
-                               FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource AccentBrush}"/>
-                    <TextBlock x:Name="TxtSurfacePhase" Text="Not started" FontSize="{StaticResource FontSizeS}"
-                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="1,-3,0,0"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <!-- The track must stay the direct parent of SurfaceProgressFill -->
-                    <Border CornerRadius="5" Background="{DynamicResource BorderBrush2}" Height="10">
-                      <Border x:Name="SurfaceProgressFill" HorizontalAlignment="Left" CornerRadius="5" Height="10" Width="0"
-                              Background="{DynamicResource DataBrush}"/>
-                    </Border>
-                    <Grid Margin="0,7,0,0">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                      </Grid.ColumnDefinitions>
-                      <!-- The verdict, as a coloured label (background + text set from code) -->
-                      <Border x:Name="SurfaceVerdictPill" CornerRadius="6" Padding="9,3" Background="{DynamicResource BgHoverBrush}">
-                        <TextBlock x:Name="TxtSurfaceVerdict" Text="Not scanned yet" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
-                      </Border>
-                      <TextBlock Grid.Column="2" x:Name="TxtSurfaceScanned" Text="— GB / — GB" FontSize="{StaticResource FontSizeM}"
-                                 Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                    </Grid>
-                  </StackPanel>
-                  <!-- The current speed — large, next to the remaining time: it is the figure that says the most about the disk state during
-                       the scan. -->
-                  <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="28,0,0,0" MinWidth="120" Visibility="Collapsed">
-                    <TextBlock Text="Read speed now" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                      <TextBlock x:Name="TxtSurfaceSpeed" Text="—" FontSize="{StaticResource FontSizeHero}" FontWeight="Bold"
-                                 FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource AccentBrush}"/>
-                      <TextBlock Text=" MB/s" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}"
-                                 VerticalAlignment="Bottom" Margin="0,0,0,5"/>
-                    </StackPanel>
-                  </StackPanel>
-                  <Border Grid.Column="3" Width="1" Background="{DynamicResource BorderBrush2}" Margin="20,4,0,4" HorizontalAlignment="Left" Visibility="Collapsed"/>
-                  <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="40,0,0,0" MinWidth="110">
-                    <TextBlock Text="Time left" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right"/>
-                    <TextBlock x:Name="TxtSurfaceEta" Text="—" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
-                               FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                      <TextBlock Text="elapsed " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                      <TextBlock x:Name="TxtSurfaceElapsed" Text="—" FontSize="{StaticResource FontSizeS}" FontFamily="{DynamicResource MonoFont}"
-                                 Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    </StackPanel>
-                  </StackPanel>
-                </Grid>
-              </Border>
-
-              <!-- ② BLOCK MAP  +  ③ RESPONSE TIME -->
-              <Grid Grid.Row="1" Margin="0,0,0,8">
+              <!-- Top: progress and the speed along the drive (left), the response times (right, as tall as both);
+                   below: the sector map over the whole width, filling the rest of the page (no scrolling) -->
+              <Grid Grid.Row="0" Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*"/>
                   <ColumnDefinition Width="8"/>
                   <ColumnDefinition Width="320"/>
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="12,10" SnapsToDevicePixels="True">
-                  <Grid>
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto"/>
-                      <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                <!-- ① VERDICT + PROGRESS, ④ the speed along the drive -->
+                <DockPanel Grid.Column="0" LastChildFill="True">
+                  <Border DockPanel.Dock="Top" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="16,10" Margin="0,0,0,8">
+                    <Grid>
                       <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="96"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                       </Grid.ColumnDefinitions>
-                      <TextBlock x:Name="TxtSurfaceMapTitle" Text="Sector map" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBlock Text="OK" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource YellowBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBlock Text="Slow" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource RedBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBlock Text="Unreadable" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource BorderBrush2}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBlock Text="Not scanned" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                      <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                        <TextBlock x:Name="TxtSurfacePctLabel" Text="0%" FontSize="{StaticResource FontSizeHero}" FontWeight="Bold"
+                                   FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource AccentBrush}"/>
+                        <TextBlock x:Name="TxtSurfacePhase" Text="Not started" FontSize="{StaticResource FontSizeS}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" Margin="1,-3,0,0"/>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <!-- The track must stay the direct parent of SurfaceProgressFill -->
+                        <Border CornerRadius="5" Background="{DynamicResource BorderBrush2}" Height="10">
+                          <Border x:Name="SurfaceProgressFill" HorizontalAlignment="Left" CornerRadius="5" Height="10" Width="0"
+                                  Background="{DynamicResource DataBrush}"/>
+                        </Border>
+                        <Grid Margin="0,7,0,0">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <!-- The verdict, as a coloured label (background + text set from code) -->
+                          <Border x:Name="SurfaceVerdictPill" CornerRadius="6" Padding="9,3" Background="{DynamicResource BgHoverBrush}">
+                            <TextBlock x:Name="TxtSurfaceVerdict" Text="Not scanned yet" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                          </Border>
+                          <TextBlock Grid.Column="2" x:Name="TxtSurfaceScanned" Text="— GB / — GB" FontSize="{StaticResource FontSizeM}"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                        </Grid>
+                      </StackPanel>
+                      <!-- The current speed — large, next to the remaining time: it is the figure that says the most about the disk state during
+                           the scan. -->
+                      <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="28,0,0,0" MinWidth="120" Visibility="Collapsed">
+                        <TextBlock Text="Read speed now" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                          <TextBlock x:Name="TxtSurfaceSpeed" Text="—" FontSize="{StaticResource FontSizeHero}" FontWeight="Bold"
+                                     FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource AccentBrush}"/>
+                          <TextBlock Text=" MB/s" FontSize="{StaticResource FontSizeM}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                     VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                        </StackPanel>
+                      </StackPanel>
+                      <Border Grid.Column="3" Width="1" Background="{DynamicResource BorderBrush2}" Margin="20,4,0,4" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                      <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="40,0,0,0" MinWidth="110">
+                        <TextBlock Text="Time left" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Right"/>
+                        <TextBlock x:Name="TxtSurfaceEta" Text="—" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold"
+                                   FontFamily="{DynamicResource MonoFont}" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                          <TextBlock Text="elapsed " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                          <TextBlock x:Name="TxtSurfaceElapsed" Text="—" FontSize="{StaticResource FontSizeS}" FontFamily="{DynamicResource MonoFont}"
+                                     Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
                       </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="1">
-                      <local:SectorBlockMap x:Name="SurfaceBlockMap" MinHeight="160"
-                                            MouseMove="SurfaceBlockMap_MouseMove"
-                                            ToolTipService.InitialShowDelay="150"/>
-                      <Border x:Name="SurfaceEmptyState" CornerRadius="8" Padding="16,6" IsHitTestVisible="False"
-                              VerticalAlignment="Center">
-                        <StackPanel HorizontalAlignment="Center">
-                          <Viewbox Width="26" Height="26" Margin="0,0,0,6" Opacity="0.5">
-                            <Canvas Width="24" Height="24">
-                              <Path Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/>
-                            </Canvas>
-                          </Viewbox>
-                          <TextBlock Text="No scan yet" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold"
-                                     Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
-                          <TextBlock Text="Run a surface scan to map bad or slow areas on this drive. The scan only reads — no data is changed."
-                                     FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
-                                     Opacity="0.75" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
-                                     Margin="0,4,0,0" MaxWidth="460"/>
+                  </Border>
+                  <!-- ④ the speed across the disk surface, under the progress; it takes the height left next to "Response time" -->
+                  <Border Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="14,10">
+                    <Grid>
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" MinHeight="120"/>
+                      </Grid.RowDefinitions>
+                      <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="Read speed along the drive" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtSurfaceSpeedSubtitle" Text="  ·  start → end of the drive" FontSize="{StaticResource FontSizeS}"
+                                     Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
-                      </Border>
+                        <!-- the scan speed: now · average · min · max (the shared "Disk activity" card above is no longer shown) -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                          <TextBlock Text="Now " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock Text="{Binding Text, ElementName=TxtStActScanNow}" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock Text="   Average " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtSurfaceSpeedAvg" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock Text="   Min " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtSurfaceSpeedMin" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock Text="   Max " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock x:Name="TxtSurfaceSpeedMax" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                          <TextBlock Text=" MB/s" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </Grid>
+                      <local:SpeedCurveChart x:Name="SurfaceSpeedChart" Grid.Row="1" MouseMove="SurfaceSpeedChart_MouseMove"
+                                             ToolTipService.InitialShowDelay="100">
+                        <local:SpeedCurveChart.ContextMenu>
+                          <ContextMenu Opened="SurfaceChartMenu_Opened">
+                            <MenuItem Header="Whole drive" Tag="-1" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
+                            <MenuItem Header="Everything scanned so far" Tag="0" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
+                            <MenuItem Header="Last 15 minutes" Tag="15" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
+                            <MenuItem Header="Last 5 minutes" Tag="5" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
+                            <MenuItem Header="Last 1 minute" Tag="1" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
+                          </ContextMenu>
+                        </local:SpeedCurveChart.ContextMenu>
+                      </local:SpeedCurveChart>
                     </Grid>
-                  </Grid>
-                </Border>
-
+                  </Border>
+                </DockPanel>
                 <!-- ③ Response time (histogram) + key figures -->
-                <Border Grid.Column="2" Grid.RowSpan="2" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="16,12" SnapsToDevicePixels="True">
+                <Border Grid.Column="2" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="16,12" SnapsToDevicePixels="True">
                   <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                       <TextBlock Text="Response time" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
@@ -1064,56 +1065,57 @@
                     </StackPanel>
                   </ScrollViewer>
                 </Border>
-                            <!-- ④ the speed across the disk surface — under the map, as wide as it -->
-              <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="14,10" Margin="0,8,0,0">
-                <Grid>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="120"/>
-                  </Grid.RowDefinitions>
-                  <Grid Margin="0,0,0,6">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*"/>
-                      <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock Text="Read speed along the drive" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock x:Name="TxtSurfaceSpeedSubtitle" Text="  ·  start → end of the drive" FontSize="{StaticResource FontSizeS}"
-                                 Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <!-- the scan speed: now · average · min · max (the shared "Disk activity" card above is no longer shown) -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                      <TextBlock Text="Now " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock Text="{Binding Text, ElementName=TxtStActScanNow}" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock Text="   Average " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock x:Name="TxtSurfaceSpeedAvg" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock Text="   Min " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock x:Name="TxtSurfaceSpeedMin" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock Text="   Max " FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock x:Name="TxtSurfaceSpeedMax" Text="—" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold" FontFamily="{DynamicResource MonoFont}"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                      <TextBlock Text=" MB/s" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                  </Grid>
-                  <local:SpeedCurveChart x:Name="SurfaceSpeedChart" Grid.Row="1" MouseMove="SurfaceSpeedChart_MouseMove"
-                                         ToolTipService.InitialShowDelay="100">
-                    <local:SpeedCurveChart.ContextMenu>
-                      <ContextMenu Opened="SurfaceChartMenu_Opened">
-                        <MenuItem Header="Whole drive" Tag="-1" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
-                        <MenuItem Header="Everything scanned so far" Tag="0" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
-                        <MenuItem Header="Last 15 minutes" Tag="15" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
-                        <MenuItem Header="Last 5 minutes" Tag="5" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
-                        <MenuItem Header="Last 1 minute" Tag="1" IsCheckable="True" Click="SurfaceChartWindow_Click"/>
-                      </ContextMenu>
-                    </local:SpeedCurveChart.ContextMenu>
-                  </local:SpeedCurveChart>
-                </Grid>
-              </Border>
               </Grid>
+
+              <!-- ② BLOCK MAP — the whole width, the rest of the height -->
+                <Border Grid.Row="1" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="12,10" Margin="0,0,0,8" SnapsToDevicePixels="True">
+                  <Grid>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="TxtSurfaceMapTitle" Text="Sector map" FontSize="{StaticResource FontSizeM}" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="OK" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource YellowBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="Slow" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource RedBrush}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="Unreadable" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{DynamicResource BorderBrush2}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="Not scanned" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                      <local:SectorBlockMap x:Name="SurfaceBlockMap" MinHeight="160"
+                                            MouseMove="SurfaceBlockMap_MouseMove"
+                                            ToolTipService.InitialShowDelay="150"/>
+                      <Border x:Name="SurfaceEmptyState" CornerRadius="8" Padding="16,6" IsHitTestVisible="False"
+                              VerticalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center">
+                          <Viewbox Width="26" Height="26" Margin="0,0,0,6" Opacity="0.5">
+                            <Canvas Width="24" Height="24">
+                              <Path Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/>
+                            </Canvas>
+                          </Viewbox>
+                          <TextBlock Text="No scan yet" FontSize="{StaticResource FontSizeL}" FontWeight="SemiBold"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+                          <TextBlock Text="Run a surface scan to map bad or slow areas on this drive. The scan only reads — no data is changed."
+                                     FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                     Opacity="0.75" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
+                                     Margin="0,4,0,0" MaxWidth="460"/>
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Grid>
+                </Border>
+
 
               
 

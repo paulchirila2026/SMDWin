@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Storage › Surface scan: the progress and the read-speed chart are side by side with "Response time" at the top, and the sector map spans the whole width below, filling the rest of the page.
 - Cards no longer light up under the mouse (Dashboard and everywhere else); list rows still do. The remaining coloured pills and dots (Applications, Windows Services, Space usage, Event Viewer, SMART attributes, the sensor banner) are Windows-style state marks with plain words; "Do not disable" is a small lock with neutral text instead of a red pill.
 - Page action buttons are 8 px apart with more room inside. Storage: Disk Management and Diskpart are in one "Windows tools" menu button.
 - Dark background: three subtle states — blue when all is well (a little stronger than before), a faint amber for warnings, a faint red when something is critical.
@@ -58,6 +59,7 @@ Dates are in day.month.year format.
 - Benchmark: a line drawing of this computer (desktop, laptop, all-in-one or mini PC) replaces the four big dials. Each component has a callout with its mark ring, hardware and value; the part being tested lights up while it runs (fans speed up, memory and disk activity blink), and after the test each part takes the colour of its mark. The general mark and the performance class sit next to the drawing; the component cards keep their values and tests, with a small mark ring in the header. Before the first run the page shows the same layout with Start in the top bar. The drawing grows with the window, each test shows what it measures under its bar, and the large cards no longer light up under the mouse. The warnings before a test are small chips on one row (the full advice in the tooltip), and the drawing shrinks to fit so the whole page fits on a laptop screen.
 
 ### Fixed
+- Temp & Stress: "CPU + GPU" could end up running only the CPU test. The GPU start waited in a queue behind the processor load, and the one-second check took it for a GPU test that had stopped by itself. The GPU test now starts right away (before the CPU load), and a GPU test that really stops by itself is written to the log with its reason.
 - Storage: USB and other external drives no longer show "bad-block errors" from the Windows log as a critical problem. Windows numbers removable disks in the order they are connected, and removing a stick without "Eject" also leaves such entries, so these are now shown as a warning about read / write errors in the log.
 - Dashboard: "Secure Boot: Disabled" was shown in green; it is now orange (a warning).
 - Benchmark drawing: every memory module has its chips (on the all-in-one only one of the two had them); the mini PC modules sit side by side too.
