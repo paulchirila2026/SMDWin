@@ -242,6 +242,9 @@ namespace SMDWin.Views
             public double X, Y, R, X2, Y2, W;
             public int Part = -1, Src = -1, Seed;
             public bool DGpu, Warm, Front;
+            /// <summary>Air: points and directions sampled along the path (the pulses run on them).</summary>
+            public Point[]? Pts;
+            public Vector[]? Tan;
         }
 
         private sealed class Model
@@ -292,7 +295,15 @@ namespace SMDWin.Views
                 => Add(new Op { T = OpT.Shape, G = Fz(Geometry.Parse(d)), S = s, Part = part, W = width });
             public void Fan(double cx, double cy, double r, int src) => Add(new Op { T = OpT.Fan, X = cx, Y = cy, R = r, Src = src });
             public void Edge(double x1, double y1, double x2, double y2, int src) => Add(new Op { T = OpT.Edge, X = x1, Y = y1, X2 = x2, Y2 = y2, Src = src });
-            public void Air(string d, bool warm) => Add(new Op { T = OpT.Air, G = Fz(Geometry.Parse(d)), Warm = warm });
+            public void Air(string d, bool warm)
+            {
+                var g = Fz(Geometry.Parse(d));
+                var pg = PathGeometry.CreateFromGeometry(g);
+                const int N = 32;
+                var pts = new Point[N + 1]; var tan = new Vector[N + 1];
+                for (int i = 0; i <= N; i++) { pg.GetPointAtFractionLength(i / (double)N, out var pt, out var tg); pts[i] = pt; tg.Normalize(); tan[i] = new Vector(tg.X, tg.Y); }
+                Add(new Op { T = OpT.Air, G = g, Warm = warm, Pts = pts, Tan = tan, Seed = _seed++ });
+            }
             public void Heat(double x, double y, int part) => Add(new Op { T = OpT.Heat, X = x, Y = y, Part = part });
             public void Glow(double cx, double cy, double r, int part) => Add(new Op { T = OpT.Glow, X = cx, Y = cy, R = r, Part = part });
             public void Pipe(string d, int part) => Add(new Op { T = OpT.Pipe, G = Fz(Geometry.Parse(d)), Part = part });
@@ -723,7 +734,9 @@ namespace SMDWin.Views
                 double gTarget = hot[i] ? 0.75 + 0.25 * tf : 0.4 * tf;
                 _glow[i] = anim ? _glow[i] + (gTarget - _glow[i]) * Math.Min(1, dt * 2.5) : gTarget;
             }
-            _air = (_air + dt * 32 / (2.2 - 1.5 * _load[FanCase])) % 32;
+            // the air pulses: faster with the fans; brighter (+30 %) and one more per path while the processor / graphics work
+            _air = (_air + dt * (0.16 + 0.42 * _load[FanCase])) % 1;
+            double busy = Math.Clamp((Math.Max(_load[FanCpu], gpuShown ? _load[FanGpu] : 0) - 0.1) / 0.8, 0, 1);
             _trace = (_trace + dt * 9 / 0.7) % 9;
             _ringSpin = (_ringSpin + dt * 300) % 360;
             for (int i = 0; i < 4; i++)
@@ -965,11 +978,8 @@ namespace SMDWin.Views
                             d.DrawLine(P(edgeBrush, 5, new[] { 0.8, 1.0 }, -_edge[op.Src] / 5), new Point(op.X, op.Y), new Point(op.X2, op.Y2));
                             break;
                         case OpT.Air:
-                        {
-                            var c = op.Warm ? HotText : light ? ColdLight : Cold;
-                            d.DrawGeometry(null, P(B(c, 0.6), 1.5, new[] { 4.0, 6.67 }, -_air / 1.5, true), op.G);
+                            DrawAir(d, op, op.Warm ? HotText : light ? ColdLight : Cold, busy, now);
                             break;
-                        }
                         case OpT.Heat:
                         {
                             bool tooHot = (op.Part == 0 ? _live.CpuTemp : _live.GpuTemp) is float ht && ht >= 85;
@@ -1027,6 +1037,58 @@ namespace SMDWin.Views
 
         private static readonly Dictionary<double, Geometry> _blades = new();
         /// <summary>Four curved blades around (0, 0), as in the mockup.</summary>
+        // pens of the air pulses, by colour / opacity step / width (they are drawn every frame)
+        private static readonly Dictionary<(Color, int, int), Pen> _airPens = new();
+        private static Pen AirPen(Color c, double alpha, double w)
+        {
+            var key = (c, (int)Math.Round(Math.Clamp(alpha, 0, 1) * 40), (int)Math.Round(w * 10));
+            if (!_airPens.TryGetValue(key, out var p)) _airPens[key] = p = P(B(c, key.Item2 / 40.0), key.Item3 / 10.0, null, 0, true);
+            return p;
+        }
+
+        /// <summary>
+        /// Air: the path itself, barely visible, and short pulses of light sliding along it (a wide faint stroke under a thin bright
+        /// one, so they glow). Cool air comes in straight; warm air goes out in slightly longer pulses with a faint ripple.
+        /// </summary>
+        private void DrawAir(DrawingContext d, Op op, Color c, double busy, double now)
+        {
+            if (op.Pts == null || op.Tan == null) return;
+            d.DrawGeometry(null, AirPen(c, 0.08 + 0.03 * busy, 1), op.G);
+            int n = busy > 0.5 ? 3 : 2;
+            double len = op.Warm ? 0.22 : 0.15, peak = 0.5 * (1 + 0.3 * busy);
+            const int Seg = 8;
+            for (int k = 0; k < n; k++)
+            {
+                double tp = (_air + k / (double)n + op.Seed * 0.137) % 1;
+                for (int j = 0; j < Seg; j++)
+                {
+                    double t1 = tp - len * j / Seg, t2 = tp - len * (j + 1) / Seg;
+                    if (t2 < 0) break;
+                    double fade = Math.Min(1, t1 / 0.15) * Math.Min(1, (1 - t1) / 0.25);
+                    double a = peak * fade * (1 - j / (double)Seg);
+                    if (a < 0.02) continue;
+                    Point p1 = AirAt(op, t1, now), p2 = AirAt(op, t2, now);
+                    d.DrawLine(AirPen(c, a * 0.22, 3.4), p1, p2);
+                    d.DrawLine(AirPen(c, a, 1.5), p1, p2);
+                }
+            }
+        }
+
+        private static Point AirAt(Op op, double t, double now)
+        {
+            var pts = op.Pts!; var tan = op.Tan!;
+            double f = Math.Clamp(t, 0, 1) * (pts.Length - 1);
+            int i = Math.Min(pts.Length - 2, (int)f); double u = f - i;
+            var p = pts[i] + (pts[i + 1] - pts[i]) * u;
+            if (op.Warm)
+            {
+                var tg = tan[i];
+                double w = Math.Sin(t * 30 - now * 5) * 1.3;
+                p += new Vector(-tg.Y * w, tg.X * w);
+            }
+            return p;
+        }
+
         private static Geometry Blades(double r)
         {
             if (_blades.TryGetValue(r, out var g)) return g;
