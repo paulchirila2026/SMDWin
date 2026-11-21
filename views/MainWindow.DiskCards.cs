@@ -151,16 +151,7 @@ namespace SMDWin.Views
             };
             outer.SetResourceReference(Border.BackgroundProperty, "BgCardBrush");
             outer.SetResourceReference(Border.BorderBrushProperty, "BorderBrush2");
-            outer.MouseEnter += (_, _) =>
-            {
-                if (!SettingsService.Current.DesignExperimentShadowsOff)
-                    outer.SetResourceReference(Border.BackgroundProperty, "BgHoverBrush");
-            };
-            outer.MouseLeave += (_, _) =>
-            {
-                // no hover shadow: an effect on the card would blur its text
-                outer.SetResourceReference(Border.BackgroundProperty, "BgCardBrush");
-            };
+            // no hover highlight on the card (as on every other card)
             var sp = new StackPanel();
 
             // ── HEADER: icon + model + badge + health ─────────────────────────

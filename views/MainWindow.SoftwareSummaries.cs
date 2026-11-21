@@ -104,10 +104,18 @@ namespace SMDWin.Views
             }
             else if (pill is { } p)
             {
-                var pb = new Border { CornerRadius = new CornerRadius(9), Padding = new Thickness(8, 1, 8, 2), Background = SummaryTint(p.brush, 34), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
-                var pt = new TextBlock { Text = p.text, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold };
+                // no coloured pill: a state ("Crashed", "Did not start") is the Windows mark + the word; a plain label ("New")
+                // is only the word in the accent colour
+                var pb = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+                if (p.brush != "AccentBrush")
+                {
+                    var mk = new StatusMark { Width = 13, Height = 13, Margin = new Thickness(0, 0, 5, 0), VerticalAlignment = VerticalAlignment.Center };
+                    mk.SetResourceReference(StatusMark.FillProperty, p.brush);
+                    pb.Children.Add(mk);
+                }
+                var pt = new TextBlock { Text = p.text, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
                 pt.SetResourceReference(TextBlock.ForegroundProperty, p.brush);
-                pb.Child = pt;
+                pb.Children.Add(pt);
                 right = pb;
             }
             else if (link is { } l)
@@ -159,7 +167,7 @@ namespace SMDWin.Views
             try
             {
                 if (BeginSummary(AppDetailEmpty) is not { } host) return;
-                var apps = _allApps;
+                var apps = _allApps.Where(a => !a.IsDriver).ToList();   // driver packages are not programs
                 if (apps.Count == 0) { host.Children.Add(new TextBlock()); EndSummary(host); return; }
                 void Select(InstalledApp a) { AppsGrid.SelectedItem = a; AppsGrid.ScrollIntoView(a); }
 

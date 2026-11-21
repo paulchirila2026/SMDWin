@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -19,9 +20,11 @@ namespace SMDWin.Views
     /// The lights sit at fixed places (top left, right, bottom), so the page looks the same every time.
     /// The picture is redrawn only when the window size, the screen scaling or the theme changes.
     ///
-    /// Alert tint (Dark only): while something is dangerous (a high temperature held for a while, or a Health check item that means physical danger — DiagnosticOrchestrator.IsPhysicalDanger)
-    /// a second picture, with the main light turned red, fades in over the first one — slowly, so it reads as part of the
-    /// background and not as a warning flash. It is drawn only when first needed, and fades out just as slowly.
+    /// State tint (Dark only), three levels: blue when all is well (the base picture); a faint amber when there is a warning
+    /// (the last Health check found warnings or non-dangerous critical items, or a Dashboard value is over its warning
+    /// threshold); a faint red while something is dangerous (a high temperature held for a while, or a Health check item that
+    /// means physical danger — DiagnosticOrchestrator.IsPhysicalDanger). The tint is a second picture that fades in over the
+    /// first one — slowly, so it reads as part of the background and not as a flash. Drawn only when needed.
     /// </summary>
     public partial class MainWindow
     {
@@ -32,9 +35,9 @@ namespace SMDWin.Views
         private bool _auroraHooked;
         private int _auroraGen;
         private int _auroraAlertGen;
-        private bool _auroraAlertOn;
+        private int _auroraAlertLevel;   // 0 = all well (no tint), 1 = warning (amber), 2 = danger (red)
         private (int w, int h, bool dark, Color bg) _auroraLast;
-        private (int w, int h, bool dark, Color bg) _auroraAlertLast;
+        private (int w, int h, bool dark, Color bg, int level) _auroraAlertLast;
 
         internal void AuroraLayer_Loaded(object sender, RoutedEventArgs e)
         {
@@ -65,7 +68,7 @@ namespace SMDWin.Views
         }
 
         /// <summary>The lights and the picture size for the current window, theme and screen scaling; null while the window has no size yet.</summary>
-        private AuroraSpec? BuildAuroraSpec(bool alert)
+        private AuroraSpec? BuildAuroraSpec(int level)
         {
             if (AuroraLayer == null) return null;
             bool dark = ThemeManager.IsDark(ThemeManager.Normalize(
@@ -101,22 +104,30 @@ namespace SMDWin.Views
                 double rx2 = Math.Max(800 * sx, w * 0.66), ry2 = Math.Max(780 * sy, h * 1.00);   // right
                 double rx3 = Math.Max(980 * sx, w * 0.72), ry3 = Math.Max(540 * sy, h * 0.60);   // bottom
                 double y2 = h * 0.38;
-                // about half the earlier strength: the lights stay as a hint of colour, not a glow the eye goes to
-                lights = !alert
-                    ? new[]
+                // all well: blue, between the first strength and the halved one (a hint of colour, not a glow the eye goes to)
+                lights = level switch
+                {
+                    0 => new[]
                     {
-                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.09),
-                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.055),
-                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.025),
-                    }
-                    // the same places, warmer: the blue light becomes a deep red, the violet one a dark wine, the teal one a dark
-                    // rose — at about 80 % of the previous strength, since the lights are now much larger
-                    : new[]
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.125),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.078),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.038),
+                    },
+                    // a warning: the same places in a faint amber (weaker than the blue, so it is felt more than seen)
+                    1 => new[]
                     {
-                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0xE0, 0x30, 0x3C), 0.26),
-                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xC2, 0x38, 0x6A), 0.15),
-                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x9A, 0x2E, 0x4C), 0.10),
-                    };
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0xF0, 0x9A, 0x2C), 0.11),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xD9, 0x77, 0x3A), 0.065),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0xB0, 0x6C, 0x2E), 0.035),
+                    },
+                    // danger: deep red, wine, dark rose — subtle, below the earlier alert strength
+                    _ => new[]
+                    {
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0xE0, 0x30, 0x3C), 0.19),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xC2, 0x38, 0x6A), 0.11),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x9A, 0x2E, 0x4C), 0.07),
+                    },
+                };
             }
             return new AuroraSpec(w, h, bg, lights, 96 * sx, 96 * sy, dark);
         }
@@ -125,7 +136,7 @@ namespace SMDWin.Views
         {
             try
             {
-                if (AuroraImage == null || BuildAuroraSpec(alert: false) is not AuroraSpec spec) return;
+                if (AuroraImage == null || BuildAuroraSpec(0) is not AuroraSpec spec) return;
                 if (!spec.Dark)
                 {
                     // no alert picture on Light
@@ -150,7 +161,7 @@ namespace SMDWin.Views
                     });
                 }
 
-                if (spec.Dark && _auroraAlertOn) RenderAlertImage();
+                if (spec.Dark && _auroraAlertLevel > 0) RenderAlertImage();
             }
             catch (Exception ex) { AppLogger.Debug($"RenderAurora: {ex.Message}"); }
         }
@@ -168,11 +179,19 @@ namespace SMDWin.Views
                 var s = SettingsService.Current;
                 bool hot = (_dashAlertState.TryGetValue("cputemp", out bool ct) && ct)
                         || (_dashAlertState.TryGetValue("gputemp", out bool gt) && gt);
-                bool want = s.AuroraAlertTint && (hot || s.HealthCheckLastDanger);   // only physical danger, not every critical item
-                if (want == _auroraAlertOn) return;
-                _auroraAlertOn = want;
-                if (want) RenderAlertImage();   // fades in as soon as the picture is ready
-                else FadeAuroraAlert(0);
+                bool danger = hot || s.HealthCheckLastDanger;   // only physical danger, not every critical item
+                // a warning: the last Health check found something (the orange / red dot on "PC health"), or another
+                // Dashboard value is held over its threshold
+                bool warn = s.HealthCheckLastSeverity is "Warning" or "Critical"
+                         || _dashAlertState.Any(kv => kv.Value && kv.Key is not ("cputemp" or "gputemp"));
+                int level = !s.AuroraAlertTint ? 0 : danger ? 2 : warn ? 1 : 0;
+                if (level == _auroraAlertLevel) return;
+                int was = _auroraAlertLevel;
+                _auroraAlertLevel = level;
+                if (level == 0) { FadeAuroraAlert(0); return; }
+                // from amber to red (or back): fade the old tint out first, then draw and fade in the new one
+                if (was > 0) FadeAuroraAlert(0, then: RenderAlertImage);
+                else RenderAlertImage();   // fades in as soon as the picture is ready
             }
             catch (Exception ex) { AppLogger.Debug($"UpdateAuroraAlert: {ex.Message}"); }
         }
@@ -182,13 +201,14 @@ namespace SMDWin.Views
         {
             try
             {
-                if (AuroraAlertImage == null || BuildAuroraSpec(alert: true) is not AuroraSpec spec || !spec.Dark) return;
-                if (_auroraAlertLast == (spec.W, spec.H, spec.Dark, spec.Bg) && AuroraAlertImage.Source != null)
+                int level = _auroraAlertLevel;
+                if (level == 0 || AuroraAlertImage == null || BuildAuroraSpec(level) is not AuroraSpec spec || !spec.Dark) return;
+                if (_auroraAlertLast == (spec.W, spec.H, spec.Dark, spec.Bg, level) && AuroraAlertImage.Source != null)
                 {
                     FadeAuroraAlert(1);
                     return;
                 }
-                _auroraAlertLast = (spec.W, spec.H, spec.Dark, spec.Bg);
+                _auroraAlertLast = (spec.W, spec.H, spec.Dark, spec.Bg, level);
                 int gen = ++_auroraAlertGen;
                 _ = Task.Run(() =>
                 {
@@ -197,7 +217,7 @@ namespace SMDWin.Views
                     {
                         if (gen != _auroraAlertGen || AuroraAlertImage == null) return;
                         AuroraAlertImage.Source = bmp;
-                        if (_auroraAlertOn) FadeAuroraAlert(1);
+                        if (_auroraAlertLevel > 0) FadeAuroraAlert(1);
                     });
                 });
             }
@@ -205,21 +225,23 @@ namespace SMDWin.Views
         }
 
         /// <summary>A very slow fade (4 s in, 6 s out). With animations switched off the change is immediate.</summary>
-        private void FadeAuroraAlert(double to)
+        private void FadeAuroraAlert(double to, Action? then = null)
         {
             if (AuroraAlertImage == null) return;
-            if (!SettingsService.Current.EnableAnimations)
+            if (!SettingsService.Current.EnableAnimations || (to == 0 && AuroraAlertImage.Opacity <= 0.01))
             {
                 AuroraAlertImage.BeginAnimation(UIElement.OpacityProperty, null);
                 AuroraAlertImage.Opacity = to;
+                then?.Invoke();
                 return;
             }
             var fade = new DoubleAnimation
             {
                 To = to,
-                Duration = TimeSpan.FromSeconds(to > 0 ? 4 : 6),
+                Duration = TimeSpan.FromSeconds(to > 0 ? 4 : (then != null ? 2 : 6)),
                 EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
             };
+            if (then != null) fade.Completed += (_, _) => then();
             AuroraAlertImage.BeginAnimation(UIElement.OpacityProperty, fade);
         }
 

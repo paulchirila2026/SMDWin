@@ -240,7 +240,7 @@ namespace SMDWin.Views
                 int days = Math.Max(0, (int)(DateTime.Now - last).TotalDays);
                 bool stale = days > UpdateStaleDays;
                 facts.Children.Add(HeroFact("Clock", SpecSheet.Hue("Windows"),
-                    days == 0 ? SI("Today", "today") : string.Format(SI("DaysAgo", "{0} days ago"), days),
+                    days == 0 ? SI("Today", "today") : days == 1 ? SI("Yesterday", "yesterday") : string.Format(SI("DaysAgo", "{0} days ago"), days),
                     Ws("LastUpdate"), stale ? "StatusCheckBrush" : "TextPrimaryBrush", SMDWin.Services.DateFormatHelper.FormatDate(last).TrimStart('0')));
             }
         }

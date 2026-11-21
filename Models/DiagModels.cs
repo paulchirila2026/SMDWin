@@ -487,6 +487,14 @@ namespace SMDWin.Models
         public string Size { get; set; } = "";
         public long SizeBytes { get; set; }
         public DateTime? InstallDateRaw { get; set; }
+        /// <summary>The program declared no size; SizeBytes was measured from its folder (AppSizeEstimator).</summary>
+        public bool SizeEstimated { get; set; }
+        public bool HasSize => SizeBytes > 0;
+        public string? SizeTip => SizeEstimated ? LiteralTexts.Translate("Estimated from the size of the program folder") : null;
+        /// <summary>A "Windows Driver Package" entry (a driver installed with its own uninstaller, not a program).</summary>
+        public bool IsDriver => Name.StartsWith("Windows Driver Package", StringComparison.OrdinalIgnoreCase);
+        /// <summary>For a driver package: its folder in the Windows driver store (from the uninstall command), or "".</summary>
+        public string DriverFolder { get; set; } = "";
 
         // ── Applications: iconita, instalat recent, bloatware ──
         /// <summary>The DisplayIcon value from the registry ("C:\app.exe,0" or ".ico").</summary>
@@ -500,6 +508,7 @@ namespace SMDWin.Models
             {
                 if (_iconTried) return _icon;
                 _iconTried = true;
+                if (IsDriver) return null;   // drivers all show the same driver tile (their icons were a random mix)
                 try
                 {
                     string path = AppCommands.IconFilePath(IconSource);

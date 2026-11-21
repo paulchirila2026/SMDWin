@@ -117,7 +117,7 @@ namespace SMDWin.Views
         private void AppFilter_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.Tag is string tag) _appFilter = tag;
-            foreach (var b in new[] { BtnAppFilterAll, BtnAppFilterLarge, BtnAppFilterRecent, BtnAppFilterBloat, BtnAppFilterUnused, BtnAppFilterUpdates })
+            foreach (var b in new[] { BtnAppFilterAll, BtnAppFilterLarge, BtnAppFilterRecent, BtnAppFilterBloat, BtnAppFilterUnused, BtnAppFilterUpdates, FindName("BtnAppFilterDrivers") as Wpf.Ui.Controls.Button })
                 if (b != null) SetTabButtonActive(b, (b.Tag as string) == _appFilter);
             ApplyAppsView();
         }
@@ -126,7 +126,9 @@ namespace SMDWin.Views
         private void ApplyAppsView()
         {
             var q = TxtAppSearch?.Text.Trim() ?? "";
-            IEnumerable<InstalledApp> v = _allApps;
+            // driver packages are not programs: they have their own filter and stay out of the other views and counts
+            var programs = _allApps.Where(a => !a.IsDriver).ToList();
+            IEnumerable<InstalledApp> v = _appFilter == "Drivers" ? _allApps.Where(a => a.IsDriver) : programs;
             if (q.Length > 0)
                 v = v.Where(a => a.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
                                  a.Publisher.Contains(q, StringComparison.OrdinalIgnoreCase));
@@ -148,11 +150,23 @@ namespace SMDWin.Views
             AppsGrid.ItemsSource = list;
             if (selected != null && list.Contains(selected)) AppsGrid.SelectedItem = selected;
 
-            double totalGb = _allApps.Sum(a => (double)a.SizeBytes) / 1_073_741_824.0;
-            if (TxtAppsStatCount  != null) TxtAppsStatCount.Text  = _allApps.Count.ToString();
+            double totalGb = programs.Sum(a => (double)a.SizeBytes) / 1_073_741_824.0;
+            int bloat = programs.Count(a => a.IsBloat);
+            if (TxtAppsStatCount  != null) TxtAppsStatCount.Text  = programs.Count.ToString();
             if (TxtAppsStatSize   != null) TxtAppsStatSize.Text   = $"{totalGb:F1} GB";
-            if (TxtAppsStatRecent != null) TxtAppsStatRecent.Text = _allApps.Count(a => a.IsRecent).ToString();
-            if (TxtAppsStatBloat  != null) TxtAppsStatBloat.Text  = _allApps.Count(a => a.IsBloat).ToString();
+            if (TxtAppsStatRecent != null) TxtAppsStatRecent.Text = programs.Count(a => a.IsRecent).ToString();
+            if (TxtAppsStatBloat  != null)
+            {
+                TxtAppsStatBloat.Text = bloat.ToString();
+                // orange only when there is something to look at
+                TxtAppsStatBloat.SetResourceReference(TextBlock.ForegroundProperty, bloat > 0 ? "StatusWarningBrush" : "TextPrimaryBrush");
+            }
+            int drivers = _allApps.Count - programs.Count;
+            if (FindName("BtnAppFilterDrivers") is Wpf.Ui.Controls.Button bd)
+            {
+                bd.Content = $"{LiteralTexts.Translate("Drivers")} · {drivers}";
+                bd.Visibility = drivers > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
 
             double gb = list.Sum(a => (double)a.SizeBytes) / 1_073_741_824.0;
             if (TxtAppsTableSub != null) TxtAppsTableSub.Text = $"{list.Count} programs · {gb:F1} GB";

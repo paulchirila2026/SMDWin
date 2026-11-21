@@ -44,10 +44,17 @@
               <TextBlock x:Name="TxtDiskSubtitle" Text="Health • SMART • Surface Scan • Benchmark" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
               <!-- Auto Clean — a useful shortcut next to the other actions -->
               <ui:Button Appearance="Secondary" HorizontalAlignment="Right" VerticalAlignment="Center"
                       ToolTip="Open internal Auto Clean tool — free disk space (Temp, Prefetch, WinUpdate cache, thumbnails)"
-                      Click="ShortcutAutoClean_Click" Margin="0,0,6,4">
+                      Click="ShortcutAutoClean_Click">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center">
                     <Canvas Width="24" Height="24">
@@ -57,30 +64,24 @@
                   <TextBlock Text="Auto Clean" VerticalAlignment="Center"/>
                 </StackPanel>
               </ui:Button>
+              <!-- the two Windows disk tools (used rarely) behind one button with a menu -->
               <ui:Button x:Name="BtnStorageDevMgr" Appearance="Secondary"
-                      HorizontalAlignment="Right" VerticalAlignment="Center"
-                      Click="BtnStorageDevMgr_Click" Margin="0,0,6,4"
-                      ToolTip="Open Disk Management — create, delete and resize partitions">
+                      HorizontalAlignment="Right" VerticalAlignment="Center" Click="StorageToolsMenu_Click"
+                      ToolTip="Windows disk tools: Disk Management and Diskpart">
+                <ui:Button.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Disk Management" Click="BtnStorageDevMgr_Click" ToolTip="Create, delete and resize partitions"/>
+                    <MenuItem Header="Diskpart (administrator)" Click="OpenDiskpart_Click" ToolTip="Advanced partition and disk management, in a command window"/>
+                  </ContextMenu>
+                </ui:Button.ContextMenu>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center">
                     <Canvas Width="24" Height="24">
                       <Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M9.25,6 A0.75,0.75 0 0 0 9.25,7.5 L14.75,7.5 A0.75,0.75 0 0 0 14.75,6 Z M8.5,17.75 C8.5,17.34 8.84,17 9.25,17 L14.75,17 A0.75,0.75 0 0 1 14.75,18.5 L9.25,18.5 A0.75,0.75 0 0 1 8.5,17.75 M9.25,14 A0.75,0.75 0 0 0 9.25,15.5 L14.75,15.5 A0.75,0.75 0 0 0 14.75,14 Z M6,5 A3,3 0 0 1 9,2 L15,2 A3,3 0 0 1 18,5 L18,19 A3,3 0 0 1 15,22 L9,22 A3,3 0 0 1 6,19 Z M9,3.5 C8.17,3.5 7.5,4.17 7.5,5 L7.5,19 C7.5,19.83 8.17,20.5 9,20.5 L15,20.5 C15.83,20.5 16.5,19.83 16.5,19 L16.5,5 C16.5,4.17 15.83,3.5 15,3.5 Z"/>
                     </Canvas>
                   </Viewbox>
-                  <TextBlock Text="Disk Management" VerticalAlignment="Center"/>
-                </StackPanel>
-              </ui:Button>
-              <ui:Button Appearance="Secondary"
-                      HorizontalAlignment="Right" VerticalAlignment="Center"
-                      Click="OpenDiskpart_Click" Margin="0,0,0,4"
-                      ToolTip="Open Diskpart as Administrator — advanced partition and disk management">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                  <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center">
-                    <Canvas Width="24" Height="24">
-                      <Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M6.78,10.98 C7.02,10.74 7.38,10.74 7.62,10.98 L10.02,13.38 A0.6,0.6 0 0 1 10.02,14.22 L7.62,16.62 A0.6,0.6 0 0 1 6.78,15.78 L8.75,13.8 L6.78,11.82 A0.6,0.6 0 0 1 6.78,10.98 M17.4,15.6 L11.4,15.6 A0.6,0.6 0 0 0 11.4,16.8 L17.4,16.8 A0.6,0.6 0 0 0 17.4,15.6 M3.6,6.6 A3,3 0 0 1 6.6,3.6 L17.4,3.6 A3,3 0 0 1 20.4,6.6 L20.4,17.4 A3,3 0 0 1 17.4,20.4 L6.6,20.4 A3,3 0 0 1 3.6,17.4 Z M19.2,7.2 L19.2,6.6 C19.2,5.6 18.38,4.8 17.4,4.8 L6.6,4.8 C5.6,4.8 4.8,5.6 4.8,6.6 L4.8,7.2 Z M4.8,8.4 L4.8,17.4 C4.8,18.4 5.6,19.2 6.6,19.2 L17.4,19.2 C18.38,19.2 19.2,18.4 19.2,17.4 L19.2,8.4 Z"/>
-                    </Canvas>
-                  </Viewbox>
-                  <TextBlock Text="Diskpart" VerticalAlignment="Center"/>
+                  <TextBlock Text="Windows tools" VerticalAlignment="Center"/>
+                  <Path Data="M6,9 L12,15 L18,9" Stroke="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Width="10" Height="10" Stretch="Uniform" Margin="8,1,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
               </ui:Button>
             </WrapPanel>
@@ -707,7 +708,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                       <DataTemplate>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,2">
-                          <Ellipse Width="8" Height="8" Fill="{Binding TrafficLightColor, Converter={StaticResource ThemeStatusBrush}}"
+                          <local:StatusMark Width="13" Height="13" Fill="{Binding TrafficLightColor, Converter={StaticResource ThemeStatusBrush}}"
                                    VerticalAlignment="Center" Margin="0,0,6,0"/>
                           <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"
                                      FontWeight="SemiBold"/>

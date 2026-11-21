@@ -1011,7 +1011,7 @@
             </Style>
           </Border.Style>
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <Ellipse Width="7" Height="7" VerticalAlignment="Center" Margin="0,0,6,0" Fill="{DynamicResource StatusWarningBrush}"/>
+            <local:StatusMark Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" Fill="{DynamicResource StatusWarningBrush}"/>
             <TextBlock x:Name="TxtPawnIoMissingBanner" Text="Sensors unavailable — click to retry"
                        FontSize="{StaticResource FontSizeS}" FontWeight="SemiBold"
                        Foreground="{DynamicResource StatusWarningBrush}" VerticalAlignment="Center"/>
@@ -1150,14 +1150,21 @@
                          Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3,0,0"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-              <ui:Button x:Name="BtnScanEvents" Height="28" Appearance="Primary" Click="ScanEvents_Click" Margin="0,0,6,4" Padding="10,5"
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
+              <ui:Button x:Name="BtnScanEvents" Height="28" Appearance="Primary" Click="ScanEvents_Click" Padding="10,5"
                       ToolTip="Scan the Windows Event Log with the current filters and time range">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Canvas></Viewbox>
                   <TextBlock Text="Scan" VerticalAlignment="Center"/>
                 </StackPanel>
               </ui:Button>
-              <ui:Button x:Name="BtnExportEvents" Height="28" Appearance="Secondary" Click="ExportEvents_Click" Margin="0,0,6,4" Padding="10,5"
+              <ui:Button x:Name="BtnExportEvents" Height="28" Appearance="Secondary" Click="ExportEvents_Click" Padding="10,5"
                       ToolTip="Export filtered events to a CSV file">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M18.25,20.5 A0.75,0.75 0 0 1 18.25,22 L5.25,22 A0.75,0.75 0 0 1 5.25,20.5 Z M11.65,2.01 L11.75,2.01 C12.13,2.01 12.45,2.29 12.49,2.65 L12.5,2.75 L12.5,16.45 L16.22,12.72 A0.75,0.75 0 0 1 17.2,12.65 L17.28,12.72 C17.55,12.99 17.58,13.4 17.35,13.7 L17.28,13.78 L12.28,18.78 A0.75,0.75 0 0 1 11.31,18.85 L11.22,18.78 L6.22,13.78 A0.75,0.75 0 0 1 7.2,12.65 L7.28,12.72 L11,16.43 L11,2.76 C11,2.38 11.28,2.06 11.65,2.01 L11.75,2.01 Z"/></Canvas></Viewbox>
@@ -1165,7 +1172,7 @@
                 </StackPanel>
               </ui:Button>
               <Border Width="1" Margin="8,2,10,6" Background="{DynamicResource CardBorderBrush}" Opacity="0.5"/>
-              <ui:Button x:Name="BtnEventsPowerHistory" Margin="0,0,6,4" Height="28" Visibility="Collapsed" Appearance="Secondary" Click="OpenPowerHistory_Click" Padding="10,5"
+              <ui:Button x:Name="BtnEventsPowerHistory" Height="28" Visibility="Collapsed" Appearance="Secondary" Click="OpenPowerHistory_Click" Padding="10,5"
                       ToolTip="Power History — timeline boot/shutdown/crash/sleep/resume">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center">
@@ -1176,7 +1183,7 @@
                   <TextBlock x:Name="TxtEventsPowerHistoryLabel" Text="Power History" VerticalAlignment="Center"/>
                 </StackPanel>
               </ui:Button>
-              <ui:Button x:Name="BtnOpenNativeEventViewer" Margin="0,0,0,4" Height="28" Appearance="Secondary" Click="OpenNativeEventViewer_Click" Padding="10,5"
+              <ui:Button x:Name="BtnOpenNativeEventViewer" Height="28" Appearance="Secondary" Click="OpenNativeEventViewer_Click" Padding="10,5"
                       ToolTip="Open the Windows Event Viewer (eventvwr.msc)">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center">
@@ -1319,7 +1326,7 @@
                       <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
-                            <Ellipse Width="8" Height="8" Fill="{Binding LevelColor, Converter={StaticResource ThemeStatusBrush}}" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                            <local:StatusMark Width="14" Height="14" Fill="{Binding LevelColor, Converter={StaticResource ThemeStatusBrush}}" VerticalAlignment="Center" Margin="0,0,7,0"/>
                             <TextBlock Text="{Binding LevelDisplay}" Foreground="{Binding LevelColor, Converter={StaticResource ThemeStatusBrush}}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                           </StackPanel>
                         </DataTemplate>
@@ -1460,20 +1467,27 @@
               <TextBlock x:Name="TxtCrashSubtitle" Text="Stability over the last 30 days · blue screens · minidump analysis" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
             <ui:Button x:Name="BtnOpenMiniDump" Appearance="Secondary" 
-                    Click="OpenMiniDumpFolder_Click" Margin="0,0,8,0">
+                    Click="OpenMiniDumpFolder_Click">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path x:Name="IconStorageTabFiles" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Canvas></Viewbox>
                 <TextBlock Text="Minidump folder" VerticalAlignment="Center"/>
               </StackPanel>
             </ui:Button>
-            <ui:Button x:Name="BtnWinDbg" Appearance="Secondary" Click="OpenWinDbg_Click" Margin="0,0,8,0">
+            <ui:Button x:Name="BtnWinDbg" Appearance="Secondary" Click="OpenWinDbg_Click">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M15.05,1.5 A0.75,0.75 0 0 1 16.45,2 L8.95,22.5 A0.75,0.75 0 0 1 7.55,22 Z M6.2,6.22 A0.75,0.75 0 0 1 7.28,7.26 L2.8,12 L7.3,16.73 A0.75,0.75 0 0 1 6.22,17.77 L1.22,12.52 A0.75,0.75 0 0 1 1.22,11.48 Z M16.72,6.2 A0.75,0.75 0 0 1 17.78,6.22 L22.78,11.47 C23.06,11.77 23.06,12.22 22.78,12.51 L17.78,17.76 A0.75,0.75 0 0 1 16.7,16.72 L21.2,12 L16.7,7.27 A0.75,0.75 0 0 1 16.72,6.21"/></Canvas></Viewbox>
                 <TextBlock x:Name="TxtBtnWinDbg" Text="Analyze with WinDbg" VerticalAlignment="Center"/>
               </StackPanel>
             </ui:Button>
-            <ui:Button x:Name="BtnReloadCrashes" Appearance="Primary" Click="LoadCrashes_Click" Margin="0,0,0,0">
+            <ui:Button x:Name="BtnReloadCrashes" Appearance="Primary" Click="LoadCrashes_Click">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M16.25,5.18 C16,5.51 16.06,5.98 16.39,6.23 A7.24,7.24 0 0 1 12.79,19.21 L13.47,18.53 A0.75,0.75 0 0 0 12.49,17.4 L12.41,17.47 L10.41,19.47 A0.75,0.75 0 0 0 10.34,20.45 L10.41,20.53 L12.41,22.53 A0.75,0.75 0 0 0 13.54,21.55 L13.47,21.47 L12.72,20.72 A8.75,8.75 0 0 0 17.3,5.04 A0.75,0.75 0 0 0 16.25,5.18 M10.53,1.47 C10.23,1.77 10.23,2.24 10.53,2.53 L11.28,3.28 A8.75,8.75 0 0 0 6.43,18.75 A0.75,0.75 0 0 0 7.39,17.59 A7.23,7.23 0 0 1 11.2,4.8 L10.52,5.48 A0.75,0.75 0 1 0 11.58,6.54 L13.58,4.54 C13.88,4.24 13.88,3.77 13.58,3.48 L11.58,1.48 A0.75,0.75 0 0 0 10.52,1.48"/></Canvas></Viewbox>
                 <TextBlock Text="Reload" VerticalAlignment="Center"/>
@@ -1665,6 +1679,13 @@
               <TextBlock x:Name="TxtDriversSubtitle" Text="Devices and their drivers · problems first" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
               <Border CornerRadius="8" Background="{DynamicResource SegTrackBrush}" Padding="3" Margin="0,0,6,0"
                       ToolTip="Basic: simplified view by category. Advanced: all installed .sys files.">
                 <StackPanel Orientation="Horizontal">
@@ -1681,19 +1702,19 @@
               <CheckBox Style="{StaticResource VanillaCheckBoxStyle}" x:Name="ChkDriverMode" Visibility="Collapsed"/>
               <ui:Button x:Name="BtnDeviceManager" Appearance="Secondary"
                       Click="OpenDeviceManager_Click"
-                      Margin="0,0,6,0" Padding="12,5" Height="30"
+ Padding="12,5" Height="30"
                       ToolTip="Open Windows Device Manager">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M15.25,2 C15.63,2 15.95,2.28 15.99,2.65 L16,2.75 L16,5.08 A3.8,3.8 0 0 1 18.93,8 L21.25,8 A0.75,0.75 0 0 1 21.35,9.5 L19,9.5 L19,11.25 L21.25,11.25 C21.63,11.25 21.95,11.53 21.99,11.9 L22,12 C22,12.38 21.72,12.7 21.35,12.74 L21.25,12.75 L19,12.75 L19,14.5 L21.25,14.5 C21.63,14.5 21.95,14.78 21.99,15.15 L22,15.25 C22,15.63 21.72,15.95 21.35,15.99 L21.25,16 L18.92,16 A3.8,3.8 0 0 1 16,18.92 L16,21.25 A0.75,0.75 0 0 1 14.5,21.35 L14.5,19 L12.75,19 L12.75,21.25 C12.75,21.63 12.47,21.95 12.1,21.99 L12,22 A0.75,0.75 0 0 1 11.26,21.35 L11.25,21.25 L11.25,19 L9.5,19 L9.5,21.25 C9.5,21.63 9.22,21.95 8.85,21.99 L8.75,22 A0.75,0.75 0 0 1 8.01,21.35 L8,21.25 L8,18.93 A3.8,3.8 0 0 1 5.08,16 L2.75,16 A0.75,0.75 0 0 1 2.65,14.5 L5,14.5 L5,12.75 L2.75,12.75 A0.75,0.75 0 0 1 2.01,12.1 L2,12 C2,11.62 2.28,11.3 2.65,11.26 L2.75,11.25 L5,11.25 L5,9.5 L2.75,9.5 A0.75,0.75 0 0 1 2.01,8.85 L2,8.75 C2,8.37 2.28,8.05 2.65,8.01 L2.75,8 L5.08,8 A3.8,3.8 0 0 1 8,5.07 L8,2.75 A0.75,0.75 0 0 1 9.5,2.65 L9.5,5 L11.25,5 L11.25,2.75 C11.25,2.37 11.53,2.05 11.9,2.01 L12,2 C12.38,2 12.7,2.28 12.74,2.65 L12.75,2.75 L12.75,5 L14.5,5 L14.5,2.75 C14.5,2.4 14.73,2.11 15.05,2.03 L15.15,2.01 Z M15.25,6.5 L8.75,6.5 C7.51,6.5 6.5,7.5 6.5,8.75 L6.5,15.25 C6.5,16.49 7.5,17.5 8.75,17.5 L15.25,17.5 C16.49,17.5 17.5,16.5 17.5,15.25 L17.5,8.75 C17.5,7.51 16.5,6.5 15.25,6.5 M12,9 A3,3 0 0 1 12,15 A3,3 0 0 1 12,9 M12,10.5 A1.5,1.5 0 0 0 12,13.5 A1.5,1.5 0 0 0 12,10.5"/></Canvas></Viewbox><TextBlock Text="Device Manager" VerticalAlignment="Center"/></StackPanel>
                     </ui:Button>
               <ui:Button x:Name="BtnBulkDriverSearch" Appearance="Secondary"
                       Click="BulkDriverSearch_Click"
-                      Margin="0,0,6,0" Padding="12,5" Height="30"
+ Padding="12,5" Height="30"
                       ToolTip="Search online for ALL missing/errored drivers at once — opens one browser tab per device, using your preferred search site (Settings → Drivers).">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M12,4.5 A7.5,7.5 0 1 1 4.58,10.9 C4.65,10.44 4.32,10 3.86,10 C3.49,10 3.16,10.26 3.1,10.62 Q3,11.3 3,12 A9,9 0 1 0 6,5.3 L6,4.24 A0.75,0.75 0 0 0 4.5,4.24 L4.5,7.24 C4.5,7.65 4.84,7.99 5.25,7.99 L8.25,7.99 A0.75,0.75 0 0 0 8.25,6.49 L6.9,6.49 A7.5,7.5 0 0 1 12,4.49 M12.5,7.74 A0.75,0.75 0 0 0 11,7.74 L11,12.24 C11,12.65 11.34,12.99 11.75,12.99 L14.75,12.99 A0.75,0.75 0 0 0 14.75,11.49 L12.5,11.49 Z"/></Canvas></Viewbox><TextBlock Text="Search all missing drivers" VerticalAlignment="Center"/></StackPanel>
                     </ui:Button>
               <ui:Button x:Name="BtnDriverScan" Appearance="Primary"
                       Click="DriverScan_Click"
-                      Margin="0,0,6,0" Padding="12,5" Height="30"
+ Padding="12,5" Height="30"
                       ToolTip="Rescan all devices and drivers">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Canvas></Viewbox><TextBlock Text="Scan" VerticalAlignment="Center"/></StackPanel>
                     </ui:Button>
@@ -2327,7 +2348,14 @@
               <TextBlock x:Name="TxtAppsSubtitle" Text="Installed programs · size, age and what you may not need" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
-              <ui:Button x:Name="BtnAddRemove" Appearance="Secondary" Click="OpenAddRemovePrograms_Click" Margin="0,0,8,0">
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
+              <ui:Button x:Name="BtnAddRemove" Appearance="Secondary" Click="OpenAddRemovePrograms_Click">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M6.25,4.5 C5.28,4.5 4.5,5.28 4.5,6.25 L4.5,17.75 C4.5,18.72 5.28,19.5 6.25,19.5 L17.75,19.5 C18.72,19.5 19.5,18.72 19.5,17.75 L19.5,13.75 A0.75,0.75 0 0 1 21,13.75 L21,17.75 C21,19.55 19.54,21 17.75,21 L6.25,21 A3.25,3.25 0 0 1 3,17.75 L3,6.25 C3,4.45 4.46,3 6.25,3 L10.25,3 A0.75,0.75 0 0 1 10.25,4.5 Z M13,3.75 C13,3.34 13.34,3 13.75,3 L20.25,3 C20.66,3 21,3.34 21,3.75 L21,10.25 A0.75,0.75 0 0 1 19.5,10.25 L19.5,5.56 L14.28,10.78 A0.75,0.75 0 0 1 13.22,9.72 L18.44,4.5 L13.75,4.5 A0.75,0.75 0 0 1 13,3.75"/></Canvas></Viewbox>
                   <TextBlock Text="Programs &amp; Features" VerticalAlignment="Center"/>
@@ -2361,7 +2389,7 @@
               </Border>
               <Border Grid.Column="2" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1,0,0,0" Padding="18,0,20,0">
                 <StackPanel>
-                  <TextBlock x:Name="TxtAppsStatRecent" Text="—" Style="{StaticResource CompChartValue}" FontSize="26" Foreground="{DynamicResource AccentBrush}"/>
+                  <TextBlock x:Name="TxtAppsStatRecent" Text="—" Style="{StaticResource CompChartValue}" FontSize="26" Foreground="{DynamicResource TextPrimaryBrush}"/>
                   <TextBlock Text="installed in the last 30 days" Style="{StaticResource CompSub}"/>
                 </StackPanel>
               </Border>
@@ -2416,7 +2444,9 @@
               <ui:Button x:Name="BtnAppFilterUnused" Content="Unused" Appearance="Secondary" Tag="Unused" Click="AppFilter_Click" Padding="10,4" Margin="2,0,0,0"
                          ToolTip="Not started for more than 90 days, as recorded by Windows"/>
               <ui:Button x:Name="BtnAppFilterUpdates" Content="Updates" Appearance="Secondary" Tag="Updates" Click="AppFilter_Click" Padding="10,4" Margin="2,0,0,0" Visibility="Collapsed"
-                         ToolTip="Programs with a newer version, found by winget (the Windows package tool)"/></StackPanel></Border>
+                         ToolTip="Programs with a newer version, found by winget (the Windows package tool)"/>
+              <ui:Button x:Name="BtnAppFilterDrivers" Content="Drivers" Appearance="Secondary" Tag="Drivers" Click="AppFilter_Click" Padding="10,4" Margin="2,0,0,0" Visibility="Collapsed"
+                         ToolTip="Drivers installed with their own uninstaller (&quot;Windows Driver Package&quot;) — kept apart from the programs"/></StackPanel></Border>
               <ui:Button x:Name="BtnAppUpdateAll" Content="Update all" Appearance="Primary" Click="AppUpdateAll_Click" Padding="12,4" Margin="10,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
             </StackPanel>
             <TextBlock x:Name="TxtAppsCount" DockPanel.Dock="Right" VerticalAlignment="Center" Style="{StaticResource CompSub}"/>
@@ -2480,6 +2510,10 @@
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                               </Border>
                               <Image x:Name="AppRowIcon" Source="{Binding Icon, IsAsync=True}" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
+                              <!-- a driver package: one common driver tile (a chip), instead of a random mix of icons and letters -->
+                              <Border CornerRadius="6" Background="{DynamicResource BgHoverBrush}" Visibility="{Binding IsDriver, Converter={StaticResource BoolToVisConv}}">
+                                <Viewbox Width="16" Height="16"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="M9,2.75 A0.75,0.75 0 0 1 9.75,3.5 L9.75,5 L14.25,5 L14.25,3.5 A0.75,0.75 0 0 1 15.75,3.5 L15.75,5 L16.75,5 C17.99,5 19,6 19,7.25 L19,8.25 L20.5,8.25 A0.75,0.75 0 0 1 20.5,9.75 L19,9.75 L19,14.25 L20.5,14.25 A0.75,0.75 0 0 1 20.5,15.75 L19,15.75 L19,16.75 C19,17.99 18,19 16.75,19 L15.75,19 L15.75,20.5 A0.75,0.75 0 0 1 14.25,20.5 L14.25,19 L9.75,19 L9.75,20.5 A0.75,0.75 0 0 1 8.25,20.5 L8.25,19 L7.25,19 C6.01,19 5,18 5,16.75 L5,15.75 L3.5,15.75 A0.75,0.75 0 0 1 3.5,14.25 L5,14.25 L5,9.75 L3.5,9.75 A0.75,0.75 0 0 1 3.5,8.25 L5,8.25 L5,7.25 C5,6.01 6,5 7.25,5 L8.25,5 L8.25,3.5 A0.75,0.75 0 0 1 9,2.75 M7.25,6.5 A0.75,0.75 0 0 0 6.5,7.25 L6.5,16.75 C6.5,17.16 6.84,17.5 7.25,17.5 L16.75,17.5 C17.16,17.5 17.5,17.16 17.5,16.75 L17.5,7.25 A0.75,0.75 0 0 0 16.75,6.5 Z M9.25,8.5 L14.75,8.5 C15.16,8.5 15.5,8.84 15.5,9.25 L15.5,14.75 C15.5,15.16 15.16,15.5 14.75,15.5 L9.25,15.5 A0.75,0.75 0 0 1 8.5,14.75 L8.5,9.25 C8.5,8.84 8.84,8.5 9.25,8.5"/></Viewbox>
+                              </Border>
                             </Grid>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" MaxWidth="360" HorizontalAlignment="Left">
                               <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
@@ -2516,12 +2550,24 @@
                     <DataGridTemplateColumn Header="Size" Width="150" SortMemberPath="SizeBytes">
                       <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Grid Width="60" Height="5" Margin="0,0,10,0" VerticalAlignment="Center">
+                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding SizeTip}">
+                            <!-- no bar when the size is unknown (only "—") -->
+                            <Grid Width="60" Height="5" Margin="0,0,10,0" VerticalAlignment="Center"
+                                  Visibility="{Binding HasSize, Converter={StaticResource BoolToVisConv}}">
                               <Border CornerRadius="3" Background="{DynamicResource BgHoverBrush}"/>
                               <Border CornerRadius="3" Background="{DynamicResource DataBrush}" HorizontalAlignment="Left" Width="{Binding SizeBarW}"/>
                             </Grid>
-                            <TextBlock Text="{Binding Size}" FontFamily="{StaticResource NumFont}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Size}" FontFamily="{StaticResource NumFont}" FontWeight="SemiBold" VerticalAlignment="Center">
+                              <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                  <Style.Triggers>
+                                    <!-- measured from the folder: in the secondary colour, as an estimate -->
+                                    <DataTrigger Binding="{Binding SizeEstimated}" Value="True"><Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/></DataTrigger>
+                                    <DataTrigger Binding="{Binding HasSize}" Value="False"><Setter Property="Margin" Value="70,0,0,0"/></DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </TextBlock.Style>
+                            </TextBlock>
                           </StackPanel>
                         </DataTemplate>
                       </DataGridTemplateColumn.CellTemplate>
@@ -2695,6 +2741,13 @@
               <TextBlock x:Name="TxtServicesSubtitle" Text="What runs in the background · safe changes only" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+              <WrapPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </WrapPanel.Resources>
               <Border CornerRadius="6" Background="{DynamicResource BgInputBrush}" Padding="2" Margin="0,0,8,0"
                       ToolTip="Switch between Key Services (curated, safe-to-review list) and All Services (full Windows service list)">
                 <StackPanel Orientation="Horizontal">
@@ -2717,64 +2770,57 @@
             </WrapPanel>
           </Grid>
 
-          <!-- ① Quick switches: the 5 frequent changes, each reversible -->
-          <Border Grid.Row="1" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="18,14,18,14" Margin="0,0,0,12">
+          <!-- ① Quick switches: the 5 frequent changes, each reversible — one compact row (the explanation is in the tooltip) -->
+          <Border Grid.Row="1" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Padding="16,8,16,8" Margin="0,0,0,12">
             <StackPanel>
-              <DockPanel LastChildFill="False" Margin="0,0,0,10">
-                <Viewbox DockPanel.Dock="Left" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Viewbox>
-                <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                  <TextBlock Text="Quick switches" Style="{StaticResource DashRowName}" ToolTip="Common changes, one click each"/>
-                </StackPanel>
-                <TextBlock DockPanel.Dock="Right" Text="All reversible" Style="{StaticResource CompSub}" VerticalAlignment="Center"/>
-              </DockPanel>
+              
               <Grid>
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-              <Border Grid.Column="0" x:Name="RowWinUpdate" Margin="0,0,10,0" Padding="14,12" CornerRadius="9" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}" local:TechTooltip.Text="OFF disables Windows Update completely: the wuauserv, UsoSvc (Update Orchestrator) and WaaSMedicSvc (Update Medic, which would otherwise re-enable Windows Update by itself) services are set to Disabled in the registry, their automatic restart-on-failure is removed, and the update scan tasks are turned off. The original settings are saved first. ON restores exactly those settings. A restore script (Restore-WindowsUpdate.bat) is saved in C:\ProgramData\SMDWin and works even without SMD Win. Note: Microsoft Defender definitions normally arrive through Windows Update; while it is off, Defender falls back to downloading them directly from Microsoft, usually less often.">
+              <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0" ToolTip="Common changes, one click each · all reversible">
+                <Viewbox Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Viewbox>
+                <TextBlock Text="Quick switches" Style="{StaticResource DashRowName}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+              </StackPanel>
+              <Border Grid.Column="1" x:Name="RowWinUpdate" Margin="0" Padding="14,4" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardBorderBrush}" local:TechTooltip.Text="OFF disables Windows Update completely: the wuauserv, UsoSvc (Update Orchestrator) and WaaSMedicSvc (Update Medic, which would otherwise re-enable Windows Update by itself) services are set to Disabled in the registry, their automatic restart-on-failure is removed, and the update scan tasks are turned off. The original settings are saved first. ON restores exactly those settings. A restore script (Restore-WindowsUpdate.bat) is saved in C:\ProgramData\SMDWin and works even without SMD Win. Note: Microsoft Defender definitions normally arrive through Windows Update; while it is off, Defender falls back to downloading them directly from Microsoft, usually less often.">
                 <StackPanel>
-                  <DockPanel Margin="0,0,0,8">
+                  <DockPanel>
                     <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,4.5 A7.5,7.5 0 1 1 4.58,10.9 C4.65,10.44 4.32,10 3.86,10 C3.49,10 3.16,10.26 3.1,10.62 Q3,11.3 3,12 A9,9 0 1 0 6,5.3 L6,4.24 A0.75,0.75 0 0 0 4.5,4.24 L4.5,7.24 C4.5,7.65 4.84,7.99 5.25,7.99 L8.25,7.99 A0.75,0.75 0 0 0 8.25,6.49 L6.9,6.49 A7.5,7.5 0 0 1 12,4.49"/></Viewbox>
                     <CheckBox DockPanel.Dock="Right" x:Name="ChkWinUpdate" Style="{StaticResource ToggleSwitchSmallStyle}" Click="ToggleWindowsUpdate_Click" VerticalAlignment="Center"/>
-                    <TextBlock Text="Updates" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Updates" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                   </DockPanel>
-                  <TextBlock Text="Downloads and installs Windows updates" Style="{StaticResource CompSub}" TextWrapping="Wrap" MinHeight="34"/>
                 </StackPanel>
-              </Border>              <Border Grid.Column="1" x:Name="RowSysMain" Margin="0,0,10,0" Padding="14,12" CornerRadius="9" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}">
+              </Border>              <Border Grid.Column="2" x:Name="RowSysMain" Margin="0" Padding="14,4" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardBorderBrush}" ToolTip="Preloads the apps you use often">
                 <StackPanel>
-                  <DockPanel Margin="0,0,0,8">
+                  <DockPanel>
                     <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M21.62,6.88 A3,3 0 0 0 19.5,6 L19.5,3.75 A0.75,0.75 0 0 0 18,3.75 L18,6 L15,6 L15,3.75 A0.75,0.75 0 0 0 13.5,3.75 L13.5,6 L10.5,6 L10.5,3.75 A0.75,0.75 0 0 0 9,3.75 L9,6 L6,6 L6,3.75 A0.75,0.75 0 0 0 4.5,3.75 L4.5,6 A3,3 0 0 0 1.5,9 L1.5,15 A3,3 0 0 0 4.5,18 L4.5,20.25 A0.75,0.75 0 0 0 6,20.25 L6,18 L9,18 L9,20.25 A0.75,0.75 0 0 0 10.5,20.25 L10.5,18 L13.5,18 L13.5,20.25 A0.75,0.75 0 0 0 15,20.25 L15,18 L18,18 L18,20.25 A0.75,0.75 0 0 0 19.5,20.25 L19.5,18 A3,3 0 0 0 22.5,15 L22.5,9 A3,3 0 0 0 21.62,6.88 M21,15 A1.5,1.5 0 0 1 19.5,16.5 L4.5,16.5 A1.5,1.5 0 0 1 3,15 L3,9 A1.5,1.5 0 0 1 4.5,7.5 L19.5,7.5 A1.5,1.5 0 0 1 21,9 Z M18.75,9 L5.25,9 A0.75,0.75 0 0 0 4.5,9.75 L4.5,14.25 A0.75,0.75 0 0 0 5.25,15 L18.75,15 A0.75,0.75 0 0 0 19.5,14.25 L19.5,9.75 A0.75,0.75 0 0 0 18.75,9 M18,13.5 L6,13.5 L6,10.5 L18,10.5 Z"/></Viewbox>
                     <CheckBox DockPanel.Dock="Right" x:Name="ChkSysMain" Style="{StaticResource ToggleSwitchSmallStyle}" Click="ToggleSysMain_Click" VerticalAlignment="Center"/>
-                    <TextBlock Text="SysMain" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="SysMain" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                   </DockPanel>
-                  <TextBlock Text="Preloads the apps you use often" Style="{StaticResource CompSub}" TextWrapping="Wrap" MinHeight="34"/>
                 </StackPanel>
-              </Border>              <Border Grid.Column="2" x:Name="RowWinSearch" Margin="0,0,10,0" Padding="14,12" CornerRadius="9" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}">
+              </Border>              <Border Grid.Column="3" x:Name="RowWinSearch" Margin="0" Padding="14,4" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardBorderBrush}" ToolTip="Indexes files for fast search">
                 <StackPanel>
-                  <DockPanel Margin="0,0,0,8">
+                  <DockPanel>
                     <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M16.1,17.16 A8,8 0 1 1 17.16,16.1 L21.78,20.72 A0.75,0.75 0 1 1 20.72,21.78 Z M17.5,11 A6.5,6.5 0 0 0 4.5,11 A6.5,6.5 0 0 0 17.5,11"/></Viewbox>
                     <CheckBox DockPanel.Dock="Right" x:Name="ChkWinSearch" Style="{StaticResource ToggleSwitchSmallStyle}" Click="ToggleWindowsSearch_Click" VerticalAlignment="Center"/>
-                    <TextBlock Text="Search index" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Search index" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                   </DockPanel>
-                  <TextBlock Text="Indexes files for fast search" Style="{StaticResource CompSub}" TextWrapping="Wrap" MinHeight="34"/>
                 </StackPanel>
-              </Border>              <Border Grid.Column="3" x:Name="RowTelemetry" Margin="0,0,10,0" Padding="14,12" CornerRadius="9" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}">
+              </Border>              <Border Grid.Column="4" x:Name="RowTelemetry" Margin="0" Padding="14,4" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardBorderBrush}" ToolTip="Sends usage data to Microsoft">
                 <StackPanel>
-                  <DockPanel Margin="0,0,0,8">
+                  <DockPanel>
                     <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,2 A10,10 0 0 1 12,22 A10,10 0 0 1 12,2 M14.94,16.5 L9.06,16.5 C9.71,18.91 10.85,20.5 12,20.5 C13.15,20.5 14.29,18.91 14.94,16.5 M7.51,16.5 L4.79,16.5 A8.5,8.5 0 0 0 8.88,19.91 Q8.09,18.66 7.61,16.89 Z M19.21,16.5 L16.5,16.5 C16.18,17.83 15.71,19 15.13,19.91 A8.5,8.5 0 0 0 19.03,16.78 Z M7.1,10 L3.74,10 L3.74,10.02 A8.5,8.5 0 0 0 4.04,15 L7.22,15 A20,20 0 0 1 7.09,10 M15.39,10 L8.6,10 A19,19 0 0 0 8.74,15 L15.26,15 A19,19 0 0 0 15.4,10 M20.27,10 L16.92,10 A21,21 0 0 1 16.79,15 L19.97,15 A8.5,8.5 0 0 0 20.27,10 M8.88,4.09 L8.86,4.09 A8.5,8.5 0 0 0 4.25,8.49 L7.3,8.5 C7.61,6.75 8.16,5.22 8.88,4.09 M12,3.49 L11.88,3.5 C10.62,3.62 9.4,5.62 8.83,8.5 L15.17,8.5 C14.61,5.63 13.39,3.63 12.13,3.5 Z M15.12,4.09 L15.22,4.26 A13,13 0 0 1 16.7,8.5 L19.75,8.5 A8.5,8.5 0 0 0 15.41,4.21 Z"/></Viewbox>
                     <CheckBox DockPanel.Dock="Right" x:Name="ChkTelemetry" Style="{StaticResource ToggleSwitchSmallStyle}" Click="ToggleTelemetry_Click" VerticalAlignment="Center"/>
-                    <TextBlock Text="Telemetry" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Telemetry" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                   </DockPanel>
-                  <TextBlock Text="Sends usage data to Microsoft" Style="{StaticResource CompSub}" TextWrapping="Wrap" MinHeight="34"/>
                 </StackPanel>
-              </Border>              <Border Grid.Column="4" x:Name="RowBlockWinVersion" Margin="0" Padding="14,12" CornerRadius="9" BorderThickness="1" BorderBrush="{DynamicResource CardBorderBrush}">
+              </Border>              <Border Grid.Column="5" x:Name="RowBlockWinVersion" Margin="0" Padding="14,4" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource CardBorderBrush}" ToolTip="No feature upgrades. Security updates still install.">
                 <StackPanel>
-                  <DockPanel Margin="0,0,0,8">
+                  <DockPanel>
                     <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,1 A5,5 0 0 1 17,6 L17,8.01 C18.68,8.14 20,9.54 20,11.25 L20,18.75 C20,20.55 18.54,22 16.75,22 L7.25,22 A3.25,3.25 0 0 1 4,18.75 L4,11.25 A3.25,3.25 0 0 1 7,8.01 L7,6 A5,5 0 0 1 12,1 M7.25,9.5 C6.28,9.5 5.5,10.28 5.5,11.25 L5.5,18.75 C5.5,19.72 6.28,20.5 7.25,20.5 L16.75,20.5 C17.72,20.5 18.5,19.72 18.5,18.75 L18.5,11.25 C18.5,10.28 17.72,9.5 16.75,9.5 Z M12,13.75 A1.25,1.25 0 0 1 12,16.25 A1.25,1.25 0 0 1 12,13.75 M12,2.5 A3.5,3.5 0 0 0 8.5,6 L8.5,8 L15.5,8 L15.5,6 A3.5,3.5 0 0 0 12,2.5"/></Viewbox>
                     <CheckBox DockPanel.Dock="Right" x:Name="ChkBlockWinVersion" Style="{StaticResource ToggleSwitchSmallStyle}" Click="BlockCurrentWinVersion_Click" VerticalAlignment="Center"/>
-                    <TextBlock Text="Block Win version" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Pause feature updates" FontWeight="SemiBold" FontSize="{StaticResource FontSizeM}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                   </DockPanel>
-                  <TextBlock Text="No feature upgrades. Security updates still install." Style="{StaticResource CompSub}" TextWrapping="Wrap" MinHeight="34"/>
                   <TextBlock x:Name="TxtBlockWinVersionState" Text="" Visibility="Collapsed" FontWeight="SemiBold" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource StatusSuccessBrush}"/>
                 </StackPanel>
               </Border>
@@ -2840,7 +2886,8 @@
                       <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                           <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="8" Height="8" Margin="0,0,8,0" Fill="{Binding StatusColor, Converter={StaticResource ThemeStatusBrush}}" VerticalAlignment="Center"/>
+                            <!-- running / stopped is not a health state: a small, quiet dot -->
+                            <Ellipse Width="6" Height="6" Margin="0,0,8,0" Opacity="0.85" Fill="{Binding StatusColor, Converter={StaticResource ThemeStatusBrush}}" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
                           </StackPanel>
                         </DataTemplate>
@@ -2857,10 +2904,13 @@
                     <DataGridTemplateColumn x:Name="ColSvcRisk" Header="Risk" Width="140" SortMemberPath="RiskLevel">
                       <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                          <Grid HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="{Binding RiskLabel, Mode=OneWay}">
-                            <Border CornerRadius="6" Background="{Binding RiskTableColor, Mode=OneWay, Converter={StaticResource ThemeStatusBrush}}" Opacity="{Binding RiskPillOpacity, Mode=OneWay}"/>
-                            <TextBlock Margin="8,2" FontSize="{StaticResource FontSizeXS}" FontWeight="SemiBold" Foreground="{Binding RiskTableColor, Mode=OneWay, Converter={StaticResource ThemeStatusBrush}}" Text="{Binding RiskLabel, Mode=OneWay}"/>
-                          </Grid>
+                          <!-- no red pill: "Do not disable" is advice, not an error — a small lock and the word in the text colour -->
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="{Binding RiskLabel, Mode=OneWay}">
+                            <Viewbox Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center" Visibility="{Binding IsCritical, Converter={StaticResource BoolToVisConv}}">
+                              <Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="M12,2 C9.24,2 7,4.24 7,7 L7,9 L6,9 C4.9,9 4,9.9 4,11 L4,20 C4,21.1 4.9,22 6,22 L18,22 C19.1,22 20,21.1 20,20 L20,11 C20,9.9 19.1,9 18,9 L17,9 L17,7 C17,4.24 14.76,2 12,2 Z M12,4 C13.66,4 15,5.34 15,7 L15,9 L9,9 L9,7 C9,5.34 10.34,4 12,4 Z"/>
+                            </Viewbox>
+                            <TextBlock FontSize="{StaticResource FontSizeXS}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" Text="{Binding RiskLabel, Mode=OneWay}"/>
+                          </StackPanel>
                         </DataTemplate>
                       </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -3204,6 +3254,13 @@
               <TextBlock x:Name="TxtStartupSubtitleInfo" Text="What opens when you sign in to Windows" Style="{StaticResource PageSubtitleStyle}"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <StackPanel.Resources>
+                <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                  <Setter Property="Margin" Value="8,0,0,4"/>
+                  <Setter Property="Padding" Value="12,6"/>
+                </Style>
+              </StackPanel.Resources>
               <Border CornerRadius="8" Background="{DynamicResource SegTrackBrush}" Padding="3" Margin="0,0,8,0"
                       ToolTip="Also list non-Windows auto-start services (e.g. Adobe, Nvidia, TeamViewer). Core Windows services are never shown here — manage those from the Windows Services page.">
                 <StackPanel Orientation="Horizontal">
@@ -3216,7 +3273,7 @@
                 </StackPanel>
               </Border>
               <CheckBox Style="{StaticResource VanillaCheckBoxStyle}" x:Name="ChkStartupShowAllServices" Visibility="Collapsed"/>
-              <ui:Button x:Name="BtnOpenTaskMgr" Appearance="Secondary" Click="OpenTaskManager_Click" Margin="0,0,8,0" ToolTip="Opens Task Manager">
+              <ui:Button x:Name="BtnOpenTaskMgr" Appearance="Secondary" Click="OpenTaskManager_Click" ToolTip="Opens Task Manager">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M6.25,4.5 C5.28,4.5 4.5,5.28 4.5,6.25 L4.5,17.75 C4.5,18.72 5.28,19.5 6.25,19.5 L17.75,19.5 C18.72,19.5 19.5,18.72 19.5,17.75 L19.5,13.75 A0.75,0.75 0 0 1 21,13.75 L21,17.75 C21,19.55 19.54,21 17.75,21 L6.25,21 A3.25,3.25 0 0 1 3,17.75 L3,6.25 C3,4.45 4.46,3 6.25,3 L10.25,3 A0.75,0.75 0 0 1 10.25,4.5 Z M13,3.75 C13,3.34 13.34,3 13.75,3 L20.25,3 C20.66,3 21,3.34 21,3.75 L21,10.25 A0.75,0.75 0 0 1 19.5,10.25 L19.5,5.56 L14.28,10.78 A0.75,0.75 0 0 1 13.22,9.72 L18.44,4.5 L13.75,4.5 A0.75,0.75 0 0 1 13,3.75"/></Canvas></Viewbox><TextBlock Text="Task Manager" VerticalAlignment="Center"/></StackPanel>
                   </ui:Button>
               <ui:Button x:Name="BtnOpenMsconfig" Appearance="Secondary" Click="OpenMsconfig_Click" ToolTip="Opens System Configuration (msconfig)">

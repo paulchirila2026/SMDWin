@@ -25,6 +25,16 @@ namespace SMDWin.Views.Pages
         private void BtnStorageDevMgr_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.BtnStorageDevMgr_Click(sender, e); }
         private void ExportBadSectors_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.ExportBadSectors_Click(sender, e); }
         private void OpenDiskpart_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.OpenDiskpart_Click(sender, e); }
+        /// <summary>"Windows tools": opens its menu under the button.</summary>
+        private void StorageToolsMenu_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (sender is System.Windows.FrameworkElement b && b.ContextMenu is { } m)
+            {
+                m.PlacementTarget = b;
+                m.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                m.IsOpen = true;
+            }
+        }
         private void RefreshDiskCombos_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.RefreshDiskCombos_Click(sender, e); }
         private void RunFullBench_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.RunFullBench_Click(sender, e); }
         private void RunManualTrim_Click(object sender, System.Windows.RoutedEventArgs e) { if (_ready) Main?.RunManualTrim_Click(sender, e); }

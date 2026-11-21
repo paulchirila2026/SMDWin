@@ -567,11 +567,7 @@
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius"    Value="{DynamicResource RadiusCard}"/>
     <Setter Property="Padding"         Value="14,12"/>
-    <Style.Triggers>
-      <Trigger Property="IsMouseOver" Value="True">
-        <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
-      </Trigger>
-    </Style.Triggers>
+    <!-- no hover highlight on cards (only list rows and buttons react to the mouse) -->
   </Style>
 
   <!-- Legacy aliases — all existing XAML continues to work without changes -->
@@ -585,11 +581,6 @@
   <Style x:Key="DashClickCardStyle" TargetType="Border" BasedOn="{StaticResource DashCardStyle}">
     <Setter Property="Cursor"  Value="Hand"/>
     <Setter Property="Padding" Value="0"/>
-    <Style.Triggers>
-      <Trigger Property="IsMouseOver" Value="True">
-        <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
-      </Trigger>
-    </Style.Triggers>
   </Style>
   <!-- ══ Dashboard in rows ══════════════════════════════
        One row per component: [component] [now] [chart] [details] [state].
@@ -598,14 +589,7 @@
     <Setter Property="Padding" Value="16,10,16,10"/>
     <Setter Property="Margin"  Value="0,0,0,8"/>
     <Setter Property="MinHeight" Value="84"/>
-    <!-- on hover, besides the background + shadow, the outline takes the accent colour → it is clear the row can be pressed.
-         The red alert outline (set from code) takes priority. -->
-    <Style.Triggers>
-      <Trigger Property="IsMouseOver" Value="True">
-        <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-      </Trigger>
-    </Style.Triggers>
+    <!-- no hover effect: the hand cursor and the "›" chevron show the row can be opened -->
   </Style>
   <!-- the section label (in "Sentence case", no capitals): "What it means", "All sensors" -->
   <Style x:Key="DashRowCaption" TargetType="TextBlock">
@@ -912,16 +896,7 @@
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="SnapsToDevicePixels" Value="True"/>
     <!-- the card can be opened: a faint highlight under the mouse (the Windows way), instead of arrows everywhere -->
-    <!-- only on cards that open something (hand cursor); information-only cards (Cursor="Arrow") stay still -->
-    <Style.Triggers>
-      <MultiTrigger>
-        <MultiTrigger.Conditions>
-          <Condition Property="IsMouseOver" Value="True"/>
-          <Condition Property="Cursor" Value="Hand"/>
-        </MultiTrigger.Conditions>
-        <Setter Property="Background" Value="{DynamicResource CardHoverBg}"/>
-      </MultiTrigger>
-    </Style.Triggers>
+    <!-- no hover effect: the hand cursor and the "›" chevron show the card can be opened -->
   </Style>
   <!-- alert glow behind the card (critical values) — a separate Border, with no text in it, so the shadow does not blur the
        content. Added / removed from code: MainWindow.DashRows.cs → ApplyRowAlert -->

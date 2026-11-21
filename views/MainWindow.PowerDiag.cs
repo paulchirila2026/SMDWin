@@ -144,6 +144,7 @@ namespace SMDWin.Views
             if (d.TotalMinutes < 1) return PS("AgoNow", "just now");
             if (d.TotalHours < 1) return string.Format(PS("AgoMin", "{0} min ago"), (int)d.TotalMinutes);
             if (d.TotalDays < 1) return string.Format(PS("AgoHours", "{0} h ago"), (int)d.TotalHours);
+            if (d.TotalDays < 2) return PS("AgoYesterday", "yesterday");   // not "1 days ago"
             return string.Format(PS("AgoDays", "{0} days ago"), (int)d.TotalDays);
         }
 

@@ -1035,7 +1035,7 @@ namespace SMDWin.Views
             if (w.LastUpdateOn is DateTime last)
             {
                 r.Cells.Add(Cell(HeroFact("Clock", SpecSheet.Hue("Windows"),
-                    days == 0 ? SI("Today", "today") : string.Format(SI("DaysAgo", "{0} days ago"), days),
+                    days == 0 ? SI("Today", "today") : days == 1 ? SI("Yesterday", "yesterday") : string.Format(SI("DaysAgo", "{0} days ago"), days),
                     Ws("LastUpdate"), stale ? "StatusCheckBrush" : "TextPrimaryBrush", SMDWin.Services.DateFormatHelper.FormatDate(last).TrimStart('0'))));
                 if (stale) { r.Status = SI("StatusNotUpdated", "Not updated"); r.StatusBrush = "StatusCheckBrush"; }
             }

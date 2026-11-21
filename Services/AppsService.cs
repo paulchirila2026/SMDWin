@@ -54,6 +54,14 @@ namespace SMDWin.Services
 
                                     var publisher = sub.GetValue("Publisher")?.ToString() ?? "";
                                     var version   = CleanVersionPrefix(sub.GetValue("DisplayVersion")?.ToString() ?? "");
+                                    // driver packages write "06/01/2011 4.0.0.32" as the version: the date goes to "Installed"
+                                    DateTime? driverDate = null;
+                                    var dv = System.Text.RegularExpressions.Regex.Match(version, @"^(\d{1,2})/(\d{1,2})/(\d{4})\s+(.+)$");
+                                    if (dv.Success)
+                                    {
+                                        version = dv.Groups[4].Value.Trim();
+                                        try { driverDate = new DateTime(int.Parse(dv.Groups[3].Value), int.Parse(dv.Groups[1].Value), int.Parse(dv.Groups[2].Value)); } catch { driverDate = null; }
+                                    }
                                     var rawDate   = sub.GetValue("InstallDate")?.ToString();
                                     var date      = FormatDate(rawDate);
                                     DateTime? dateRaw = null;
@@ -79,6 +87,11 @@ namespace SMDWin.Services
                                     }
 
                                     var installLocation = sub.GetValue("InstallLocation")?.ToString()?.Trim().Trim('"') ?? "";
+                                    if (dateRaw == null && driverDate.HasValue)
+                                    {
+                                        dateRaw = driverDate;
+                                        date = DateFormatHelper.FormatDate(driverDate.Value);
+                                    }
                                     if (dateRaw == null)
                                     {
                                         var installLoc = installLocation;
@@ -122,6 +135,7 @@ namespace SMDWin.Services
                                         SizeBytes      = sizeBytesRaw,
                                         IconSource     = sub.GetValue("DisplayIcon")?.ToString() ?? "",
                                         InstallLocation = installLocation,
+                                        DriverFolder   = AppSizeEstimator.DriverFolderFrom(uninstall),
                                         Hive           = root == Registry.LocalMachine ? "HKLM" : "HKCU",
                                         RegistryPath   = AppCommands.RegistryPath(root == Registry.LocalMachine ? "HKLM" : "HKCU", keyPath, subName),
                                         ModifyCommand  = AppCommands.ModifyCommand(

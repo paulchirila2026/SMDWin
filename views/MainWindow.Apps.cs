@@ -55,8 +55,20 @@ namespace SMDWin.Views
                 ApplyAppExtras();
                 ApplyAppsView();
                 _ = EnrichAppsAsync();
+                _ = EstimateAppSizesAsync(_allApps);
             }
             finally { HideLoading(); }
+        }
+
+        /// <summary>Measures the programs without a declared size (in the background), then redraws the list.</summary>
+        private async Task EstimateAppSizesAsync(List<InstalledApp> apps)
+        {
+            try
+            {
+                int n = await SMDWin.Services.AppSizeEstimator.EstimateAsync(apps);
+                if (n > 0 && ReferenceEquals(apps, _allApps)) ApplyAppsView();
+            }
+            catch (Exception ex) { SMDWin.Services.AppLogger.Debug($"EstimateAppSizesAsync: {ex.Message}"); }
         }
 
         private static Dictionary<string, string> _serviceFriendlyDesc => SMDWin.Services.LanguageService.CurrentCode switch

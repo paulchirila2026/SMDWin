@@ -188,7 +188,7 @@
                       <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkAuroraAlert" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
                       <StackPanel VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource SetRowTitle}" Text="Background reacts to problems"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="A soft red tint slowly appears on Dark when something is critical"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="On Dark the background slowly turns faintly amber for warnings and red when something is critical"/>
                       </StackPanel>
                     </DockPanel>
                   </Border>

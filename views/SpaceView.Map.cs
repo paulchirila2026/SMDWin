@@ -80,9 +80,10 @@ namespace SMDWin.Views
             var b = (WpfColor)ColorConverter.ConvertFromString(p.Inner);
             var g = new LinearGradientBrush
             {
-                MappingMode = BrushMappingMode.Absolute, StartPoint = new System.Windows.Point(0, 0), EndPoint = new System.Windows.Point(8, 8),
+                // fine diagonal lines (a thin stripe every 6 px) instead of wide bands, so large blocks stay calm
+                MappingMode = BrushMappingMode.Absolute, StartPoint = new System.Windows.Point(0, 0), EndPoint = new System.Windows.Point(6, 6),
                 SpreadMethod = GradientSpreadMethod.Repeat,
-                GradientStops = { new GradientStop(a, 0), new GradientStop(a, 0.5), new GradientStop(b, 0.5), new GradientStop(b, 1) },
+                GradientStops = { new GradientStop(a, 0), new GradientStop(a, 0.72), new GradientStop(b, 0.72), new GradientStop(b, 1) },
             };
             g.Freeze();
             return g;

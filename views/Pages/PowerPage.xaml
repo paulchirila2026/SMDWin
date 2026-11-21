@@ -28,41 +28,48 @@
               </StackPanel>
               <!-- Action buttons in title bar -->
               <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <WrapPanel.Resources>
+                  <!-- the page actions: 8 px apart, with room inside (they were packed close together) -->
+                  <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                    <Setter Property="Margin" Value="8,0,0,4"/>
+                    <Setter Property="Padding" Value="12,6"/>
+                  </Style>
+                </WrapPanel.Resources>
                 <!-- Keep awake (MainWindow.PowerSimple.cs): stops sleep and the screen turning off for a while, the plan stays as it is -->
                 <Border x:Name="PowerKeepAwakeBox" CornerRadius="8" BorderThickness="1" Padding="10,0,6,0" Height="30" Margin="0,0,8,0"
                         BorderBrush="{DynamicResource CardBorderBrush}" Background="{DynamicResource BgCardBrush}" VerticalAlignment="Center">
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtKeepAwakeTitle" Text="Keep awake" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
                     <TextBlock x:Name="TxtKeepAwakeState" Text="off" Margin="6,0,8,0" FontSize="{StaticResource FontSizeS}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <ui:Button x:Name="BtnKeepAwakeFor" Appearance="Secondary" Padding="8,1" Height="24" Margin="0,0,6,0" Content="1 hour" VerticalAlignment="Center"/>
+                    <ui:Button x:Name="BtnKeepAwakeFor" Appearance="Secondary" Padding="8,1" Height="24" Content="1 hour" VerticalAlignment="Center"/>
                     <CheckBox x:Name="ChkKeepAwake" Style="{StaticResource ToggleSwitchStyle}" VerticalAlignment="Center"/>
                   </StackPanel>
                 </Border>
                 <!-- Reset to defaults: Balanced, processor Normal, the recommended times (asks first) — MainWindow.PowerRedesign.cs -->
-                <ui:Button x:Name="BtnPowerDefaults" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,8,0"
+                <ui:Button x:Name="BtnPowerDefaults" Appearance="Secondary" Height="30" Padding="10,4"
                            ToolTip="Balanced plan, Normal processor and the recommended times — the settings that suit most PCs">
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Path x:Name="IconPowerDefaults" Width="24" Height="24" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}"/></Viewbox>
                     <TextBlock x:Name="TxtBtnPowerDefaults" Text="Reset to defaults" VerticalAlignment="Center"/>
                   </StackPanel>
                 </ui:Button>
-                <ui:Button x:Name="BtnPowerCheck" Appearance="Primary" Foreground="White" Height="30" Padding="12,4" Margin="0,0,6,0"
+                <ui:Button x:Name="BtnPowerCheck" Appearance="Primary" Foreground="White" Height="30" Padding="12,4"
                            ToolTip="Looks for settings and devices that waste power or stop sleep, and explains each one">
                   <TextBlock x:Name="TxtBtnPowerCheck" Text="Power check" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </ui:Button>
                 <ui:Button x:Name="BtnBatteryTest" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
-                        Click="BatteryTest_Click" Margin="0,0,6,0"
+                        Click="BatteryTest_Click"
                         local:TechTooltip.Text="Reads FullChargeCapacity and DesignCapacity from WMI (Win32_Battery/BatteryStatus), computes wear% = 100 - (Full/Design*100), and cross-checks against powercfg's battery report (CAPACITY_INFORMATION from the ACPI battery driver) when available.">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Viewbox Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M17,6 A3,3 0 0 1 20,9 L20,10 L21,10 A1,1 0 0 1 22,11 L22,13 A1,1 0 0 1 21,14 L20,14 L20,15 A3,3 0 0 1 17,18 L5,18 A3,3 0 0 1 2,15 L2,9 A3,3 0 0 1 5,6 Z M17,7.5 L5,7.5 C4.22,7.5 3.58,8.1 3.5,8.86 L3.5,15 C3.5,15.78 4.1,16.42 4.86,16.5 L17,16.5 C17.78,16.5 18.42,15.9 18.5,15.14 L18.5,9 C18.5,8.22 17.9,7.58 17.14,7.5 Z"/></Canvas></Viewbox><TextBlock Text="Battery Test" VerticalAlignment="Center"/></StackPanel>
                     </ui:Button>
-                <ui:Button x:Name="BtnGenerateSleepReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,6,0"
+                <ui:Button x:Name="BtnGenerateSleepReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
                         Click="GenerateSleepReport_Click" ToolTip="Runs powercfg /sleepstudy — needs at least one previous Modern Standby sleep cycle to have data">
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Viewbox Width="13" Height="13" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M20.03,17 A10,10 0 0 1 3.13,17.68 A0.75,0.75 0 0 1 3.49,16.55 C7.26,15.2 9.28,13.64 10.45,11.4 C11.68,9.05 12,6.47 11.14,2.94 A0.75,0.75 0 0 1 11.9,2 A10,10 0 0 1 20.03,17 M11.78,12.1 C10.53,14.49 8.47,16.2 4.96,17.6 A8.5,8.5 0 0 0 18.73,16.25 A8.5,8.5 0 0 0 12.83,3.62 C13.47,7.01 13.05,9.67 11.78,12.1"/></Canvas></Viewbox>
                     <TextBlock Text="Sleep Report" VerticalAlignment="Center"/>
                   </StackPanel>
                 </ui:Button>
-                <ui:Button x:Name="BtnGenerateEnergyReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4" Margin="0,0,6,0"
+                <ui:Button x:Name="BtnGenerateEnergyReport" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
                         Click="GenerateEnergyReport_Click" ToolTip="Runs powercfg /energy — takes about 60 seconds, monitors the system live">
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Viewbox Width="13" Height="13" Margin="0,0,5,0"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M7.43,2.83 C7.6,2.33 8.07,2 8.6,2 L15.06,2 C15.91,2 16.51,2.84 16.24,3.65 L14.8,8 L18.76,8 C19.86,8 20.43,9.33 19.66,10.12 L8.59,21.54 C7.53,22.62 5.71,21.64 6.04,20.16 L7.31,14.5 L5.75,14.49 C4.54,14.49 3.7,13.29 4.1,12.15 Z M8.78,3.5 L5.52,12.66 C5.46,12.82 5.58,12.99 5.75,12.99 L8.25,13 A0.75,0.75 0 0 1 8.98,13.91 L7.51,20.5 L18.16,9.5 L13.75,9.5 A0.75,0.75 0 0 1 13.04,8.51 L14.7,3.5 Z"/></Canvas></Viewbox>
@@ -70,7 +77,7 @@
                   </StackPanel>
                 </ui:Button>
                 <ui:Button x:Name="BtnPowerHistory" VerticalAlignment="Center" Visibility="Collapsed" Appearance="Secondary" Height="30" Padding="10,4"
-                        Click="OpenPowerHistory_Click" Margin="0,0,6,0"
+                        Click="OpenPowerHistory_Click"
                         ToolTip="Power History — timeline boot/shutdown/crash/sleep/resume">
                   <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center">

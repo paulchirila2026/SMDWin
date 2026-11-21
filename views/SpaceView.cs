@@ -173,8 +173,8 @@ namespace SMDWin.Views
                 var head = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 4) };
                 if (dot != null)
                 {
-                    var e = new System.Windows.Shapes.Ellipse { Width = 7, Height = 7, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
-                    e.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, dot);
+                    var e = new StatusMark { Width = 13, Height = 13, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
+                    e.SetResourceReference(StatusMark.FillProperty, dot);
                     head.Children.Add(e);
                 }
                 cap = Txt(label, Ui.FontS, "TextSecondaryBrush");
@@ -347,15 +347,33 @@ namespace SMDWin.Views
             hintBox.SetResourceReference(Border.BackgroundProperty, "SegTrackBrush");
             sp.Children.Add(hintBox);
             var btns = new WrapPanel { Margin = new Thickness(-4, 12, 0, 0) };
+            // "Open folder" and "Copy path" as icon buttons (the words are in the tooltip), so all three fit on one row
             var open = Net.NetWindowHelper.SecondaryButton(S("OpenFolder", "Open folder"));
             open.Click += (_, _) => { if (_selected != null) RevealInExplorer(_selected.FullPath); };
             var copy = Net.NetWindowHelper.SecondaryButton(S("CopyPath", "Copy path"));
             copy.Click += (_, _) => { if (_selected != null) try { System.Windows.Clipboard.SetText(_selected.FullPath); } catch (Exception ex) { AppLogger.Debug("Copy path: " + ex.Message); } };
             _selRecycle = Net.NetWindowHelper.SecondaryButton(S("ToRecycle", "Move to Recycle Bin"));
             _selRecycle.Click += (_, _) => RecycleSelected();
+            IconOnly(open, "M3.5,6.25 C3.5,5.28 4.28,4.5 5.25,4.5 L9.38,4.5 C9.81,4.5 10.22,4.68 10.5,5 L12.06,6.75 L18.75,6.75 C19.72,6.75 20.5,7.53 20.5,8.5 L20.5,17.75 C20.5,18.72 19.72,19.5 18.75,19.5 L5.25,19.5 C4.28,19.5 3.5,18.72 3.5,17.75 Z", S("OpenFolder", "Open folder"));
+            IconOnly(copy, "M8,4.5 L16.5,4.5 C17.6,4.5 18.5,5.4 18.5,6.5 L18.5,16 M6,7.5 L14.5,7.5 C15.33,7.5 16,8.17 16,9 L16,19.5 C16,20.33 15.33,21 14.5,21 L6,21 C5.17,21 4.5,20.33 4.5,19.5 L4.5,9 C4.5,8.17 5.17,7.5 6,7.5 Z", S("CopyPath", "Copy path"));
             btns.Children.Add(open); btns.Children.Add(copy); btns.Children.Add(_selRecycle);
             sp.Children.Add(btns);
             return Card(sp, new Thickness(16, 14, 16, 14));
+        }
+
+        /// <summary>A button that shows only an icon (stroked outline, in the text colour); the label goes to the tooltip.</summary>
+        private static void IconOnly(System.Windows.Controls.Button b, string data, string label)
+        {
+            var path = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse(data), Width = 16, Height = 16, Stretch = Stretch.Uniform, StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round,
+            };
+            path.SetBinding(System.Windows.Shapes.Shape.StrokeProperty, new System.Windows.Data.Binding("Foreground") { Source = b });
+            b.Content = path;
+            b.Padding = new Thickness(10, 7, 10, 7);
+            b.ToolTip = label;
+            System.Windows.Automation.AutomationProperties.SetName(b, label);
         }
 
         private Border BuildRecCard()
@@ -847,6 +865,7 @@ namespace SMDWin.Views
         {
             var span = DateTime.Now - t;
             if (span.TotalDays < 1) return S("AgeToday", "today");
+            if (span.TotalDays < 2) return S("AgeYesterday", "yesterday");   // not "1 days ago"
             if (span.TotalDays < 60) return string.Format(S("AgeDays", "{0} days ago"), (int)span.TotalDays);
             if (span.TotalDays < 730) return string.Format(S("AgeMonths", "{0} months ago"), (int)(span.TotalDays / 30.4));
             return string.Format(S("AgeYears", "{0} years ago"), (int)(span.TotalDays / 365.25));
