@@ -301,7 +301,7 @@ namespace SMDWin.Views
                 var pg = PathGeometry.CreateFromGeometry(g);
                 const int N = 32;
                 var pts = new Point[N + 1]; var tan = new Vector[N + 1];
-                for (int i = 0; i <= N; i++) { pg.GetPointAtFractionLength(i / (double)N, out var pt, out var tg); pts[i] = pt; tg.Normalize(); tan[i] = new Vector(tg.X, tg.Y); }
+                for (int i = 0; i <= N; i++) { pg.GetPointAtFractionLength(i / (double)N, out var pt, out var tg); pts[i] = pt; var v = new Vector(tg.X, tg.Y); if (v.Length > 0) v.Normalize(); tan[i] = v; }
                 Add(new Op { T = OpT.Air, G = g, Warm = warm, Pts = pts, Tan = tan, Seed = _seed++ });
             }
             public void Heat(double x, double y, int part) => Add(new Op { T = OpT.Heat, X = x, Y = y, Part = part });
