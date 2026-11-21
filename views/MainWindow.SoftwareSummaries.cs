@@ -106,7 +106,7 @@ namespace SMDWin.Views
             {
                 // no coloured pill: a state ("Crashed", "Did not start") is the Windows mark + the word; a plain label ("New")
                 // is only the word in the accent colour
-                var pb = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+                var pb = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
                 if (p.brush != "AccentBrush")
                 {
                     var mk = new StatusMark { Width = 13, Height = 13, Margin = new Thickness(0, 0, 5, 0), VerticalAlignment = VerticalAlignment.Center };
