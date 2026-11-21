@@ -408,9 +408,12 @@ namespace SMDWin.Views
             for (int i = 0; i < 22; i++) { b.Circ(112 + i * 4, 302, 0.9); b.Circ(400 + i * 4, 302, 0.9); }
             b.Rect(300, 38, 96, 10, 2, Sty.Ln2);
             b.Air("M314 22 C312 12 308 6 302 -2", true); b.Air("M348 22 C348 12 348 6 348 -2", true); b.Air("M382 22 C384 12 388 6 394 -2", true);
-            b.Fan(348, 92, 36, FanCpu);
+            // blower at the left, fin stack under the top vent: the heat pipes carry the heat from the processor to the fins and the
+            // fan blows through them (the pipes used to end in the fan's hub)
+            b.Rect(312, 50, 72, 14, 2, Sty.Ln2); b.Fins(318, 8, 9, 51, 63);
+            b.Fan(262, 88, 30, FanCpu);
             b.Path("M190 132 H420 V272 H190 Z");
-            b.Pipe("M270 182 C272 150 300 128 322 112", 0); b.Pipe("M284 182 C288 156 316 134 334 120", 0);
+            b.Pipe("M270 182 C272 140 318 112 332 64", 0); b.Pipe("M284 182 C292 146 336 118 348 64", 0);
             b.Glow(276, 196, 62, 0);
             b.Rect(260, 180, 32, 32, 2, Sty.Ln, 0); b.Rect(268, 188, 16, 16, 1, Sty.Ln2);
             b.Heat(276, 170, 0); b.Trace("M292 196 L314 196");
