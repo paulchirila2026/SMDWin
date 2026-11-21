@@ -302,7 +302,8 @@ namespace SMDWin.Views
                 const int N = 32;
                 var pts = new Point[N + 1]; var tan = new Vector[N + 1];
                 for (int i = 0; i <= N; i++) { pg.GetPointAtFractionLength(i / (double)N, out var pt, out var tg); pts[i] = pt; var v = new Vector(tg.X, tg.Y); if (v.Length > 0) v.Normalize(); tan[i] = v; }
-                Add(new Op { T = OpT.Air, G = g, Warm = warm, Pts = pts, Tan = tan, Seed = _seed++ });
+                double L = 0; for (int i = 1; i <= N; i++) L += (pts[i] - pts[i - 1]).Length;
+                Add(new Op { T = OpT.Air, G = g, Warm = warm, Pts = pts, Tan = tan, R = L, Seed = _seed++ });
             }
             public void Heat(double x, double y, int part) => Add(new Op { T = OpT.Heat, X = x, Y = y, Part = part });
             public void Glow(double cx, double cy, double r, int part) => Add(new Op { T = OpT.Glow, X = cx, Y = cy, R = r, Part = part });
@@ -1083,7 +1084,7 @@ namespace SMDWin.Views
             if (op.Warm)
             {
                 var tg = tan[i];
-                double w = Math.Sin(t * 30 - now * 5) * 1.3;
+                double w = Math.Sin(t * op.R / 6 - now * 5) * 1.1;   // one ripple every ~38 units of path, whatever its length
                 p += new Vector(-tg.Y * w, tg.X * w);
             }
             return p;
