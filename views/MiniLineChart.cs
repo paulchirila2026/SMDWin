@@ -370,7 +370,33 @@ namespace SMDWin.Views
             dc.DrawText(ft, new Point(2, top - 3));
         }
 
+        // ── the line draws itself from left to right the first time the chart has data (Settings › Animations) ──
+        public static readonly DependencyProperty RevealProperty = DependencyProperty.Register(
+            nameof(Reveal), typeof(double), typeof(MiniLineChart), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
+        private double Reveal { get => (double)GetValue(RevealProperty); set => SetValue(RevealProperty, value); }
+        private bool _revealDone;
+
         protected override void OnRender(DrawingContext dc)
+        {
+            // only a chart that is shown already holding a history is revealed; one that fills live from empty is left alone
+            if (!_revealDone && _vals.Count > 0 && ActualWidth > 10)
+            {
+                _revealDone = true;
+                if (_vals.Count >= 8 && Fx.Motion && IsVisible)
+                    BeginAnimation(RevealProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(600))
+                        { EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut } });
+            }
+            double rv = Reveal;
+            if (rv < 0.999)
+            {
+                dc.PushClip(new RectangleGeometry(new Rect(0, 0, Math.Max(0, ActualWidth * rv), ActualHeight)));
+                RenderChart(dc);
+                dc.Pop();
+            }
+            else RenderChart(dc);
+        }
+
+        private void RenderChart(DrawingContext dc)
         {
             double W = ActualWidth, H = ActualHeight;
             dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, W, H));

@@ -291,7 +291,7 @@ namespace SMDWin.Views.Net
                          $"Traffic: {(hasTraffic ? $"↑{entry.TotalSentMB:F1} MB / ↓{entry.TotalRecvMB:F1} MB" : "not measured (no data counted for this connection yet)")}" +
                          (entry.HasRiskFlag ? $"\n\nRisk: {entry.RiskLabel}" : "") +
                          (entry.GeoDisplay != "—" ? $"\n\n{SMDWin.Services.GeoIpService.Attribution}" : "");
-            SMDWin.Views.AppDialog.Show(msg, "Connection details", SMDWin.Views.AppDialog.Kind.Info, Window.GetWindow(this));
+            SMDWin.Views.AppDialog.Show(msg, SMDWin.Views.MainWindow.PT("Connection details"), SMDWin.Views.AppDialog.Kind.Info, Window.GetWindow(this));
         }
 
         private Button _btnAlerts = null!;
@@ -369,7 +369,7 @@ namespace SMDWin.Views.Net
             }
             catch (Exception ex)
             {
-                SMDWin.Views.AppDialog.Show($"Could not save the file: {ex.Message}", "Export", SMDWin.Views.AppDialog.Kind.Error, Window.GetWindow(this));
+                SMDWin.Views.AppDialog.Show(SMDWin.Views.MainWindow.PT("Could not save the file: {0}", ex.Message), SMDWin.Views.MainWindow.PT("Export"), SMDWin.Views.AppDialog.Kind.Error, Window.GetWindow(this));
             }
         }
 

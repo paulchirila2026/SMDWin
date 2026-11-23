@@ -179,7 +179,16 @@
                       <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkAnimations" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
                       <StackPanel VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource SetRowTitle}" Text="Animations"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Animate charts and value changes"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Charts, page changes, screenshot flash, end-of-test tick"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                    <DockPanel>
+                      <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkSounds" Style="{StaticResource ToggleSwitchStyle}" IsChecked="True" Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sounds"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Quiet sounds: screenshot, test finished, temperature warning"/>
                       </StackPanel>
                     </DockPanel>
                   </Border>

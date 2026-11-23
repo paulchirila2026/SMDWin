@@ -1755,6 +1755,7 @@ namespace SMDWin.Views
                     ("Took",      took.ToString(@"m\:ss")), ("Cancelled", cancelled), ("Calc errors", errors));
                 _benchCts?.Dispose(); _benchCts = null;
                 RefreshBenchmarkView();
+                if (!cancelled) Fx.Done(this, _benchDoneText, problems: errors > 0);
             }
         }
     }

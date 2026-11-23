@@ -384,6 +384,10 @@ namespace SMDWin.Views
             snap = _lastTempSnap;   // fresh or without values, never old data presented as live
             if (snap == null) return;
             NoteAuroraTemps(snap.CpuTemp, snap.GpuTemp);   // the Dark background turns red above 90 °C
+            // the activity LED: the "PC health" dot dims and comes back once per reading — the sensors are being watched live
+            if (Fx.Motion && IsVisible && WindowState != WindowState.Minimized && FindName("HealthDot") is System.Windows.Shapes.Ellipse hd)
+                hd.BeginAnimation(UIElement.OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(1, 0.4, TimeSpan.FromMilliseconds(320))
+                    { AutoReverse = true, EasingFunction = new System.Windows.Media.Animation.SineEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut } });
 
             // Session history — one sample every 5s from app start, for the PDF full-session charts
             var histNow = DateTime.Now;

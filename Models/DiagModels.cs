@@ -1355,6 +1355,8 @@ namespace SMDWin.Models
         public string PingBackgroundHost { get; set; } = "8.8.8.8";
         public bool   PingUptimeSustainedOnly { get; set; } = false;
         public bool EnableAnimations { get; set; } = true;
+        /// <summary>The quiet sounds: screenshot shutter, test done, temperature warning.</summary>
+        public bool PlaySounds { get; set; } = true;
         // indicatorul „test in curs” din sidebar: Dot | Pulse | SpinRing | Hourglass | Bolt | Square* (SquareBadgeAnim)
         public string TaskBadgeStyle { get; set; } = "SquareOrbit";
         public string ThemeName { get; set; } = "Auto";

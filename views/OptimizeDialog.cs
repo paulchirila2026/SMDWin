@@ -226,9 +226,9 @@ namespace SMDWin.Views
             // confirmation: the exact list of the settings about to change
             string list = string.Join("\n", sel.Select(i => "• " + _items[i].Label));
             string ask = revert
-                ? "Restore the original value for these settings?\n\n" + list + "\n\nThe values saved before the first change are put back."
-                : "Change these Windows settings?\n\n" + list + "\n\nThe current values are saved first, so Revert can restore them. Every change is written to the Activity log.";
-            if (!AppDialog.Confirm(ask, revert ? "Revert settings" : "Apply settings", this)) return;
+                ? MainWindow.PT("Restore the original value for these settings?") + "\n\n" + list + "\n\n" + MainWindow.PT("The values saved before the first change are put back.")
+                : MainWindow.PT("Change these Windows settings?") + "\n\n" + list + "\n\n" + MainWindow.PT("The current values are saved first, so Revert can restore them. Every change is written to the Activity log.");
+            if (!AppDialog.Confirm(ask, MainWindow.PT(revert ? "Revert settings" : "Apply settings"), this)) return;
             int ok = 0, failed = 0, noEffect = 0;
             var prevCursor = System.Windows.Input.Mouse.OverrideCursor;
             System.Windows.Input.Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;

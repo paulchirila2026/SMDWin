@@ -101,6 +101,7 @@ namespace SMDWin.Views
             ChkMinimize.Checked   -= Settings_Changed; ChkMinimize.Unchecked   -= Settings_Changed;
             if (ChkEnableNotifications != null) { ChkEnableNotifications.Checked -= Settings_Changed; ChkEnableNotifications.Unchecked -= Settings_Changed; }
             if (ChkAnimations != null) { ChkAnimations.Checked -= Settings_Changed; ChkAnimations.Unchecked -= Settings_Changed; }
+            if (ChkSounds != null) { ChkSounds.Checked -= Settings_Changed; ChkSounds.Unchecked -= Settings_Changed; }
             if (ChkAuroraAlert != null) { ChkAuroraAlert.Checked -= Settings_Changed; ChkAuroraAlert.Unchecked -= Settings_Changed; }
             if (ChkUseLhm != null) { ChkUseLhm.Checked -= ChkUseLhm_Changed; ChkUseLhm.Unchecked -= ChkUseLhm_Changed; }
             SliderRefresh.ValueChanged   -= SliderRefresh_ValueChanged;
@@ -119,6 +120,7 @@ namespace SMDWin.Views
             if (ChkAutoSnapshotStress != null) ChkAutoSnapshotStress.IsChecked = s.AutoSnapshotOnStress;
             if (ChkExportSensorsReg != null) ChkExportSensorsReg.IsChecked = s.ExportSensorsToRegistry;
             if (ChkAnimations != null) ChkAnimations.IsChecked = s.EnableAnimations;
+            if (ChkSounds != null) ChkSounds.IsChecked = s.PlaySounds;
             if (ChkAuroraAlert != null) ChkAuroraAlert.IsChecked = s.AuroraAlertTint;
             // Mica — hide checkbox entirely on Win10 and earlier
 
@@ -199,6 +201,7 @@ namespace SMDWin.Views
             ChkMinimize.Checked   += Settings_Changed; ChkMinimize.Unchecked   += Settings_Changed;
             if (ChkEnableNotifications != null) { ChkEnableNotifications.Checked += Settings_Changed; ChkEnableNotifications.Unchecked += Settings_Changed; }
             if (ChkAnimations != null) { ChkAnimations.Checked += Settings_Changed; ChkAnimations.Unchecked += Settings_Changed; }
+            if (ChkSounds != null) { ChkSounds.Checked += Settings_Changed; ChkSounds.Unchecked += Settings_Changed; }
             if (ChkAuroraAlert != null) { ChkAuroraAlert.Checked += Settings_Changed; ChkAuroraAlert.Unchecked += Settings_Changed; }
             if (ChkUseLhm != null) { ChkUseLhm.Checked += ChkUseLhm_Changed; ChkUseLhm.Unchecked += ChkUseLhm_Changed; }
             SliderRefresh.ValueChanged   += SliderRefresh_ValueChanged;
@@ -469,6 +472,7 @@ namespace SMDWin.Views
             SettingsService.Current.AutoSnapshotOnStress = ChkAutoSnapshotStress?.IsChecked != false;
             if (ChkExportSensorsReg != null) SettingsService.Current.ExportSensorsToRegistry = ChkExportSensorsReg.IsChecked == true;
             if (ChkAnimations != null) SettingsService.Current.EnableAnimations = ChkAnimations.IsChecked == true;
+            if (ChkSounds != null) SettingsService.Current.PlaySounds = ChkSounds.IsChecked == true;
             if (ChkAuroraAlert != null)
             {
                 bool tint = ChkAuroraAlert.IsChecked == true;
@@ -621,6 +625,8 @@ namespace SMDWin.Views
                 ? string.Format(LanguageService.S("Msg", "StressDoneOkFmt"), minutesRan)
                 : string.Format(LanguageService.S("Msg", "StressDoneErrFmt"), minutesRan, totalErr),
                 totalErr == 0 ? "✓" : "⚠", 5000, totalErr == 0 ? ToastKind.Info : ToastKind.Warning);
+            Fx.Done(this, totalErr == 0 ? PT("Stress test finished — no errors")
+                                        : PT("Stress test finished — {0} errors", totalErr), problems: totalErr > 0);
         }
 
         private void OnSystemPowerModeChanged(object? sender, Microsoft.Win32.PowerModeChangedEventArgs e)

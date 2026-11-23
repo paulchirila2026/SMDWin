@@ -119,11 +119,19 @@ namespace SMDWin.Views
                     if (active is FrameworkElement fe)
                     {
                         fe.RenderTransform = System.Windows.Media.Transform.Identity;
-                        var fadeIn = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140))
+                        if (Fx.Motion)
                         {
-                            EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-                        };
-                        fe.BeginAnimation(UIElement.OpacityProperty, fadeIn, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
+                            var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                            var fadeIn = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)) { EasingFunction = ease };
+                            fe.BeginAnimation(UIElement.OpacityProperty, fadeIn, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
+                            // and a few pixels of slide up: the new page settles in
+                            var slide = new System.Windows.Media.TranslateTransform(0, 8);
+                            fe.RenderTransform = slide;
+                            var up = new System.Windows.Media.Animation.DoubleAnimation(8, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
+                            up.Completed += (_, _) => { if (fe.RenderTransform == slide) fe.RenderTransform = System.Windows.Media.Transform.Identity; };
+                            slide.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, up);
+                        }
+                        else fe.BeginAnimation(UIElement.OpacityProperty, null);
                         AnimateCardsIn(fe);   // the cards appear one after another
                     }
                     if (_themeDirtyPanels.Remove(panel))

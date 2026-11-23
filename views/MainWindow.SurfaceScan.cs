@@ -1166,6 +1166,7 @@ namespace SMDWin.Views
                 SetSurfaceProgress(stopped ? finalPct : 100.0, finalBad > 0);
                 SetTaskbarProgress(null);   // back to the moving band while something else runs, otherwise nothing
                 TxtSurfacePhase.Text = disconnected ? PT("Drive disconnected") : stopped ? PT("Stopped") : PT("Complete");
+                if (!stopped) Fx.Done(this, finalBad > 0 ? PT("Surface scan finished — {0} unreadable blocks", finalBad) : PT("Surface scan finished — no unreadable blocks"), problems: finalBad > 0);
                 TxtSurfaceEta.Text   = stopped ? $"stopped at {finalPct:F0}%" : "done";   // stopped: how much was scanned, not an empty box
                 SetSurfaceVerdict(finalBad, finalSlow, stopped ? SurfaceScanState.Stopped : SurfaceScanState.Complete);
                 if (TxtSurfaceScanned != null)

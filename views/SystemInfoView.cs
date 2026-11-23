@@ -312,7 +312,7 @@ namespace SMDWin.Views
             var btnCopy = MakeHeaderButton(L("Copy all", "Copiază tot", "Alles kopieren", "Tout copier"),
                 "M9,9 H20 V20 H9 Z M5,15 H4 A1,1 0 0 1 3,14 V4 A1,1 0 0 1 4,3 H14 A1,1 0 0 1 15,4 V5");
             btnCopy.Margin = new Thickness(18, 0, 0, 0);
-            btnCopy.Click += (_, _) => CopyAll();
+            btnCopy.Click += (_, _) => { CopyAll(); Fx.Copied(btnCopy as System.Windows.Controls.ContentControl); };
             var btnExportPdf = MakeHeaderButton("Export PDF",
                 "M6,9 V3 H18 V9 M6,18 H4 A1,1 0 0 1 3,17 V10 A1,1 0 0 1 4,9 H20 A1,1 0 0 1 21,10 V17 A1,1 0 0 1 20,18 H18 M6,14 H18 V21 H6 Z");
             btnExportPdf.Margin = new Thickness(8, 0, 0, 0);

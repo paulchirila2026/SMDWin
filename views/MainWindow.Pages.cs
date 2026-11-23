@@ -1185,6 +1185,7 @@ namespace SMDWin.Views
         internal System.Windows.Controls.RadioButton RbTempUnitC => PageSettings?.RbTempUnitC!;
         internal System.Windows.Controls.RadioButton RbTempUnitF => PageSettings?.RbTempUnitF!;
         internal System.Windows.Controls.CheckBox ChkAnimations => PageSettings?.ChkAnimations!;
+        internal System.Windows.Controls.CheckBox ChkSounds => PageSettings?.ChkSounds!;
         internal System.Windows.Controls.CheckBox ChkAuroraAlert => PageSettings?.ChkAuroraAlert!;
         internal System.Windows.Controls.WrapPanel LangPacksPanel => PageSettings?.LangPacksPanel!;
         internal System.Windows.Controls.TextBlock TxtLangLabel => PageSettings?.TxtLangLabel!;

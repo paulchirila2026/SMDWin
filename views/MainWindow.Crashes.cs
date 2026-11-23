@@ -472,6 +472,7 @@ namespace SMDWin.Views
                 try
                 {
                     System.Windows.Clipboard.SetText(BuildCrashReport(entry));
+                    Fx.Copied(btnCopy);
                     ShowToastSuccess(_LS("Crash", "ReportCopiedToast"));
                 }
                 catch { ShowToastWarning(_LS("Crash", "ClipboardErrorToast")); }

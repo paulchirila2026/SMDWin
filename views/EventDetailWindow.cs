@@ -241,6 +241,7 @@ namespace SMDWin.Views
                 if (ev.Duration != "—") txt += $"  ({ev.Duration})";
                 if (!string.IsNullOrWhiteSpace(ev.Notes)) txt += $"\n{ev.Notes}";
                 System.Windows.Clipboard.SetText(txt);
+                Fx.Copied(btnCopy);
             };
 
             var btnGoogle = MakeBtn("Search Google");

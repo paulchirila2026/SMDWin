@@ -249,7 +249,7 @@ namespace SMDWin.Views
         {
             var btn = new Wpf.Ui.Controls.Button
             {
-                Content    = label,
+                Content    = MainWindow.PT(label),   // "Yes" / "No" / "OK" / "Cancel" in the app language
                 Appearance = danger    ? Wpf.Ui.Controls.ControlAppearance.Danger
                            : isPrimary ? Wpf.Ui.Controls.ControlAppearance.Primary
                                        : Wpf.Ui.Controls.ControlAppearance.Secondary,

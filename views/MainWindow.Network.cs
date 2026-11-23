@@ -707,7 +707,7 @@ namespace SMDWin.Views
         private void ResetWinsock_Click(object s, RoutedEventArgs e)
         {
             if (!AppDialog.Confirm(
-"This will reset the Winsock catalog.\nA system restart is required afterward.\n\nContinue?", "Reset Winsock")) return;
+PT("This will reset the Winsock catalog.\nA system restart is required afterward.\n\nContinue?"), PT("Reset Winsock"))) return;
             try
             {
                 var psi = new System.Diagnostics.ProcessStartInfo("netsh", "winsock reset")

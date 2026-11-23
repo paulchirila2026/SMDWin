@@ -81,16 +81,13 @@ namespace SMDWin.Views
                 catch (Exception ex) { AppLogger.Debug($"Screenshot clipboard: {ex.Message}"); }   // the clipboard can be busy
 
                 AppLogger.Info($"Screenshot saved: {path}");
-                ShowToast(copied
-                    ? T4("Screenshot saved and copied — right click the camera for the folder",
-                         "Captură salvată și copiată — click dreapta pe cameră pentru folder",
-                         "Bildschirmfoto gespeichert und kopiert — Rechtsklick auf die Kamera öffnet den Ordner",
-                         "Capture enregistrée et copiée — clic droit sur l'appareil photo pour le dossier")
-                    : T4("Screenshot saved — right click the camera for the folder",
-                         "Captură salvată — click dreapta pe cameră pentru folder",
-                         "Bildschirmfoto gespeichert — Rechtsklick auf die Kamera öffnet den Ordner",
-                         "Capture enregistrée — clic droit sur l'appareil photo pour le dossier"),
-                    "📷", 3200);
+                Fx.Play(Fx.Sound.Shutter);
+                Fx.Flash(this);
+                Fx.Thumbnail(this, bmp,
+                    copied ? T4("Saved and copied", "Salvată și copiată", "Gespeichert und kopiert", "Enregistrée et copiée")
+                           : T4("Saved", "Salvată", "Gespeichert", "Enregistrée"),
+                    T4("Open folder", "Deschide folderul", "Ordner öffnen", "Ouvrir le dossier"),
+                    () => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true }); } catch (Exception ex) { AppLogger.Debug($"Open screenshot folder: {ex.Message}"); } });
             }
             catch (Exception ex)
             {

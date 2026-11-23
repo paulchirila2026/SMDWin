@@ -213,7 +213,7 @@ namespace SMDWin.Views
                 try { System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\""); }
                 catch (Exception ex) { AppLogger.Debug($"Open export folder: {ex.Message}"); }
             }
-            catch (Exception ex) { AppDialog.Show($"Could not save the file: {ex.Message}", "Export", AppDialog.Kind.Error, this); }
+            catch (Exception ex) { AppDialog.Show(MainWindow.PT("Could not save the file: {0}", ex.Message), MainWindow.PT("Export"), AppDialog.Kind.Error, this); }
         }
 
         internal static string Csv(string v) => v.Contains(',') || v.Contains('"') ? "\"" + v.Replace("\"", "\"\"") + "\"" : v;

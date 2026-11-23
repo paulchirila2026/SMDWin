@@ -41,6 +41,7 @@ namespace SMDWin.Views
 {
     public partial class MainWindow
     {
+        private bool _fxTempWasHot;
         // ── Background Continuous Monitoring ─────────────────────────────────
         private void StartBackgroundMonitoring()
         {
@@ -147,6 +148,9 @@ namespace SMDWin.Views
                 bool cpuTempAlert = cpuTemp > 0 && cpuTemp >= SettingsService.Current.TempWarnCpu;
                 bool gpuTempAlert = gpuTemp > 0 && gpuTemp >= SettingsService.Current.TempWarnGpu;
                 bool tempAlert = cpuTempAlert || gpuTempAlert;
+                // the warning sound once, when the temperature crosses the limit (not on every reading while it stays hot)
+                if (tempAlert && !_fxTempWasHot && SettingsService.Current.EnableNotifications) Fx.Play(Fx.Sound.Warning);
+                _fxTempWasHot = tempAlert;
                 int severityLevel = ((cpuTemp >= 90 || gpuTemp >= 90) && tempAlert) ? 2 : (tempAlert ? 1 : 0);
 
                 bool stressRunning = _cpuStress.Running || _gpuStress.IsRunning;

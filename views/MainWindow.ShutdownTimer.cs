@@ -82,7 +82,7 @@ namespace SMDWin.Views
             if (!AppDialog.Confirm(
                     string.Format(_LS("Tools", "ShutdownConfirmFmt"),
                                   DateTime.Now.AddMinutes(mins).ToString("HH:mm"), mins),
-                    "Shutdown Timer")) return;
+                    PT("Shutdown timer"))) return;
 
             // Schedule Windows shutdown: /s=shutdown /f=force /t=seconds
             int secs = mins * 60;

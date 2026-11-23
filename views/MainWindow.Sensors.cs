@@ -283,8 +283,8 @@ namespace SMDWin.Views
                 }
 
                 bool confirm = SMDWin.Views.AppDialog.Confirm(
-                    $"Found {missing.Count} missing/errored device(s). This will open {missing.Count} browser tab(s), one search per device. Continue?",
-                    "Bulk Driver Search");
+                    PT("Found {0} device(s) without a driver or with errors. This opens {0} browser tab(s), one search per device. Continue?", missing.Count),
+                    PT("Search for drivers"));
                 if (!confirm) return;
 
                 // distinct addresses (several devices may have the same hardware ID → the same search)
@@ -317,8 +317,8 @@ namespace SMDWin.Views
                 if (failed > 0)
                 {
                     SMDWin.Views.AppDialog.Show(
-                        $"Opened {opened} of {missing.Count} searches — {failed} device(s) could not be launched (see logs for details).",
-                        "Bulk Driver Search", SMDWin.Views.AppDialog.Kind.Warning);
+                        PT("Opened {0} of {1} searches — {2} could not be opened (details in the log).", opened, missing.Count, failed),
+                        PT("Search for drivers"), SMDWin.Views.AppDialog.Kind.Warning);
                 }
             }
             catch (Exception ex) { AppLogger.Debug($"BulkSearchMissingDrivers: {ex.Message}"); }

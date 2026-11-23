@@ -28,13 +28,12 @@ namespace SMDWin.Views
 
         // The opening sweep: in the first seconds after the app starts, each dial fills from 0 to its value the first time it is
         // shown — once, a slower glide than the usual one. Later (other pages opened afterwards) the value appears normally.
-        private static readonly System.Diagnostics.Stopwatch _sinceStart = System.Diagnostics.Stopwatch.StartNew();
-        private const double IntroWindowSec = 25, IntroSec = 1.1;
+        private const double IntroSec = 1.1;
         private bool _introDone;
 
+        // each dial sweeps from 0 the first time it is shown, whenever that is (pages are built when first opened)
         private bool IntroAllowed =>
-            !_introDone && _sinceStart.Elapsed.TotalSeconds < IntroWindowSec
-            && (SMDWin.Services.SettingsService.Current?.EnableAnimations ?? false);
+            !_introDone && SMDWin.Views.Fx.Motion;
 
         /// <summary>Starts the opening sweep if it is still due: from 0 to the current value.</summary>
         private bool TryIntro()

@@ -946,6 +946,7 @@ namespace SMDWin.Views
                         sb.AppendLine($"  [{Label(r)}] {r.Name}: {r.Summary}");
                 }
                 System.Windows.Clipboard.SetText(sb.ToString());
+                Fx.Copied(_btnCopy);
                 _txtStatus.Text = P("Report copied — paste it into an e-mail or a document.");
             }
             catch (Exception ex) { AppLogger.Warning(ex, "HealthCheckWindow.CopyReport"); }
