@@ -161,11 +161,14 @@ namespace SMDWin.Views
                 if (FindName("StorageDriveRows") is not System.Windows.Controls.Panel host) return;
                 host.Children.Clear();
                 _perDiskUi.Clear();
+                _driveFits.Clear();
                 foreach (var d in disks) host.Children.Add(MakeDriveRow(d));
                 // from now on the activity of each disk is read (MainWindow.StorageDiskActivity.cs)
                 _perDiskOn = true;
                 HookDriveRowsResize();
                 ApplyDriveRowsColumns();
+                HookDriveFit();
+                QueueDriveFit();
                 UpdatePerDiskCards();
                 UpdateStorageTotals(disks);
             }
@@ -307,8 +310,9 @@ namespace SMDWin.Views
             // the model was cut ("WDC PC SN520 SDAPNUW-…") with room left in the row — a little more width and a
             // second line when needed, the full name in the tooltip
             string modelText = string.IsNullOrWhiteSpace(d.Model) ? $"Disk {d.DiskIndex}" : d.Model.Trim();
-            info.Children.Add(new TextBlock { Text = modelText, Style = TryFindResource("DashRowName") as Style, FontSize = 20, Margin = new Thickness(0, 2, 0, 2),
-                                              TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis, MaxHeight = 56, ToolTip = modelText });
+            var nameT = new TextBlock { Text = modelText, Style = TryFindResource("DashRowName") as Style, FontSize = 20, Margin = new Thickness(0, 2, 0, 2),
+                                        TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis, MaxHeight = 56, ToolTip = modelText };
+            info.Children.Add(nameT);
             string style = d.Partitions.Count > 0 ? "" : " · " + PT("no volumes");
             info.Children.Add(Txt2($"{d.Size}{style}", "TextSecondaryBrush", Ui.FontM));
             var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Needs attention"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
@@ -346,8 +350,29 @@ namespace SMDWin.Views
                 root.RowDefinitions[1].Height = GridLength.Auto;
                 body.VerticalAlignment = on ? VAlign.Top : VAlign.Center;
                 body.Margin = new Thickness(0, 0, 0, on ? 14 : 22);
+                QueueDriveFit();
             };
             _perDiskUi[d.DiskIndex] = actUi;
+
+            // tight layout, when two disks have to fit the visible height (FitDriveCards): a smaller picture and name, less spacing
+            bool tightOn = false;
+            _driveFits.Add(new DriveCardFit
+            {
+                Card = card, Chart = actUi.Chart,
+                ChartShown = () => activity.Visibility == Visibility.Visible,
+                SetTight = tight =>
+                {
+                    if (tight == tightOn) return;
+                    tightOn = tight;
+                    body.ColumnDefinitions[0].Width = new GridLength(tight ? 124 : 188);
+                    pic.Width = tight ? 110 : 176; pic.Height = tight ? 72 : 122;
+                    nameT.FontSize = tight ? 17 : 20; nameT.MaxHeight = tight ? 46 : 56;
+                    stRow.Margin = new Thickness(0, tight ? 3 : 10, 0, 0);
+                    card.Padding = new Thickness(18, tight ? 10 : 14, 18, 0);
+                    body.Margin = new Thickness(0, 0, 0, tight ? 6 : 14);
+                    actUi.SetTight(tight);
+                },
+            });
 
             // (kept for a narrow window) a smaller picture, the partitions under the name instead of next to it
             card.Tag = new Action<bool>(compact =>

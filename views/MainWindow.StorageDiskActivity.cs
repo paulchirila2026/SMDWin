@@ -9,6 +9,7 @@ using Border      = System.Windows.Controls.Border;
 using TextBlock   = System.Windows.Controls.TextBlock;
 using VAlign      = System.Windows.VerticalAlignment;
 using HAlign      = System.Windows.HorizontalAlignment;
+using UniformGrid = System.Windows.Controls.Primitives.UniformGrid;
 
 namespace SMDWin.Views
 {
@@ -36,6 +37,8 @@ namespace SMDWin.Views
             public ColumnDefinition BusyOn = null!, BusyOff = null!;
             public FrameworkElement PeakRow = null!;
             public Action<bool> ShowChart = _ => { };
+            /// <summary>Tight (two disks must fit the screen): the values on two columns, no busy bar and no peak row.</summary>
+            public Action<bool> SetTight = _ => { };
             public bool Hidden;
         }
 
@@ -134,7 +137,11 @@ namespace SMDWin.Views
             grid.Children.Add(left);
 
             var values = new StackPanel { VerticalAlignment = VAlign.Center };
-            var side = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(16, 0, 0, 0), Margin = new Thickness(16, 0, 0, 0), Width = 210, Child = values };
+            // tight layout: the four main values on two columns (the rows are moved between the two panels)
+            var valuesTight = new UniformGrid { Columns = 2, VerticalAlignment = VAlign.Center, Visibility = Visibility.Collapsed };
+            var valuesHost = new Grid();
+            valuesHost.Children.Add(values); valuesHost.Children.Add(valuesTight);
+            var side = new Border { BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(16, 0, 0, 0), Margin = new Thickness(16, 0, 0, 0), Width = 210, Child = valuesHost };
             side.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
             Grid.SetColumn(side, 1);
             grid.Children.Add(side);
@@ -170,6 +177,30 @@ namespace SMDWin.Views
             ui.Peak = Row("Peak", 13, null, out var peakRow);
             ui.PeakRow = peakRow;
             peakRow.ToolTip = PT("The highest read or write speed in the chosen time window");
+
+            var mainRows = values.Children.OfType<DockPanel>().Take(4).ToList();   // read, write, response time, busy
+            object? rangeTip = chart.ToolTip;
+            bool tightNow = false;
+            ui.SetTight = tight =>
+            {
+                if (tight == tightNow) return;
+                tightNow = tight;
+                foreach (var r in mainRows) { ((Panel)r.Parent).Children.Remove(r); }
+                for (int i = 0; i < mainRows.Count; i++)
+                {
+                    var r = mainRows[i];
+                    r.Margin = tight ? new Thickness(0, 0, i % 2 == 0 ? 18 : 0, 4) : new Thickness(0, 0, 0, 5);
+                    if (tight) valuesTight.Children.Add(r); else values.Children.Insert(i, r);
+                }
+                values.Visibility = tight ? Visibility.Collapsed : Visibility.Visible;
+                valuesTight.Visibility = tight ? Visibility.Visible : Visibility.Collapsed;
+                side.Width = tight ? 330 : 210;
+                grid.Margin = new Thickness(0, 0, 0, tight ? 8 : 14);
+                // the peak stays in the chart's tooltip, above the time-range hint
+                chart.ToolTip = tight ? PeakTip() : rangeTip;
+            };
+            string PeakTip() => PT("Peak") + ": " + ui.Peak.Text + (rangeTip is string rt ? "\n" + rt : "");
+            chart.ToolTipOpening += (_, _) => { if (tightNow) chart.ToolTip = PeakTip(); };
             return grid;
         }
 
@@ -198,6 +229,85 @@ namespace SMDWin.Views
                     card.Margin = cols == 2 ? new Thickness(i % 2 == 0 ? 0 : 6, 0, i % 2 == 0 ? 6 : 0, 12) : new Thickness(0, 0, 0, 12);
                     (card.Tag as Action<bool>)?.Invoke(cols == 2);
                 }
+        }
+
+        // ── vertical fit: the drive cards share the visible height ─────────────────────────────────────────────
+        /// <summary>What the fit pass changes on one card.</summary>
+        private sealed class DriveCardFit
+        {
+            public Border Card = null!;
+            public MiniLineChart Chart = null!;
+            public Action<bool> SetTight = _ => { };
+            public Func<bool> ChartShown = () => true;
+        }
+        private readonly List<DriveCardFit> _driveFits = new();
+        private bool _driveFitPending, _driveFitHooked;
+
+        /// <summary>
+        /// The cards fill the visible height without scrolling when they can: one disk — its chart grows into the free space;
+        /// two or more — the first two share the height (normal layout with a taller chart when it fits, otherwise the tight
+        /// layout: smaller picture, values on two columns, a chart between 48 and 96 px); further disks scroll.
+        /// </summary>
+        private void QueueDriveFit()
+        {
+            if (_driveFitPending) return;
+            _driveFitPending = true;
+            Dispatcher.BeginInvoke(new Action(() => { _driveFitPending = false; FitDriveCards(); }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void HookDriveFit()
+        {
+            if (_driveFitHooked || FindName("StorageTabOverview") is not ScrollViewer sv) return;
+            _driveFitHooked = true;
+            // the viewport changes size with the window only (not with the content), so this cannot loop
+            sv.SizeChanged += (_, e) => { if (e.HeightChanged || e.WidthChanged) QueueDriveFit(); };
+            sv.IsVisibleChanged += (_, _) => { if (sv.IsVisible) QueueDriveFit(); };
+        }
+
+        private void FitDriveCards()
+        {
+            try
+            {
+                if (_driveFits.Count == 0 || FindName("StorageTabOverview") is not ScrollViewer sv || !sv.IsVisible) return;
+                if (FindName("StorageDriveRows") is not FrameworkElement host || host.Parent is not Grid page) return;
+                var shown = _driveFits.Where(f => f.Card.Visibility == Visibility.Visible && f.ChartShown()).ToList();
+                if (shown.Count == 0) return;
+                double above = page.Children.OfType<FrameworkElement>().Where(c => Grid.GetRow(c) == 0).Sum(c => c.ActualHeight);
+                double avail = sv.ViewportHeight - above - 4;
+                if (avail < 200) return;
+                int k = Math.Min(2, shown.Count);
+                double target = avail / k;   // a card's measured height includes the space under it
+                double width = host.ActualWidth > 0 ? host.ActualWidth : sv.ViewportWidth;
+
+                // the card height without its chart, for the first k cards (the tallest decides, so the charts stay equal)
+                double Base(bool tight)
+                {
+                    double b = 0;
+                    foreach (var f in shown.Take(k))
+                    {
+                        f.SetTight(tight);
+                        f.Card.Measure(new Size(width, double.PositiveInfinity));
+                        b = Math.Max(b, f.Card.DesiredSize.Height - f.Chart.Height);
+                    }
+                    return b;
+                }
+                bool tightMode = false;
+                double baseH = Base(false), chartH;
+                if (shown.Count == 1 || baseH + 96 <= target)
+                    chartH = Math.Clamp(target - baseH, 96, shown.Count == 1 ? 340 : 220);
+                else
+                {
+                    tightMode = true;
+                    baseH = Base(true);
+                    chartH = Math.Clamp(target - baseH, 48, 96);
+                }
+                foreach (var f in _driveFits)
+                {
+                    f.SetTight(tightMode);
+                    if (Math.Abs(f.Chart.Height - chartH) > 1) f.Chart.Height = Math.Round(chartH);
+                }
+            }
+            catch (Exception ex) { AppLogger.Debug($"FitDriveCards: {ex.Message}"); }
         }
 
         private bool _driveRowsSizeHooked;
