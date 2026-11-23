@@ -8,7 +8,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using SMDWin.Services;
 using Application = System.Windows.Application;
+using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using Image = System.Windows.Controls.Image;
 using Orientation = System.Windows.Controls.Orientation;
@@ -112,6 +114,22 @@ namespace SMDWin.Views
         // ── overlays on the main window ──
         private static Grid? Host(Window? w) => (w ?? Application.Current?.MainWindow)?.FindName("RootGrid") as Grid;
 
+        /// <summary>
+        /// The card colour made solid: in the Dark theme the card surface is semi-transparent (it lets the background glow through),
+        /// which made the pop-ups look washed out over the page — it is blended here over the page background.
+        /// </summary>
+        private static Brush OpaqueSurface()
+        {
+            var app = Application.Current;
+            Color card = (app?.TryFindResource("CardSurfaceBrush") as SolidColorBrush)?.Color ?? Colors.White;
+            Color bg = (app?.TryFindResource("BgDarkBrush") as SolidColorBrush)?.Color ?? Color.FromRgb(0x11, 0x14, 0x18);
+            double a = card.A / 255.0;
+            byte Mix(byte c, byte b) => (byte)Math.Round(c * a + b * (1 - a));
+            var solid = new SolidColorBrush(Color.FromRgb(Mix(card.R, bg.R), Mix(card.G, bg.G), Mix(card.B, bg.B)));
+            solid.Freeze();
+            return solid;
+        }
+
         /// <summary>A short white flash over the window, like a camera.</summary>
         public static void Flash(Window w)
         {
@@ -150,7 +168,7 @@ namespace SMDWin.Views
                 RenderTransform = new TranslateTransform(Motion ? 40 : 0, 0), Opacity = Motion ? 0 : 1,
                 Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 3, Opacity = 0.25 },
             };
-            card.SetResourceReference(Border.BackgroundProperty, "CardSurfaceBrush");
+            card.Background = OpaqueSurface();
             card.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
             Grid.SetRowSpan(card, 99); Grid.SetColumnSpan(card, 99); Panel.SetZIndex(card, 9998);
             host.Children.Add(card);
@@ -200,7 +218,7 @@ namespace SMDWin.Views
                 IsHitTestVisible = false, Opacity = Motion ? 0 : 1, RenderTransform = new TranslateTransform(0, Motion ? -10 : 0),
                 Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 20, ShadowDepth = 3, Opacity = 0.22 },
             };
-            card.SetResourceReference(Border.BackgroundProperty, "CardSurfaceBrush");
+            card.Background = OpaqueSurface();
             card.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
             Grid.SetRowSpan(card, 99); Grid.SetColumnSpan(card, 99); Panel.SetZIndex(card, 9997);
             host.Children.Add(card);
