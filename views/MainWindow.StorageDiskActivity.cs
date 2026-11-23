@@ -180,12 +180,13 @@ namespace SMDWin.Views
 
             var mainRows = values.Children.OfType<DockPanel>().Take(4).ToList();   // read, write, response time, busy
             object? rangeTip = chart.ToolTip;
+            var u = ui;   // an out parameter cannot be used inside the lambdas
             bool tightNow = false;
             ui.SetTight = tight =>
             {
                 if (tight == tightNow) return;
                 tightNow = tight;
-                foreach (var r in mainRows) { ((Panel)r.Parent).Children.Remove(r); }
+                foreach (var r in mainRows) { ((System.Windows.Controls.Panel)r.Parent).Children.Remove(r); }
                 for (int i = 0; i < mainRows.Count; i++)
                 {
                     var r = mainRows[i];
@@ -199,7 +200,7 @@ namespace SMDWin.Views
                 // the peak stays in the chart's tooltip, above the time-range hint
                 chart.ToolTip = tight ? PeakTip() : rangeTip;
             };
-            string PeakTip() => PT("Peak") + ": " + ui.Peak.Text + (rangeTip is string rt ? "\n" + rt : "");
+            string PeakTip() => PT("Peak") + ": " + u.Peak.Text + (rangeTip is string rt ? "\n" + rt : "");
             chart.ToolTipOpening += (_, _) => { if (tightNow) chart.ToolTip = PeakTip(); };
             return grid;
         }
@@ -286,7 +287,7 @@ namespace SMDWin.Views
                     foreach (var f in shown.Take(k))
                     {
                         f.SetTight(tight);
-                        f.Card.Measure(new Size(width, double.PositiveInfinity));
+                        f.Card.Measure(new System.Windows.Size(width, double.PositiveInfinity));
                         b = Math.Max(b, f.Card.DesiredSize.Height - f.Chart.Height);
                     }
                     return b;
