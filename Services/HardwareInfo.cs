@@ -254,6 +254,8 @@ namespace SMDWin.Services
                                          gpuName.Contains("HD 4", StringComparison.OrdinalIgnoreCase) ||
                                          gpuName.Contains("HD 5", StringComparison.OrdinalIgnoreCase) ||
                                          gpuName.Contains("HD 6", StringComparison.OrdinalIgnoreCase));
+                    // the WMI value stops at 4 GB (32-bit): the full value from DirectX / the driver when it is larger
+                    if (!isIntegrated) vram = GpuVram.GbFor(gpuName, vram);
                     double finalVram = isIntegrated ? -1 : (vram > 0 ? Math.Round(vram, 2) : 0);
 
                     Gpus.Add(new GpuInfo
@@ -442,6 +444,8 @@ namespace SMDWin.Services
                                          gpuName.Contains("HD 6", StringComparison.OrdinalIgnoreCase));
 
                     // For discrete GPUs (NVIDIA, AMD, Intel Arc/Xe): use DXGI if WMI VRAM is 0 or implausible
+                    // the WMI value stops at 4 GB (32-bit): the full value from DirectX / the driver when it is larger
+                    if (!isIntegrated) vram = GpuVram.GbFor(gpuName, vram);
                     double finalVram = isIntegrated ? -1 : (vram > 0 ? Math.Round(vram, 2) : 0);
 
                     Gpus.Add(new GpuInfo

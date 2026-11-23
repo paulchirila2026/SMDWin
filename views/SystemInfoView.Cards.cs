@@ -248,6 +248,7 @@ namespace SMDWin.Views
                     try { rawRam = Convert.ToInt64(go["AdapterRAM"]); } catch (Exception ex) { AppLogger.Debug(ex.Message); }
                     double vramGB = rawRam / (1024.0 * 1024 * 1024);
                     bool isIntegrated = IsIntegratedGpu(go);
+                    if (!isIntegrated) vramGB = SMDWin.Services.GpuVram.GbFor(gpuName, vramGB);   // WMI stops at 4 GB
                     // Windows (WMI) gives the video memory as 32 bits, so at most 4 GB; for the card in the summary the value read through
                     // DirectX is used, which is complete
                     bool inSummary = !string.IsNullOrEmpty(summary.GpuVram) && summary.GpuVram != "—"
