@@ -7,8 +7,8 @@ namespace SMDWin.Services
     /// <summary>
     /// Version text, the same everywhere (splash, About, Settings, Features, reports, log, self-test, Debug).
     /// until the public release only the build number is shown — "Build 57". It comes from build-number.txt
-    /// (SMDWin.csproj, target SmdBuildNumber): every publish adds 1; an ordinary build from Visual Studio keeps the number and
-    /// shows "Build 57 dev". At the public release the stage comes back ("0.1 Beta · build 432").
+    /// (SMDWin.csproj, target SmdBuildNumber), part of the source and raised with it, so the same code has the same number on
+    /// every computer; a publish shows "Build 57", an ordinary build from Visual Studio "Build 57 dev". At the public release the stage comes back ("0.1 Beta · build 432").
     /// </summary>
     public static class AppVersionInfo
     {

@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- The build number comes from the source (build-number.txt, raised with each source package) and is no longer counted on each publish, so the same code has the same build number on every computer and in the GitHub release.
 - Temp & Stress › GPU test: works the whole card, closer to OCCT. The old test repeated one chain of calculations (part of the units waited for the previous result) and painted with one-colour fills, which modern cards do almost for free — on a GTX 1080 Ti it drew 191 W against 274 W in OCCT. Now each step runs 8 independent calculation chains with a read and a write in a large buffer spread over the video memory (64–512 MB), plus a full-screen draw that samples a texture, so the texture units, the pixel writers and the memory work too. The work per frame still starts small and grows only while frames are short, far from the 2 s after which Windows resets the driver.
 - Temp & Stress › CPU test: the heavy vector work (AVX2) runs all the time; the lighter integer check now takes 2 s of every 30 s instead of every other 20 s, so the power and the temperature no longer drop in waves (34 W average against 40 W in OCCT on a Xeon E5-2680 v3). 12 parallel calculation chains instead of 8 keep all the units busy.
 - Temp & Stress: the graphics card's power (W) has its own row in the sensor list, right after load, with its lowest and highest value (shown when the card reports it).

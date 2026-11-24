@@ -99,43 +99,28 @@
   <ItemGroup Condition="Exists('Assets\oui_database.csv')">
     <EmbeddedResource Include="Assets\oui_database.csv" />
   </ItemGroup>
-  <!-- BUILD NUMBER: build-number.txt holds the number of the last published build. Every publish (dotnet publish,
-       publish.bat, or Visual Studio's Publish) adds 1 and writes it back; ordinary builds (F5, Build) keep the number and are
-       marked "dev". The number and the build time go into the exe (AssemblyMetadata SmdBuild / SmdBuildKind, FileVersion
-       0.4.0.N) and are shown as "Build N" in the log, the self-test, About, the splash and the PDF — so a log or a stick copy
-       says exactly which build it came from. -->
-  <!-- the number is also kept outside the project folder (%LOCALAPPDATA%\SMDWin\dev\build-number.txt) and the
-       higher of the two is used — every new zip comes with its own build-number.txt, so the count started again from 1 each
-       time ("why build 3 again?"). The temporary WPF markup project (*_wpftmp) only reads the number: it used to add 1 too,
-       so one publish counted twice. -->
+  <!-- BUILD NUMBER: build-number.txt, part of the source, holds the build number — the number of the source package (S114 →
+       114), raised together with the code. Building does not change it, so the same code has the same number on every computer
+       (it used to be counted per computer on each publish: three PCs gave three different numbers for the same code).
+       A publish (dotnet publish, publish.bat, Visual Studio's Publish, the GitHub release) is marked "release", an ordinary
+       build (F5, Build) "dev". The number goes into the exe (AssemblyMetadata SmdBuild / SmdBuildKind, FileVersion 0.4.2.N) and
+       is shown as "Build N" in the log, the self-test, About, the splash and the PDF. -->
   <PropertyGroup>
     <SmdBuildNumberFile>$(MSBuildProjectDirectory)\build-number.txt</SmdBuildNumberFile>
-    <SmdBuildNumberUserFile>$(LOCALAPPDATA)\SMDWin\dev\build-number.txt</SmdBuildNumberUserFile>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <Target Name="SmdBuildNumber" BeforeTargets="GetAssemblyVersion">
     <ReadLinesFromFile File="$(SmdBuildNumberFile)" Condition="Exists('$(SmdBuildNumberFile)')">
       <Output TaskParameter="Lines" PropertyName="_SmdBuildRead" />
     </ReadLinesFromFile>
-    <ReadLinesFromFile File="$(SmdBuildNumberUserFile)" Condition="'$(LOCALAPPDATA)' != '' and Exists('$(SmdBuildNumberUserFile)')">
-      <Output TaskParameter="Lines" PropertyName="_SmdBuildReadUser" />
-    </ReadLinesFromFile>
     <PropertyGroup>
       <_SmdBuildRead Condition="'$(_SmdBuildRead)' == ''">0</_SmdBuildRead>
-      <_SmdBuildReadUser Condition="'$(_SmdBuildReadUser)' == ''">0</_SmdBuildReadUser>
-      <_SmdIsWpfTmp>$(MSBuildProjectName.EndsWith('_wpftmp'))</_SmdIsWpfTmp>
       <_SmdPublish Condition="'$(_IsPublishing)' == 'true' or '$(SmdPublish)' == 'true'">true</_SmdPublish>
       <_SmdPublish Condition="'$(_SmdPublish)' == ''">false</_SmdPublish>
-      <SmdBuild>$([System.Math]::Max($([System.Int32]::Parse($(_SmdBuildRead.Trim()))), $([System.Int32]::Parse($(_SmdBuildReadUser.Trim())))))</SmdBuild>
-      <SmdBuild Condition="'$(_SmdPublish)' == 'true'">$([MSBuild]::Add($(SmdBuild), 1))</SmdBuild>
-      <!-- the GitHub build passes its own number (SmdBuildOverride): a release built there is numbered from 100 up -->
-      <SmdBuild Condition="'$(SmdBuildOverride)' != ''">$(SmdBuildOverride)</SmdBuild>
+      <SmdBuild>$([System.Int32]::Parse($(_SmdBuildRead.Trim())))</SmdBuild>
       <FileVersion>$(Version).$(SmdBuild)</FileVersion>
       <InformationalVersion>$(Version) build $(SmdBuild)</InformationalVersion>
     </PropertyGroup>
-    <WriteLinesToFile Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True'" File="$(SmdBuildNumberFile)" Lines="$(SmdBuild)" Overwrite="true" />
-    <MakeDir Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True' and '$(LOCALAPPDATA)' != ''" Directories="$(LOCALAPPDATA)\SMDWin\dev" ContinueOnError="true" />
-    <WriteLinesToFile Condition="'$(_SmdPublish)' == 'true' and '$(_SmdIsWpfTmp)' != 'True' and '$(LOCALAPPDATA)' != ''" File="$(SmdBuildNumberUserFile)" Lines="$(SmdBuild)" Overwrite="true" ContinueOnError="true" />
     <ItemGroup>
       <AssemblyMetadata Include="SmdBuild" Value="$(SmdBuild)" />
       <AssemblyMetadata Include="SmdBuildKind" Value="$([MSBuild]::ValueOrDefault('$(_SmdPublish)', 'false').Replace('true','release').Replace('false','dev'))" />
