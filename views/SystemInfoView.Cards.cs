@@ -352,7 +352,7 @@ namespace SMDWin.Views
                     (L("Capacity","Capacitate","Kapazität","Capacité"), disk.Size),
                     (L("Type","Tip","Typ","Type"),            disk.TypeText),   // "M.2 SATA SSD" — also on the PDF sheet
                     (L("Status","Status","Status","État"),       disk.Status),
-                    (L("Health","Sănătate","Zustand","État"),     $"{disk.HealthPercent}%"),
+                    (L("Health","Sănătate","Zustand","État"),     DriveVerdict.Of(disk).PercentText),
                 };
                 if (disk.UsbLinkText.Length > 0)
                     diskRows.Add((L("Connection","Conexiune","Verbindung","Connexion"), disk.UsbLinkText));

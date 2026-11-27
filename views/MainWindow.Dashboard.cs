@@ -1252,12 +1252,9 @@ namespace SMDWin.Views
                         var diskMatch = _allDisks.FirstOrDefault(d =>
                             d.Partitions.Any(p => p.Letter?.TrimEnd('\\')
                                 .Equals(drivePath, StringComparison.OrdinalIgnoreCase) == true));
-                        if (diskMatch != null && diskMatch.HealthPercent > 0)
-                        {
-                            healthStr = diskMatch.HealthPercent >= 80 ? "Good"
-                                      : diskMatch.HealthPercent >= 50 ? "Fair"
-                                      : "Poor";
-                        }
+                        var dvMatch = SMDWin.Services.DriveVerdict.Of(diskMatch);
+                        if (diskMatch != null && dvMatch.HasData)
+                            healthStr = dvMatch.Word;   // the same verdict as the Storage page
                         else if (diskMatch?.Status is { Length: > 0 } st && st != "Unknown")
                             healthStr = st;
                         entries.Add((drivePath, label, mType, model, totalGB, freeGB, usedPct, healthStr));
@@ -1455,12 +1452,14 @@ namespace SMDWin.Views
                     {
                         // the health of the drive named on the card (the system drive). It used to be the weakest of all drives, so the
                         // card of a Samsung SSD showed the 82 % of the second drive (an HDD). The other drives are listed in the tooltip.
-                        var withHealth = _allDisks.Where(d => d.HealthPercent > 0).ToList();
+                        // the one verdict of each disk (DriveVerdict) — the same figure as on the Storage page
+                        var withHealth = _allDisks.Where(d => SMDWin.Services.DriveVerdict.Of(d).HasData).ToList();
                         var mainDisk = withHealth.FirstOrDefault(d => string.Equals(d.Model?.Trim(), mainGrp[0].model?.Trim(), StringComparison.OrdinalIgnoreCase))
                                        ?? withHealth.OrderBy(d => d.DiskIndex).FirstOrDefault();
-                        var healths = mainDisk != null ? new List<int> { mainDisk.HealthPercent } : new List<int>();
+                        var mainV = SMDWin.Services.DriveVerdict.Of(mainDisk);
+                        var healths = mainDisk != null ? new List<int> { mainV.Percent } : new List<int>();
                         rowHealth.ToolTip = withHealth.Count > 1
-                            ? string.Join("\n", withHealth.Select(d => $"{d.Model?.Trim()}: {d.HealthPercent}%"))
+                            ? string.Join("\n", withHealth.Select(d => { var v = SMDWin.Services.DriveVerdict.Of(d); return $"{d.Model?.Trim()}: {v.PercentText} · {PT(v.Word)}"; }))
                             : null;
                         if (healths.Count > 0)
                         {
@@ -1468,17 +1467,17 @@ namespace SMDWin.Views
                             // the cell is already labelled "Health": only the figure, in the theme's status colour
                             rowHealth.Text = $"{worst}%";
                             // the mark (bound to Tag) carries the state colour; the word stays neutral when all is well
-                            if (worst >= 80)
+                            if (mainV.Level == SMDWin.Services.DriveVerdict.State.Good)
                             {
                                 rowHealth.SetResourceReference(FrameworkElement.TagProperty, "StatusOkBrush");
                                 rowHealth.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "TextPrimaryBrush");
                             }
-                            else { rowHealth.Foreground = worst >= 50 ? warnBr : critBr; rowHealth.Tag = rowHealth.Foreground; }
+                            else { rowHealth.Foreground = mainV.Level == SMDWin.Services.DriveVerdict.State.Watch ? warnBr : critBr; rowHealth.Tag = rowHealth.Foreground; }
                         }
                         else
                         {
                             string h = mainGrp[0].health ?? "—";
-                            rowHealth.Text = h;
+                            rowHealth.Text = h == "—" ? h : PT(h);
                             rowHealth.Foreground = h is "Good" or "OK" or "Healthy" ? (Brush)Res("StatusGoodBrush", System.Windows.Media.Brushes.Green)
                                                  : h == "—" ? (Brush)Res("TextSecondaryBrush", System.Windows.Media.Brushes.Gray) : warnBr;
                         }

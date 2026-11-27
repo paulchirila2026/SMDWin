@@ -613,9 +613,10 @@ namespace SMDWin.Views
                     pills.Children.Add(SmallPill(SI("NoHealth", "no health data"), "TextSecondaryBrush", null));
                 else
                 {
-                    int hp = d.HealthPercent;
+                    var dv = DriveVerdict.Of(d);
+                    int hp = dv.Percent;
                     minHealth = Math.Min(minHealth, hp);
-                    string hb = hp >= 90 ? "StatusGoodBrush" : hp >= 60 ? "StatusCheckBrush" : "StatusProblemBrush";
+                    string hb = dv.Level switch { DriveVerdict.State.Good => "StatusGoodBrush", DriveVerdict.State.Watch => "StatusCheckBrush", _ => "StatusProblemBrush" };
                     pills.Children.Add(SmallPill(string.Format(SI("CellHealth", "Health {0}%"), hp), hb, "Shield"));
                 }
                 var tAttr = d.SmartAttributes.FirstOrDefault(a => a.Id == 0xC2 || a.Id == 0xBE);

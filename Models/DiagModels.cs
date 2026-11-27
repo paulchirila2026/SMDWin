@@ -90,7 +90,14 @@ namespace SMDWin.Models
         public string MediaType { get; set; } = "";
         public string Status { get; set; } = "";
         public int HealthPercent { get; set; }
-        public string HealthColor => HealthPercent >= 80 ? "#22C55E" : HealthPercent >= 50 ? "#F59E0B" : "#EF4444";
+        /// <summary>The colour of the disk's one verdict (SMDWin.Services.DriveVerdict): green / amber / red, grey without data.</summary>
+        public string HealthColor => SMDWin.Services.DriveVerdict.Of(this).Level switch
+        {
+            SMDWin.Services.DriveVerdict.State.Good => "#22C55E", SMDWin.Services.DriveVerdict.State.Watch => "#F59E0B",
+            SMDWin.Services.DriveVerdict.State.Failing => "#EF4444", _ => "#94A3B8",
+        };
+        /// <summary>The figure of the one verdict ("93%" or "—"), the same on every screen.</summary>
+        public string HealthDisplay => SMDWin.Services.DriveVerdict.Of(this).PercentText;
         public List<PartitionEntry> Partitions { get; set; } = new();
         public List<SmartAttributeEntry> SmartAttributes { get; set; } = new();
         public List<NvmeHealthRow> NvmeHealthRows { get; set; } = new();
@@ -280,7 +287,7 @@ namespace SMDWin.Models
         public bool IsRuntimeBadBlock => Id == 0xB7 && (Name ?? "").IndexOf("bad block", StringComparison.OrdinalIgnoreCase) >= 0;
 
         /// <summary>The attribute name (from the database / smartctl) says life left or wear.</summary>
-        private bool NameSaysLife => (Name ?? "").IndexOf("life", StringComparison.OrdinalIgnoreCase) >= 0
+        public bool NameSaysLife => (Name ?? "").IndexOf("life", StringComparison.OrdinalIgnoreCase) >= 0
             || (Name ?? "").IndexOf("wearout", StringComparison.OrdinalIgnoreCase) >= 0
             || (Name ?? "").IndexOf("remaining", StringComparison.OrdinalIgnoreCase) >= 0
             || (Name ?? "").IndexOf("percent", StringComparison.OrdinalIgnoreCase) >= 0;

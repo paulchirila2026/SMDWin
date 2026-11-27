@@ -203,19 +203,21 @@ namespace SMDWin.Views
                 // Disk health badge: worst disk < 80% health
                 if (!_badgeDiskActive)
                 {
-                    var worstDisk = _allDisks
-                        .Where(d => d.HealthPercent > 0 && d.HealthPercent < 80)
-                        .OrderBy(d => d.HealthPercent)
+                    // the same verdict as the Storage page (DriveVerdict): the worst disk that needs attention or is failing
+                    var worst = _allDisks.Select(d => (d, v: SMDWin.Services.DriveVerdict.Of(d)))
+                        .Where(x => x.v.Level is SMDWin.Services.DriveVerdict.State.Watch or SMDWin.Services.DriveVerdict.State.Failing)
+                        .OrderByDescending(x => x.v.Level).ThenBy(x => x.v.Percent)
                         .FirstOrDefault();
-                    if (worstDisk != null)
+                    if (worst.d != null)
                     {
+                        var worstDisk = worst.d;
                         _badgeDiskActive = true;
-                        string smartReason = SMDWin.Services.HardwareService.GetDiskHealthReason(worstDisk);
-                        string diskReason = $"{worstDisk.Model}: {worstDisk.HealthPercent}% health"
-                            + (string.IsNullOrEmpty(smartReason) ? "" : $" — {smartReason}");
+                        string smartReason = worst.v.Problems.Count > 0 ? string.Join(", ", worst.v.Problems.Take(3)) : SMDWin.Services.HardwareService.GetDiskHealthReason(worstDisk);
+                        string diskReason = $"{worstDisk.Model}: {worst.v.PercentText} — {PT(worst.v.Word)}"
+                            + (string.IsNullOrEmpty(smartReason) ? "" : $" ({smartReason})");
                         UpdateSidebarBadge("Disk", 1, diskReason);
                         SMDWin.Services.NotificationCenter.Add(SMDWin.Services.NotifCategory.Disk,
-                            worstDisk.HealthPercent < 50 ? SMDWin.Services.NotifSeverity.Critical : SMDWin.Services.NotifSeverity.Warning,
+                            worst.v.Level == SMDWin.Services.DriveVerdict.State.Failing ? SMDWin.Services.NotifSeverity.Critical : SMDWin.Services.NotifSeverity.Warning,
                             diskReason);
                     }
                 }

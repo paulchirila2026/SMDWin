@@ -57,16 +57,9 @@ namespace SMDWin.Views
             f.SmartCount = d.SmartAttributes.Count + d.NvmeHealthRows.Count;
             f.HasSmart = f.SmartCount > 0;
             f.IsHdd = d.RotationRpm > 0 || (d.Kind ?? "").Contains("HDD", StringComparison.OrdinalIgnoreCase);
-            f.WarnNames = d.SmartAttributes.Where(a => a.TrafficLightColor != "#22C55E").Select(a => a.Name)
-                .Concat(d.NvmeHealthRows.Where(r => r.TrafficLightColor != "#22C55E").Select(r => r.Name)).ToList();
-
-            // remaining life: the normalized value (100 → 0) of the first wear attribute found; on NVMe 100 − "Percentage Used"
-            if (!f.IsHdd)
-            {
-                var wear = A(0xE7) ?? A(0xE9) ?? A(0xB1) ?? A(0xAD);
-                if (wear != null && wear.CurrentValue is > 0 and <= 100) f.LifeLeft = wear.CurrentValue;
-                else if (ParseLong(N("Percentage Used")?.RawDisplay) is long used && used is >= 0 and <= 100) f.LifeLeft = (int)(100 - used);
-            }
+            // the problems and the life left come from the one verdict of the disk (DriveVerdict), as everywhere else
+            f.WarnNames = DriveVerdict.Of(d).Problems.ToList();
+            f.LifeLeft = DriveVerdict.LifeLeftOf(d);
 
             if (A(0xC2, 0xBE) is { } t) f.TempC = (int)(t.RawValue & 0xFF);
             else if (N("Composite Temperature")?.RawDisplay is string nt)
@@ -177,10 +170,9 @@ namespace SMDWin.Views
         // 1. sanatatea: cadranul + viata ramasa + verdictul in cuvinte
         private FrameworkElement HealthCell(DiskHealthEntry d, DriveFacts f)
         {
-            int hp = d.HealthPercent;
-            // the dial shows the life left when the drive reports its wear (one figure, not "100 % health" next to "92 % life");
-            // otherwise the health worked out from the SMART values
-            int dialValue = f.LifeLeft ?? hp;
+            // the one verdict of the disk (DriveVerdict): the lower of the SMART score and the life left an SSD reports
+            var dv = DriveVerdict.Of(d);
+            int dialValue = dv.Percent;
             var dock = new DockPanel();
             var dialGrid = new Grid { Style = TryFindResource("CompDialGrid") as Style };
             dialGrid.Children.Add(new PercentGauge { ShowValue = false, Segments = 20, WarnAt = 101, CritAt = 101, HasValue = dialValue > 0, Value = dialValue });
@@ -189,16 +181,17 @@ namespace SMDWin.Views
             dialText.Children.Add(new TextBlock { Style = TryFindResource("CompDialValue") as Style, Text = dialValue > 0 ? dialValue.ToString(CultureInfo.InvariantCulture) : "—" });
             dialText.Children.Add(new TextBlock { Style = TryFindResource("CompDialUnit") as Style });
             dialGrid.Children.Add(dialText);
-            dialGrid.Children.Add(new TextBlock { Style = TryFindResource("CompDialSub") as Style, Text = f.LifeLeft.HasValue ? DS("LifeWord", "life left") : DS("HealthWord", "health") });
+            dialGrid.Children.Add(new TextBlock { Style = TryFindResource("CompDialSub") as Style, Text = dv.IsLifeLeft ? DS("LifeWord", "life left") : DS("HealthWord", "health") });
             var dial = new Viewbox { Width = 98, Height = 88, Child = dialGrid, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VAlign.Center };
             DockPanel.SetDock(dial, Dock.Left);
             dock.Children.Add(dial);
 
             var right = new StackPanel { VerticalAlignment = VAlign.Center };
-            string statusKey = hp >= 90 ? "StatusGoodBrush" : hp >= 60 ? "StatusCheckBrush" : "StatusProblemBrush";
-            // the life left is in the dial; next to it, the state in one word
+            string statusKey = dv.Level switch { DriveVerdict.State.Good => "StatusGoodBrush", DriveVerdict.State.Watch => "StatusCheckBrush", _ => "StatusProblemBrush" };
+            // the figure is in the dial; next to it, the state in one word
             right.Children.Add(BandKey(DS("StatusWord", "Status")));
-            right.Children.Add(BandBig(hp >= 90 ? DS("Healthy", "Healthy") : hp >= 60 ? DS("Watch", "Needs attention") : DS("Failing", "Failing"), statusKey));
+            right.Children.Add(BandBig(PT(dv.Word), statusKey));
+            f.WarnNames = dv.Problems.ToList();
             string verdict = f.WarnNames.Count == 0
                 ? string.Format(DS("AllWithinLimits", "All {0} SMART values within limits"), f.SmartCount)
                 : string.Format(DS("ValuesNeedAttention", "{0} of {1} values need attention"), f.WarnNames.Count, f.SmartCount);

@@ -318,8 +318,9 @@ namespace SMDWin.Views
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
                 string pictureKind = DriveForm.PictureKind(d.Kind, d.Model, _heroLaptop, d.FormFactor);
-                bool noHealth = d.SmartAttributes.Count == 0 && d.NvmeHealthRows.Count == 0;
-                int hp = noHealth ? 0 : d.HealthPercent;
+                var dv = DriveVerdict.Of(d);   // the same figure and state as on the Storage page
+                bool noHealth = !dv.HasData;
+                int hp = dv.Percent;
                 row.Children.Add(new WpfViewbox
                 {
                     Width = DiskPicW(), Height = DiskPicW() * 46 / 66,
@@ -328,7 +329,7 @@ namespace SMDWin.Views
                         $"Sănătatea discului: {hp}%. Ledul mic din desen o arată: verde = sănătos, galben = de urmărit, roșu = se defectează.",
                         $"Zustand des Laufwerks: {hp}%. Die kleine LED zeigt ihn: grün = gesund, gelb = beobachten, rot = Ausfall.",
                         $"État du disque : {hp}%. La petite LED l'indique : verte = sain, orange = à surveiller, rouge = défaillant."),
-                    Child = HardwareIllustrations.Drive(pictureKind, DriveHealth.From(hp, !noHealth)),
+                    Child = HardwareIllustrations.Drive(pictureKind, dv.DrawingState),
                 });
 
                 var info = new StackPanel { VerticalAlignment = WpfVAlign.Center };

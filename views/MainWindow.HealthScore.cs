@@ -106,8 +106,9 @@ namespace SMDWin.Views
                     else if (hasSsd && hasHdd)    diskScore -= 10;
 
                     // SMART health
-                    int worstHealth = _allDisks.Where(d => d.HealthPercent > 0).Select(d => d.HealthPercent)
-                                               .DefaultIfEmpty(100).Min();
+                    // the same figure as the Storage page (DriveVerdict); disks without SMART data are left out
+                    int worstHealth = _allDisks.Select(d => SMDWin.Services.DriveVerdict.Of(d)).Where(v => v.HasData && v.Percent > 0)
+                                               .Select(v => v.Percent).DefaultIfEmpty(100).Min();
                     if      (worstHealth < 50) diskScore = Math.Max(0, diskScore - 30);
                     else if (worstHealth < 70) diskScore = Math.Max(0, diskScore - 15);
                     else if (worstHealth < 85) diskScore = Math.Max(0, diskScore - 5);

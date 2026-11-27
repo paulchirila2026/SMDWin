@@ -304,9 +304,9 @@ namespace SMDWin.Views
 
             // 1. the icon
             // without SMART data (USB sticks, some adapters) the health is unknown — do not show an invented 100%
-            bool noHealth = d.SmartAttributes.Count == 0 && d.NvmeHealthRows.Count == 0;
-            int hp = noHealth ? 0 : d.HealthPercent;
-            var pic = new Viewbox { Width = 176, Height = 122, Child = HardwareIllustrations.Drive(DriveForm.PictureKind(d.Kind, d.Model, formFactor: d.FormFactor), DriveHealth.From(hp, !noHealth)), VerticalAlignment = VAlign.Center, HorizontalAlignment = HAlign.Center };
+            // the one verdict of the disk (Services/DriveVerdict.cs): the same figure and state on every screen
+            var dv = DriveVerdict.Of(d);
+            var pic = new Viewbox { Width = 176, Height = 122, Child = HardwareIllustrations.Drive(DriveForm.PictureKind(d.Kind, d.Model, formFactor: d.FormFactor), dv.DrawingState), VerticalAlignment = VAlign.Center, HorizontalAlignment = HAlign.Center };
             body.Children.Add(pic);
             // an HDD drawing moves: the platter spins while it is on screen, the head arm jumps when the disk works (HddMotion)
             var hddMotion = (pic.Child as Canvas)?.Tag as HddMotion;
@@ -325,7 +325,7 @@ namespace SMDWin.Views
             info.Children.Add(nameT);
             string style = d.Partitions.Count > 0 ? "" : " · " + PT("no volumes");
             info.Children.Add(Txt2($"{d.Size}{style}", "TextSecondaryBrush", Ui.FontM));
-            var (stTxt, stKey) = hp >= 90 ? (DS("Healthy", "Healthy"), "StatusOkBrush") : hp >= 60 ? (DS("Watch", "Needs attention"), "StatusWarnBrush") : hp > 0 ? (DS("Failing", "Failing"), "StatusCritBrush") : (PT("No health data"), "TextSecondaryBrush");
+            var (stTxt, stKey) = (PT(dv.Word), dv.BrushKey);
             var stRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
             // the Windows-style mark (tick / ! / i in a filled circle); the word stays in the text colour unless it is a warning
             var dot = new StatusMark { Width = 14, Height = 14, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VAlign.Center };
@@ -557,28 +557,30 @@ namespace SMDWin.Views
             try
             {
                 HardwareService.MarkNvmeDataUnits(disk);
-                int hp = disk.HealthPercent;
+                var dv = DriveVerdict.Of(disk);
+                int hp = dv.HasData ? dv.Percent : 0;
                 if (FindName("SmartVerdictGauge") is PercentGauge g) { g.HasValue = hp > 0; g.Value = hp; }
                 if (FindName("TxtSmartVerdictPct") is TextBlock p) p.Text = hp > 0 ? hp.ToString() : "—";
+                if (FindName("TxtSmartVerdictSub") is TextBlock psub) psub.Text = dv.IsLifeLeft ? DS("LifeWord", "life left") : DS("HealthWord", "health");
                 if (FindName("TxtSmartVerdictDisk") is TextBlock dn) dn.Text = $"{(disk.Model ?? "").Trim()} · {KindLabel(disk)}";
 
-                // warnings: the rows that are not green (ATA or NVMe)
-                var warnNames = disk.SmartAttributes.Where(a => a.TrafficLightColor != "#22C55E").Select(a => a.Name)
-                    .Concat(disk.NvmeHealthRows.Where(r => r.TrafficLightColor != "#22C55E").Select(r => r.Name)).ToList();
+                // the values that set the state (the temperature and the drive's heat history are not among them)
+                var warnNames = dv.Problems.ToList();
                 int count = disk.SmartAttributes.Count + disk.NvmeHealthRows.Count;
                 long unsafeOff = disk.SmartAttributes.FirstOrDefault(a => a.Id is 0xC0 or 0xAE)?.RawValue ?? -1;
                 string status, key, text;
                 if (count == 0) { status = "No data"; key = "TextSecondaryBrush"; text = disk.Bus == "NVMe" || (disk.Kind ?? "").Contains("NVMe", StringComparison.OrdinalIgnoreCase)
                     ? PT("Windows reports this drive as Healthy, but its storage driver does not pass on the detailed counters (temperature, wear, power-on hours). This is common when the laptop uses the Intel RST / VMD driver; the drive maker's own tool (for example SanDisk Dashboard) can read them.")
                     : PT("The drive does not report SMART data here (common for USB sticks and some adapters)."); }
-                else if (warnNames.Count == 0 && hp >= 90)
+                else if (dv.Level == DriveVerdict.State.Good)
                 {
                     status = "Healthy"; key = "StatusOkBrush";
-                    text = PT("All {0} values are within limits.", count) + (unsafeOff > 0 ? " " + PT("Worth knowing: {0:N0} unsafe shutdowns (power lost while running).", unsafeOff) : "");
+                    text = PT("All {0} values are within limits.", count) + (unsafeOff > 0 ? " " + PT("Worth knowing: {0:N0} unsafe shutdowns (power lost while running).", unsafeOff) : "")
+                         + (dv.Notes.Count > 0 ? " " + PT("Worth knowing: {0}.", string.Join(", ", dv.Notes.Take(3))) : "");
                 }
                 else
                 {
-                    status = hp < 60 ? "Failing" : "Needs attention"; key = hp < 60 ? "StatusCritBrush" : "StatusWarnBrush";
+                    status = dv.Word; key = dv.BrushKey;
                     text = warnNames.Count > 0 ? PT("Values that need attention: {0}. Back up important data.", string.Join(", ", warnNames.Take(3)) + (warnNames.Count > 3 ? "…" : ""))
                                                : PT("The drive reports reduced health. Back up important data.");
                 }

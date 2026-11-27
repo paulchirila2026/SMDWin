@@ -159,7 +159,7 @@ if (Inc("smart"))
                                 sb.AppendLine($"  Serial:    {d.SerialNumber}");
                                 sb.AppendLine($"  Size:      {d.Size}");
                                 sb.AppendLine($"  Type:      {d.MediaType}");
-                                sb.AppendLine($"  Health:    {d.HealthPercent}% ({d.Status})");
+                                { var dv = SMDWin.Services.DriveVerdict.Of(d); sb.AppendLine($"  Health:    {dv.PercentText} — {dv.Word}{(dv.IsLifeLeft ? " (life left)" : "")} · Windows: {d.Status}"); }
                                 if (d.Partitions?.Count > 0)
                                     sb.AppendLine($"  Partitions: {string.Join(", ", d.Partitions.Select(p => $"{p.Letter} {p.TotalGB:F0} GB"))}");
                                 if (d.SmartAttributes?.Count > 0)

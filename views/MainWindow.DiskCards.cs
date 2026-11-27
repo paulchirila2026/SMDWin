@@ -208,7 +208,7 @@ namespace SMDWin.Views
             // The compact variant: a large percentage + a small label (a ring would make the header too tall).
             healthSp.Children.Add(new TextBlock
             {
-                Text = $"{disk.HealthPercent}%",
+                Text = disk.HealthDisplay,
                 FontSize = Ui.FontXXL, FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(healthClr),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
@@ -314,7 +314,7 @@ namespace SMDWin.Views
                     {
                         string eolColor, eolText, eolIcon;
                         bool skipRow = false;
-                        if (yearsLeft >= 0 && yearsLeft <= 1 && disk.HealthPercent >= 90)
+                        if (yearsLeft >= 0 && yearsLeft <= 1 && SMDWin.Services.DriveVerdict.Of(disk).Level == SMDWin.Services.DriveVerdict.State.Good)
                         {
                             skipRow = true; eolColor = "#94A3B8"; eolIcon = ""; eolText = "";
                         }

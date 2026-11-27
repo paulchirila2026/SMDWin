@@ -6,6 +6,8 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Disk health: one verdict for every screen and report (Storage, SMART, Dashboard, System Info, Surface Scan, Health check, notifications, exports). The figure is the lower of the SMART score and the life left an SSD reports; the state no longer depends on the temperature or on time once spent hot, so an NVMe no longer shows "93 %" on one page, "100 % — Needs attention" on another and "minimum 100 %" in Health check. Disks without SMART data are shown as "no health data" instead of 0 %.
+- Health check: Windows Update paused from SMD Win is shown as information, not as pending updates; the most frequent critical event is named; Secure Boot / TPM text shortened (the explanation is in the tooltip); "Clock" renamed "Time sync"; new check "Hardware errors (WHEA)" for the last 30 days; the verdict explains why the dial counts fewer checks than the groups.
 - Storage: every disk card starts with a title band ("Drive 1 of 2", the model and its drive letters), so the cards of two disks cannot be mixed up.
 - Storage: the hard-disk drawing moves — the platter spins fast while it is on screen and the head arm jumps between tracks when the disk reads or writes (never over the hub). Nothing moves with animations turned off.
 - Event Viewer: a "Last year" calendar (GitHub style) on the chart card — red = blue screen, orange = serious errors, light orange = small problems; months and days are labelled, a click on a day loads it in the table; under it: the first serious error of the year, the blue screens and the last 30 days.

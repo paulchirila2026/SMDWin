@@ -190,14 +190,17 @@ namespace SMDWin.Views
         {
             foreach (var d in disks)
             {
-                if (d.HealthPercent < 80)
+                // the same verdict as the Storage page: a notification when the disk "needs attention" or is failing
+                var dv = SMDWin.Services.DriveVerdict.Of(d);
+                if (dv.Level is SMDWin.Services.DriveVerdict.State.Watch or SMDWin.Services.DriveVerdict.State.Failing)
                 {
+                    bool failing = dv.Level == SMDWin.Services.DriveVerdict.State.Failing;
                     string msg = string.Format(_LS("Notif", "SmartHealthMsg"),
-                        d.Model.Split(' ').FirstOrDefault() ?? "Drive", d.HealthPercent);
-                    var sev = d.HealthPercent < 50 ? Forms.ToolTipIcon.Error : Forms.ToolTipIcon.Warning;
+                        d.Model.Split(' ').FirstOrDefault() ?? "Drive", dv.Percent);
+                    var sev = failing ? Forms.ToolTipIcon.Error : Forms.ToolTipIcon.Warning;
                     SendWindowsNotif(_LS("Notif", "SmartHealthTitle"), msg, ref _lastSmartNotif, SlowNotifCooldownSec, sev);
                     SMDWin.Services.NotificationCenter.Add(SMDWin.Services.NotifCategory.Disk,
-                        d.HealthPercent < 50 ? SMDWin.Services.NotifSeverity.Critical : SMDWin.Services.NotifSeverity.Warning, msg);
+                        failing ? SMDWin.Services.NotifSeverity.Critical : SMDWin.Services.NotifSeverity.Warning, msg);
                     return;
                 }
                 if (d.Status?.Contains("Realloc", StringComparison.OrdinalIgnoreCase) == true

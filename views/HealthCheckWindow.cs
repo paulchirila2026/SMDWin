@@ -42,7 +42,7 @@ namespace SMDWin.Views
             new("STORAGE", "M4 5a8 3 0 1 0 16 0a8 3 0 1 0 -16 0 M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
                 new[] { Phase.StorageHealth, Phase.FreeSpace, Phase.DiskTemperature, Phase.RestorePoints }),
             new("HARDWARE", "M9 9h6v6H9z M5 5h14v14H5z M9 2v3 M15 2v3 M9 19v3 M15 19v3 M2 9h3 M2 15h3 M19 9h3 M19 15h3",
-                new[] { Phase.MissingDrivers, Phase.Cpu, Phase.Throttling, Phase.Gpu, Phase.Ram, Phase.RamDiagnosticHistory, Phase.BatteryHealth }),
+                new[] { Phase.MissingDrivers, Phase.HardwareErrors, Phase.Cpu, Phase.Throttling, Phase.Gpu, Phase.Ram, Phase.RamDiagnosticHistory, Phase.BatteryHealth }),
             new("SYSTEM", "M6 3h9l4 4v14H6z M9 12h7 M9 16h5",
                 new[] { Phase.CriticalServices, Phase.Uptime, Phase.EventLogErrors, Phase.BsodHistory, Phase.NetworkDriverErrors, Phase.ClockSync }),
         };
@@ -57,7 +57,8 @@ namespace SMDWin.Views
             [Phase.Gpu] = "Graphics under load", [Phase.Ram] = "Memory test", [Phase.RamDiagnosticHistory] = "Windows Memory Diagnostic",
             [Phase.BatteryHealth] = "Battery",
             [Phase.CriticalServices] = "Core services", [Phase.Uptime] = "Uptime", [Phase.EventLogErrors] = "Event log",
-            [Phase.BsodHistory] = "Blue screens", [Phase.NetworkDriverErrors] = "Network adapter", [Phase.ClockSync] = "Clock",
+            [Phase.BsodHistory] = "Blue screens", [Phase.NetworkDriverErrors] = "Network adapter", [Phase.ClockSync] = "Time sync",
+            [Phase.HardwareErrors] = "Hardware errors (WHEA)",
         };
 
         /// <summary>What the problem means and what to do — the row in "Needs attention".</summary>
@@ -85,6 +86,7 @@ namespace SMDWin.Views
             [Phase.BsodHistory] = "The PC crashed with a blue screen recently.",
             [Phase.NetworkDriverErrors] = "The network adapter's driver reported errors.",
             [Phase.ClockSync] = "The clock is not synced — websites and updates can fail.",
+            [Phase.HardwareErrors] = "The processor, the memory or a PCIe device reported hardware errors. Check the temperatures, remove any overclock and update the BIOS.",
         };
 
         private sealed class Row
@@ -536,7 +538,7 @@ namespace SMDWin.Views
             Phase.BatteryHealth => () => _ = _owner?.NavigateToPublic("Battery"),
             Phase.MissingDrivers => () => _ = _owner?.NavigateToPublic("Drivers"),
             Phase.CriticalServices => () => _ = _owner?.NavigateToPublic("Services"),
-            Phase.EventLogErrors or Phase.NetworkDriverErrors => () => _ = _owner?.NavigateToPublic("Events"),
+            Phase.EventLogErrors or Phase.NetworkDriverErrors or Phase.HardwareErrors => () => _ = _owner?.NavigateToPublic("Events"),
             Phase.BsodHistory => () => _ = _owner?.NavigateToPublic("Crash"),
             Phase.Cpu or Phase.Gpu or Phase.Throttling => () => _ = _owner?.NavigateToPublic("Stress"),
             Phase.Ram or Phase.RamDiagnosticHistory => () => _ = _owner?.NavigateToPublic("Ram"),
@@ -549,7 +551,7 @@ namespace SMDWin.Views
             Phase.WindowsUpdate => P("Open updates"), Phase.RestorePoints => P("Turn on"),
             Phase.StorageHealth or Phase.FreeSpace or Phase.DiskTemperature => P("Open storage"),
             Phase.BatteryHealth => P("Open power"), Phase.MissingDrivers => P("Open drivers"), Phase.CriticalServices => P("Open services"),
-            Phase.EventLogErrors or Phase.NetworkDriverErrors => P("Open events"), Phase.BsodHistory => P("Open crash"),
+            Phase.EventLogErrors or Phase.NetworkDriverErrors or Phase.HardwareErrors => P("Open events"), Phase.BsodHistory => P("Open crash"),
             Phase.Cpu or Phase.Gpu or Phase.Throttling => P("Open Temp & Stress"),
             Phase.Ram or Phase.RamDiagnosticHistory => P("Open RAM"),
             _ => P("Open"),
@@ -667,7 +669,7 @@ namespace SMDWin.Views
             row.NotTested = r.Details.ContainsKey("NotTested") && r.Phase != Phase.Throttling;
             row.Summary = r.Summary;
             row.Result.Text = r.Summary;
-            row.Result.ToolTip = r.Summary;
+            row.Result.ToolTip = r.Details.TryGetValue("Tip", out var tip) ? r.Summary + "\n" + tip : r.Summary;
             row.Info = !row.NotTested && r.Severity == Sev.Ok && r.Details.ContainsKey("Info");
             string brush = row.NotTested ? "TextSecondaryBrush" : row.Info ? "AccentBrush" : BrushOf(r.Severity);
             row.Dot.SetResourceReference(StatusMark.FillProperty, brush);
@@ -793,6 +795,9 @@ namespace SMDWin.Views
                 _txtVerdictText.Text = notTested > 0 ? P("Everything checked looks good. Run the missing tests for a complete picture.")
                                                      : P("Everything checked looks good.");
             }
+            // the dial counts only what could be judged (e.g. 13 of 15); the groups list every check (19): say why they differ
+            if (!_running && total > 0 && notTested + info > 0)
+                _txtVerdictText.Text += "\n" + P("The dial counts the {0} checks that could be judged; {1} not tested and {2} for information only are left out.", total, notTested, info);
             _legend.Children.Clear();
             void Leg(int n, string label, string brush)
             {

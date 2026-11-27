@@ -12,7 +12,7 @@ namespace SMDWin.Services
         WindowsActivation, StorageHealth, FreeSpace, EventLogErrors, BsodHistory,
         BatteryHealth, MissingDrivers, Antivirus, WindowsUpdate, CriticalServices,
         Uptime, DiskTemperature, Security, Firewall, RestorePoints, ClockSync,
-        NetworkDriverErrors, Throttling, RamDiagnosticHistory }
+        NetworkDriverErrors, Throttling, RamDiagnosticHistory, HardwareErrors }
 
     public enum DiagnosticSeverity { Ok, Warning, Critical }
 
@@ -125,6 +125,7 @@ namespace SMDWin.Services
                 (DiagnosticPhase.EventLogErrors,      () => RunEventLogErrorsPhaseAsync(ct)),
                 (DiagnosticPhase.NetworkDriverErrors, () => RunNetworkDriverErrorsPhaseAsync(ct)),
                 (DiagnosticPhase.BsodHistory,         () => RunBsodHistoryPhaseAsync(ct)),
+                (DiagnosticPhase.HardwareErrors,      () => RunHardwareErrorsPhaseAsync(ct)),
                 (DiagnosticPhase.RamDiagnosticHistory,() => RunRamDiagnosticHistoryPhaseAsync(ct)),
                 (DiagnosticPhase.Cpu,                 () => Task.FromResult(CpuFromLastTest())),
                 (DiagnosticPhase.Throttling,          () => Task.FromResult(ThrottlingFromLastTest(getThrottleSnapshot))),
@@ -473,6 +474,20 @@ namespace SMDWin.Services
                     result.Severity = hasCriticalSecurityUpdate ? DiagnosticSeverity.Critical
                                      : count >= 1 ? DiagnosticSeverity.Warning
                                      : DiagnosticSeverity.Ok;
+                    // the updates were paused on purpose from SMD Win (Tools › Windows Update): information, not a problem
+                    bool blockedByUs = false;
+                    try { blockedByUs = WindowsUpdateBlocker.IsBlocked(); } catch (Exception ex) { AppLogger.Debug($"IsBlocked: {ex.Message}"); }
+                    if (blockedByUs)
+                    {
+                        result.Severity = DiagnosticSeverity.Ok;
+                        result.Success = true;
+                        result.Summary = count == 0 ? Tx("Updates are paused from SMD Win")
+                                                    : Tx("Updates are paused from SMD Win · {0} waiting", count);
+                        result.Details["Info"] = "1";
+                        result.Details["PendingCount"] = count.ToString();
+                        LastPendingUpdates = 0;
+                        return;
+                    }
                     result.Success = result.Severity == DiagnosticSeverity.Ok;
                     result.Summary = count == 0
                         ? Tx("No pending Windows updates")
@@ -601,7 +616,8 @@ namespace SMDWin.Services
                     else
                     {
                         // "Info" level: not a problem, but the user should know (the Health window counts it neither as passed nor as "to check")
-                        result.Summary = Tx("Secure Boot {0} · {1} — needed only for Windows 11 upgrades and some games", (secureBootOn ? Tx("on") : Tx("off")), tpmText);
+                        result.Summary = Tx("Secure Boot {0} · {1}", (secureBootOn ? Tx("on") : Tx("off")), tpmText);
+                        result.Details["Tip"] = Tx("Needed only for Windows 11 upgrades and some games");
                         result.Details["Info"] = "1";
                     }
                     result.Details["SecureBoot"] = secureBootOn ? "Enabled" : "Disabled";
@@ -764,17 +780,37 @@ namespace SMDWin.Services
                 }
                 else
                 {
-                    int worst = disks.Min(d => d.HealthPercent);
-                    var worstDisk = disks.First(d => d.HealthPercent == worst);
-                    result.Severity = worst < 50 ? DiagnosticSeverity.Critical      // red only for a failing disk
-                                     : worst < 90 ? DiagnosticSeverity.Warning
-                                     : DiagnosticSeverity.Ok;
-                    result.Success = result.Severity == DiagnosticSeverity.Ok;
-                    result.Summary = result.Severity == DiagnosticSeverity.Ok
-                        ? Tx("All disks healthy ({0} checked, worst {1}%)", disks.Count, worst)
-                        : Tx("{0}: {1}% health", worstDisk.Model, worst);
+                    // the one verdict of each disk (DriveVerdict), the same as on the Storage / SMART pages; disks without SMART
+                    // data (USB sticks, some adapters) are not judged — before, their "0 %" made the result red, and an NVMe at
+                    // 93 % life showed here as "minimum 100 %"
+                    var judged = disks.Select(d => (d, v: DriveVerdict.Of(d))).Where(x => x.v.HasData).ToList();
+                    int unknown = disks.Count - judged.Count;
+                    if (judged.Count == 0)
+                    {
+                        result.Severity = DiagnosticSeverity.Ok;
+                        result.Success = true;
+                        result.Summary = Tx("No disk reports health data (SMART) here");
+                    }
+                    else
+                    {
+                        var worst = judged.OrderByDescending(x => x.v.Level).ThenBy(x => x.v.Percent).First();
+                        result.Severity = worst.v.Level switch
+                        {
+                            DriveVerdict.State.Failing => DiagnosticSeverity.Critical,   // red only for a failing disk
+                            DriveVerdict.State.Watch   => DiagnosticSeverity.Warning,
+                            _                          => DiagnosticSeverity.Ok,
+                        };
+                        result.Success = result.Severity == DiagnosticSeverity.Ok;
+                        string what = worst.v.IsLifeLeft ? Tx("{0}% life left", worst.v.Percent) : Tx("{0}% health", worst.v.Percent);
+                        result.Summary = result.Severity == DiagnosticSeverity.Ok
+                            ? (judged.Count == 1 ? Tx("Disk healthy: {0} ({1})", worst.d.Model?.Trim() ?? "", what)
+                                                 : Tx("All {0} disks healthy · lowest: {1} ({2})", judged.Count, worst.d.Model?.Trim() ?? "", what))
+                            : Tx("{0}: {1} — {2}", worst.d.Model?.Trim() ?? "", what, Tx(worst.v.Word))
+                              + (worst.v.Problems.Count > 0 ? " (" + string.Join(", ", worst.v.Problems.Take(3)) + ")" : "");
+                        if (unknown > 0) result.Summary += " · " + Tx("{0} without health data", unknown);
+                        result.Details["WorstHealthPercent"] = worst.v.Percent.ToString();
+                    }
                     result.Details["DiskCount"] = disks.Count.ToString();
-                    result.Details["WorstHealthPercent"] = worst.ToString();
                 }
             }
             catch (OperationCanceledException) { throw; }
@@ -971,9 +1007,19 @@ namespace SMDWin.Services
                                  : count >= 1 ? DiagnosticSeverity.Warning
                                  : DiagnosticSeverity.Ok;
                 result.Success = result.Severity == DiagnosticSeverity.Ok;
+                // which event it is: the most frequent one, by its short title from the event database when known
+                string top = "";
+                if (count > 0)
+                {
+                    var g = events.GroupBy(e => (e.Source, e.EventId)).OrderByDescending(x => x.Count()).First();
+                    var kb = EventKnowledge.Find(g.Key.Source, g.Key.EventId);
+                    string src = g.Key.Source.Replace("Microsoft-Windows-", "", StringComparison.OrdinalIgnoreCase);
+                    top = (kb != null && kb.Title.Length > 0 ? kb.Title : $"{src} {g.Key.EventId}") + (g.Count() > 1 ? $" ×{g.Count()}" : "");
+                    result.Details["TopEvent"] = $"{src} {g.Key.EventId}";
+                }
                 result.Summary = count == 0
                     ? Tx("No critical events in the last 7 days")
-                    : Tx("{0} in the last 7 days", TxN(count, "critical event", "critical events"));
+                    : Tx("{0} in the last 7 days", TxN(count, "critical event", "critical events")) + " · " + top;
                 result.Details["CriticalEventCount"] = count.ToString();
             }
             catch (OperationCanceledException) { throw; }
@@ -984,6 +1030,53 @@ namespace SMDWin.Services
                 result.Summary = Tx("Could not read Event Log");
             }
             PhaseProgress?.Invoke(DiagnosticPhase.EventLogErrors, 1.0);
+            return result;
+        }
+
+        // ── Hardware errors (WHEA) — what the processor, the memory controller or a PCIe device reported to Windows in the
+        //    last 30 days. A fatal error (the PC stopped) is red; many corrected errors are worth a look (often a PCIe link
+        //    with power saving, a loose card, or an unstable overclock). ─────────────
+        private async Task<DiagnosticPhaseResult> RunHardwareErrorsPhaseAsync(CancellationToken ct)
+        {
+            var result = new DiagnosticPhaseResult { Phase = DiagnosticPhase.HardwareErrors };
+            await Task.Run(() =>
+            {
+                try
+                {
+                    string from = DateTime.Now.AddDays(-30).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    var q = new System.Diagnostics.Eventing.Reader.EventLogQuery("System", System.Diagnostics.Eventing.Reader.PathType.LogName,
+                        $"*[System[Provider[@Name='Microsoft-Windows-WHEA-Logger'] and TimeCreated[@SystemTime>='{from}']]]");
+                    using var reader = new System.Diagnostics.Eventing.Reader.EventLogReader(q);
+                    int fatal = 0, corrected = 0, n = 0;
+                    DateTime? last = null;
+                    System.Diagnostics.Eventing.Reader.EventRecord? rec;
+                    while (!ct.IsCancellationRequested && (rec = reader.ReadEvent()) != null && n < 5000)
+                    {
+                        using (rec)
+                        {
+                            n++;
+                            // 18 / 20 / 46 / 1 = fatal (machine check, PCIe fatal…); the rest are errors the hardware corrected
+                            if (rec.Id is 18 or 20 or 46 or 1 || rec.Level is 1 or 2) fatal++; else corrected++;
+                            if (rec.TimeCreated is DateTime t && (last == null || t > last)) last = t;
+                        }
+                    }
+                    result.Severity = fatal > 0 ? DiagnosticSeverity.Critical : corrected >= 10 ? DiagnosticSeverity.Warning : DiagnosticSeverity.Ok;
+                    result.Success = result.Severity == DiagnosticSeverity.Ok;
+                    result.Summary = fatal + corrected == 0 ? Tx("No hardware errors in the last 30 days")
+                        : fatal > 0 ? Tx("{0} fatal and {1} corrected hardware errors in 30 days (last: {2:d MMM})", fatal, corrected, last ?? DateTime.Now)
+                        : Tx("{0} corrected hardware errors in 30 days (last: {1:d MMM})", corrected, last ?? DateTime.Now);
+                    result.Details["WheaFatal"] = fatal.ToString();
+                    result.Details["WheaCorrected"] = corrected.ToString();
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Debug($"RunHardwareErrorsPhaseAsync: {ex.Message}");
+                    result.Severity = DiagnosticSeverity.Ok;
+                    result.Success = true;
+                    result.Summary = Tx("No hardware errors in the last 30 days");
+                }
+            }, ct);
+            PhaseProgress?.Invoke(DiagnosticPhase.HardwareErrors, 1.0);
             return result;
         }
 

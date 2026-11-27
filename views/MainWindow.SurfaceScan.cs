@@ -501,8 +501,7 @@ namespace SMDWin.Views
                 if (idx < 0 || idx >= _allDisks.Count) { ShowSurfaceTemp(-1); TxtSurfaceHealth.Text = "—"; return; }
                 var d = _allDisks[idx];
                 ShowSurfaceTemp(DiskTempC(d));
-                bool noHealth = d.SmartAttributes.Count == 0 && d.NvmeHealthRows.Count == 0;
-                TxtSurfaceHealth.Text = noHealth || d.HealthPercent <= 0 ? "—" : $"{d.HealthPercent}%";
+                TxtSurfaceHealth.Text = DriveVerdict.Of(d).PercentText;
             }
             catch (Exception ex) { AppLogger.Debug($"UpdateSurfaceDriveFacts: {ex.Message}"); }
         }
@@ -1062,9 +1061,7 @@ namespace SMDWin.Views
                         // The temperature and health of the scanned disk (not of the one selected now in the list — it may change during the
                         // scan); no synchronous call to the UI thread in the read loop
                         int tempC      = SmartTempC(disk);
-                        int healthPct  = disk.HealthPercent;
-
-                        string healthStr = healthPct >= 0 ? $"{healthPct}%" : "—";
+                        string healthStr = DriveVerdict.Of(disk).PercentText;
 
                         // Elapsed formatat
                         var elapsedTs = TimeSpan.FromSeconds(elapsedSec);

@@ -71,9 +71,9 @@ namespace SMDWin.Views
 
             SmartGrid.ItemsSource = SelectSmartGridSource(disk); ApplySmartColumns();
 
-            TxtSmartHealthBadge.Text = $"{disk.HealthPercent}%";
-            TxtSmartHealthBadge.Foreground = new SolidColorBrush(
-                (WpfColor)WpfColorConv.ConvertFromString(disk.HealthColor)!);
+            var dvBadge = SMDWin.Services.DriveVerdict.Of(disk);
+            TxtSmartHealthBadge.Text = dvBadge.PercentText;
+            TxtSmartHealthBadge.SetResourceReference(TextBlock.ForegroundProperty, dvBadge.BrushKey);
             TxtSmartDiskType.Text = $"S/N: {disk.SerialNumber}  •  {disk.PhysicalDevicePath}";
 
             UpdateSelfTestPanel();

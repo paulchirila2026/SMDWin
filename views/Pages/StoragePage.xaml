@@ -612,7 +612,7 @@
                               <TextBlock Style="{StaticResource CompDialValue}" x:Name="TxtSmartVerdictPct" Text=""/>
                               <TextBlock Style="{StaticResource CompDialUnit}"/>
                             </StackPanel>
-                            <TextBlock Style="{StaticResource CompDialSub}" Text="health"/>
+                            <TextBlock Style="{StaticResource CompDialSub}" x:Name="TxtSmartVerdictSub" Text="health"/>
                           </Grid>
                         </Viewbox>
                         <TextBlock x:Name="TxtSmartVerdictText" Grid.Column="1" Text="" TextWrapping="Wrap" VerticalAlignment="Center"
