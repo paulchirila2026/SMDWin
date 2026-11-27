@@ -69,7 +69,7 @@ namespace SMDWin.Views
             var disk = _allDisks[idx];
             _currentSmartDisk = disk;
 
-            SmartGrid.ItemsSource = SelectSmartGridSource(disk);
+            SmartGrid.ItemsSource = SelectSmartGridSource(disk); ApplySmartColumns();
 
             TxtSmartHealthBadge.Text = $"{disk.HealthPercent}%";
             TxtSmartHealthBadge.Foreground = new SolidColorBrush(
@@ -300,7 +300,7 @@ namespace SMDWin.Views
                 if (disk == null || !HardwareService.ApplySmartctlAttributes(disk, report)) return;
                 // The grid is updated only if the tested disk is still the one shown.
                 if (ReferenceEquals(_currentSmartDisk, disk) && SmartGrid != null)
-                    SmartGrid.ItemsSource = SelectSmartGridSource(disk);
+                    SmartGrid.ItemsSource = SelectSmartGridSource(disk); ApplySmartColumns();
             }
             catch (Exception ex) { AppLogger.Debug("RefreshSmartGridAfterSelfTestAsync: {Msg}", ex.Message); }
             await Task.CompletedTask;
@@ -516,10 +516,28 @@ namespace SMDWin.Views
             link.ToolTip = "Values with no standard meaning that are 0 (vendor counters)";
         }
 
+        /// <summary>NVMe disks report no Value/Worst/Limit figures: those three columns are hidden when no row has them.</summary>
+        private void ApplySmartColumns()
+        {
+            try
+            {
+                if (SmartGrid?.ItemsSource is not System.Collections.IEnumerable src) return;
+                bool any = false;
+                foreach (var o in src)
+                {
+                    if (o is NvmeHealthRow nv) { if (nv.CurrentValue.Length > 0) { any = true; break; } }
+                    else { any = true; break; }
+                }
+                var vis = any ? Visibility.Visible : Visibility.Collapsed;
+                for (int i = 2; i <= 4 && i < SmartGrid.Columns.Count; i++) SmartGrid.Columns[i].Visibility = vis;
+            }
+            catch (Exception ex) { AppLogger.Debug($"ApplySmartColumns: {ex.Message}"); }
+        }
+
         internal void SmartShowAll_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _smartShowAll = !_smartShowAll;
-            if (_smartGridDisk != null) SmartGrid.ItemsSource = SelectSmartGridSource(_smartGridDisk);
+            if (_smartGridDisk != null) SmartGrid.ItemsSource = SelectSmartGridSource(_smartGridDisk); ApplySmartColumns();
         }
 
         private static List<SMDWin.Models.SmartInfoRow> GetFallbackSmartAttributes(DiskHealthEntry disk)

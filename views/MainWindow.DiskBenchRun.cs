@@ -154,6 +154,7 @@ namespace SMDWin.Views
         // the first step is 200 MB/s: most drives are SSDs, and a hard disk (~100-180 MB/s) clearly shows as slow below it
         private static readonly double[] DiskGaugeStops = { 200, 600, 1000 };
         private TextBlock? _liveWriteValTb;
+        private TextBlock? _liveWriteMaxTb, _liveReadMaxTb;   // "max …" under each dial
         private TextBlock? _liveReadValTb;
         private TextBlock? _liveBenchPercentTb;
         private Border?    _liveBenchBarFillEl;
@@ -496,7 +497,7 @@ namespace SMDWin.Views
             BenchResultsPanel.Children.Clear();
 
             var writeColor = WpfColor.FromRgb(249, 115,  22); // #F97316 — Write (ChartOrangeBrush)
-            var readColor  = WpfColor.FromRgb( 34, 197,  94); // #22C55E — Read (ChartGreenBrush)
+            var readColor  = WpfColor.FromRgb( 59, 130, 246); // #3B82F6 — Read (blue; Write is orange, no green anywhere in the benchmark)
             string L(string en, string ro, string de, string fr) => SMDWin.Services.LanguageService.CurrentCode switch
                 { "ro" => ro, "de" => de, "fr" => fr, _ => en };
 
@@ -521,13 +522,18 @@ namespace SMDWin.Views
                 });
                 ((TextBlock)sp.Children[sp.Children.Count - 1]).SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 sp.Children.Add(g);
+                var mx = new TextBlock { Text = "", FontSize = Ui.FontXS, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 0) };
+                mx.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                sp.Children.Add(mx);
+                if (ReferenceEquals(g, _liveWriteGauge)) _liveWriteMaxTb = mx; else _liveReadMaxTb = mx;
                 return sp;
             }
             var dialsRow = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
-            var wp = GaugePanel(L("WRITE", "SCRIERE", "SCHREIBEN", "ÉCRITURE"), writeColor, _liveWriteGauge);
-            wp.Margin = new Thickness(0, 0, 28, 0);
-            dialsRow.Children.Add(wp);
-            dialsRow.Children.Add(GaugePanel(L("READ", "CITIRE", "LESEN", "LECTURE"), readColor, _liveReadGauge));
+            // Read first, then Write — the same order as everywhere else
+            var rp = GaugePanel(L("READ", "CITIRE", "LESEN", "LECTURE"), readColor, _liveReadGauge);
+            rp.Margin = new Thickness(0, 0, 28, 0);
+            dialsRow.Children.Add(rp);
+            dialsRow.Children.Add(GaugePanel(L("WRITE", "SCRIERE", "SCHREIBEN", "ÉCRITURE"), writeColor, _liveWriteGauge));
 
             var progressBlock = new StackPanel { HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) };
             var pctTb = new TextBlock { Text = "0%", FontSize = Ui.FontL, FontWeight = FontWeights.Bold, HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
@@ -556,9 +562,9 @@ namespace SMDWin.Views
             };
             // no box behind the chart: like every other chart, only the grid
             var legend = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 14, 0, 0) };
-            _liveChartWriteHeaderTb = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(writeColor), Margin = new Thickness(0, 0, 24, 0), Text = L("Write ", "Scriere ", "Schreiben ", "Écriture ") + "—" };
-            _liveChartReadHeaderTb  = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(readColor),  Text = L("Read ", "Citire ", "Lesen ", "Lecture ") + "—" };
-            legend.Children.Add(_liveChartWriteHeaderTb); legend.Children.Add(_liveChartReadHeaderTb);
+            _liveChartWriteHeaderTb = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(writeColor), Text = L("Write ", "Scriere ", "Schreiben ", "Écriture ") + "—" };
+            _liveChartReadHeaderTb  = new TextBlock { FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(readColor), Margin = new Thickness(0, 0, 24, 0), Text = L("Read ", "Citire ", "Lesen ", "Lecture ") + "—" };
+            legend.Children.Add(_liveChartReadHeaderTb); legend.Children.Add(_liveChartWriteHeaderTb);
 
             // the test stages after the sequential chart (4K, latency, queue): the chart stops when the write/read ends, and the
             // strip shows where the test is now and what has already finished
@@ -627,6 +633,8 @@ namespace SMDWin.Views
                 if (_seqWriteMax > 0) { _liveWriteGauge.RangeMin = _seqWriteMin; _liveWriteGauge.RangeMax = _seqWriteMax; }
                 _liveWriteGauge.Value = _emaWrite;
             }
+            if (_liveWriteMaxTb != null) _liveWriteMaxTb.Text = _seqWriteMax > 0 ? "max " + FmtMbs(_seqWriteMax) : "";
+            if (_liveReadMaxTb != null) _liveReadMaxTb.Text = _seqReadMax > 0 ? "max " + FmtMbs(_seqReadMax) : "";
             if (_liveReadGauge != null)
             {
                 if (_seqReadMax > 0) { _liveReadGauge.RangeMin = _seqReadMin; _liveReadGauge.RangeMax = _seqReadMax; }
@@ -641,12 +649,12 @@ namespace SMDWin.Views
             if (_liveWriteValTb != null)
             {
                 _liveWriteValTb.Text       = _emaWrite > 0 ? FmtMbs(_emaWrite) : "—";
-                _liveWriteValTb.Foreground = new SolidColorBrush(WpfColor.FromRgb(59, 130, 246));
+                _liveWriteValTb.Foreground = new SolidColorBrush(WpfColor.FromRgb(249, 115, 22));
             }
             if (_liveReadValTb != null)
             {
                 _liveReadValTb.Text       = _emaRead > 0 ? FmtMbs(_emaRead) : "—";
-                _liveReadValTb.Foreground = new SolidColorBrush(WpfColor.FromRgb(249, 115, 22));
+                _liveReadValTb.Foreground = new SolidColorBrush(WpfColor.FromRgb(59, 130, 246));
             }
 
             string LH(string ro, string en, string de, string fr) => SMDWin.Services.LanguageService.CurrentCode switch
@@ -744,7 +752,7 @@ namespace SMDWin.Views
             if (w < 80 || h < 60) return;
 
             var writeColor = WpfColor.FromRgb(249, 115, 22);   // the same as the "Write" label
-            var readColor  = WpfColor.FromRgb(34, 197, 94);    // the same as the "Read" label
+            var readColor  = WpfColor.FromRgb(59, 130, 246);   // the same as the "Read" label
             var labelBrush = (TryFindResource("TextSecondaryBrush") as Brush) ?? System.Windows.Media.Brushes.Gray;
             var okBrush     = (TryFindResource("StatusOkBrush") as Brush) ?? new SolidColorBrush(readColor);
             var accentBrush = (TryFindResource("AccentBrush") as Brush) ?? System.Windows.Media.Brushes.DodgerBlue;
@@ -863,14 +871,6 @@ namespace SMDWin.Views
                 if (k > _benchStageIdx && !_benchDone) continue;
                 double x0 = pL + cW * st.X0, sw = cW * st.XL;
                 bool now = k == _benchStageIdx && !_benchDone;
-                // the part already run, faintly tinted, so the progress shows even when the throughput is tiny (latency, a hard disk)
-                double f = now ? StageFrac(key, _benchBar) : 1;
-                if (f > 0)
-                {
-                    var band = new Rectangle { Width = Math.Max(1, sw * f), Height = cH, Fill = new SolidColorBrush(WpfColor.FromArgb(16, 96, 140, 230)) };
-                    Canvas.SetLeft(band, x0); Canvas.SetTop(band, pT);
-                    cv.Children.Add(band);
-                }
                 if (_stageSamples.TryGetValue(key, out var list) && list.Count > 0)
                 {
                     // contiguous runs of the same direction (the queue-depth part switches between read and write)
@@ -889,6 +889,7 @@ namespace SMDWin.Views
                     {
                         Text = val, FontSize = Ui.FontXS, FontWeight = FontWeights.SemiBold, Width = sw, TextAlignment = TextAlignment.Center,
                         TextTrimming = TextTrimming.CharacterEllipsis, Foreground = now ? accentBrush : labelBrush,
+                        Background = TryFindResource("BgCardBrush") as Brush,
                     };
                     Canvas.SetLeft(vt, x0); Canvas.SetTop(vt, pT + 2);
                     cv.Children.Add(vt);

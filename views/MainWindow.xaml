@@ -1570,7 +1570,8 @@
                 </DataGrid.Columns>
               </DataGrid>
               <DockPanel x:Name="CrashEmptyState" Visibility="Collapsed" Margin="18,2,18,16" VerticalAlignment="Top">
-                <ui:Button x:Name="BtnCrashEmptyOpenFolder" DockPanel.Dock="Right" Appearance="Secondary" VerticalAlignment="Center" Click="OpenMiniDumpFolder_Click">
+                <!-- the folder button is already in the page header; a second one here only duplicated it -->
+                <ui:Button x:Name="BtnCrashEmptyOpenFolder" Visibility="Collapsed" DockPanel.Dock="Right" Appearance="Secondary" VerticalAlignment="Center" Click="OpenMiniDumpFolder_Click">
                   <TextBlock x:Name="TxtCrashEmptyBtn" Text="Open minidump folder"/>
                 </ui:Button>
                 <Ellipse x:Name="CrashEmptyDot" Width="8" Height="8" Margin="2,0,12,0" VerticalAlignment="Center" Fill="{DynamicResource StatusGoodBrush}"/>

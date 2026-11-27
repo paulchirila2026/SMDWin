@@ -98,7 +98,7 @@
               </ui:Button>
               <ui:Button x:Name="BtnStorageTabSmart" Appearance="Secondary" Background="Transparent" BorderBrush="Transparent"
                       Click="StorageTab_Click" Tag="Smart" Margin="0,0,2,0"
-                      ToolTip="SMART health attributes">
+                      ToolTip="SMART health attributes" ToolTipService.Placement="Bottom" ToolTipService.VerticalOffset="8">
                 <StackPanel Orientation="Horizontal"><Viewbox Width="13" Height="13" Margin="0,0,5,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path x:Name="IconStorageTabSmart" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M3,5.75 C3,5.34 3.34,5 3.75,5 Q7.74,5 11.55,2.15 C11.82,1.95 12.18,1.95 12.45,2.15 Q16.26,5 20.25,5 C20.66,5 21,5.34 21,5.75 L21,11 Q21,11.5 20.96,12 A7,7 0 0 0 19.5,11.31 L19.5,6.48 A14.4,14.4 0 0 1 12,3.68 A14.4,14.4 0 0 1 4.5,6.48 L4.5,11 C4.5,15.15 6.83,18.22 11.63,20.28 Q12.03,21.12 12.63,21.8 L12.27,21.95 A0.8,0.8 0 0 1 11.73,21.95 C5.96,19.68 3,16 3,11 Z M23,17.5 A5.5,5.5 0 0 1 12,17.5 A5.5,5.5 0 0 1 23,17.5 M20.85,15.15 A0.5,0.5 0 0 0 20.15,15.15 L16.5,18.79 L14.85,17.15 A0.5,0.5 0 0 0 14.15,17.85 L16.15,19.85 C16.35,20.05 16.65,20.05 16.85,19.85 L20.85,15.85 A0.5,0.5 0 0 0 20.85,15.15"/></Canvas></Viewbox><TextBlock Text="SMART" VerticalAlignment="Center"/></StackPanel>
               </ui:Button>
               <ui:Button x:Name="BtnStorageTabSurface" Appearance="Secondary" Background="Transparent" BorderBrush="Transparent"
@@ -626,7 +626,7 @@
                       </Border>
                       <!-- tiles: the figures that matter, then the disk life, in a single 2-column grid that fills the remaining card height
                            (the rows stretch equally; FitSmartVerdict hides what does not fit) -->
-                      <UniformGrid x:Name="SmartTilesGrid" Columns="2" Margin="-4,0,-4,12"/>
+                      <UniformGrid x:Name="SmartTilesGrid" Columns="2" Margin="-4,0,-4,12" VerticalAlignment="Top"/>
                     </DockPanel>
                   </Border>
                   <Border x:Name="NvmeDiagPanel" Style="{StaticResource CardStyle}"
@@ -704,7 +704,7 @@
                 </DataGrid.RowStyle>
                 <DataGrid.Columns>
                   <DataGridTextColumn Header="ID" Binding="{Binding IdHex}" Width="58" MinWidth="58"/>
-                  <DataGridTemplateColumn Header="Attribute" Width="1.5*" MinWidth="210">
+                  <DataGridTemplateColumn Header="Attribute" Width="1.5*" MinWidth="190">
                     <DataGridTemplateColumn.CellTemplate>
                       <DataTemplate>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,2">
@@ -716,11 +716,11 @@
                       </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                   </DataGridTemplateColumn>
-                  <DataGridTextColumn Header="Value"     Binding="{Binding CurrentValue}" Width="55"  MinWidth="50"/>
-                  <DataGridTextColumn Header="Worst"     Binding="{Binding WorstValue}"   Width="55"  MinWidth="50"/>
-                  <DataGridTextColumn Header="Limit" Binding="{Binding ThresholdValue}" Width="60" MinWidth="55"/>
-                  <DataGridTextColumn Header="Raw"       Binding="{Binding RawDisplay}" Width="100" MinWidth="80"/>
-                  <DataGridTemplateColumn Header="Status" Width="95" MinWidth="85">
+                  <DataGridTextColumn Header="Value"     Binding="{Binding CurrentValue}" Width="68"  MinWidth="62"/>
+                  <DataGridTextColumn Header="Worst"     Binding="{Binding WorstValue}"   Width="68"  MinWidth="62"/>
+                  <DataGridTextColumn Header="Limit" Binding="{Binding ThresholdValue}" Width="68" MinWidth="62"/>
+                  <DataGridTextColumn Header="Raw"       Binding="{Binding RawDisplay}" Width="150" MinWidth="110"/>
+                  <DataGridTemplateColumn Header="Status" Width="120" MinWidth="105">
                     <DataGridTemplateColumn.CellTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor, Converter={StaticResource ThemeStatusBrush}}"

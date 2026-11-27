@@ -112,14 +112,31 @@ namespace SMDWin.Views
                 (vTitle, vWord, vKind, vCol, vSoft) = ("Stable — no errors during the test", "OK", "ok", PdfKit.Good, PdfKit.GoodSoft);
                 vText = $"Temperatures stayed below the warning limit ({limitTxt}). No throttling. Calculation checks: 0 errors.";
             }
-            const double vH = 48;
+            // the explanation under the verdict is written in full: wrapped over up to two lines
+            var fVt = PdfKit.F(8.5);
+            var vLines = new List<string>();
+            {
+                string cur = "";
+                double maxW = W - 2 * M - 48 - g.MeasureString(vWord, PdfKit.F(8.5, true)).Width - 34;
+                foreach (var word in vText.Split(' '))
+                {
+                    string next = cur.Length == 0 ? word : cur + " " + word;
+                    if (cur.Length > 0 && g.MeasureString(next, fVt).Width > maxW) { vLines.Add(cur); cur = word; }
+                    else cur = next;
+                }
+                if (cur.Length > 0) vLines.Add(cur);
+                if (vLines.Count > 2) { vLines[1] = string.Join(" ", vLines.Skip(1)); vLines.RemoveRange(2, vLines.Count - 2); }
+            }
+            double vH = vLines.Count > 1 ? 60 : 48;
             PdfKit.Card(g, M, y, W - 2 * M, vH);
             PdfKit.CheckBadge(g, M + 25, y + vH / 2, 13, vCol, vSoft, vKind);
             var fVw = PdfKit.F(8.5, true);
             double vwW = g.MeasureString(vWord, fVw).Width;
             double textW = W - 2 * M - 48 - vwW - 34;
-            g.DrawString(PdfKit.Fit(g, vTitle, PdfKit.F(11.5, true), textW), PdfKit.F(11.5, true), PdfKit.B(PdfKit.Ink), M + 46, y + 20);
-            g.DrawString(PdfKit.Fit(g, vText, PdfKit.F(8.5), textW), PdfKit.F(8.5), PdfKit.B(PdfKit.Ink2), M + 46, y + 34);
+            double ty0 = vLines.Count > 1 ? y + 21 : y + 20;
+            g.DrawString(PdfKit.Fit(g, vTitle, PdfKit.F(11.5, true), textW), PdfKit.F(11.5, true), PdfKit.B(PdfKit.Ink), M + 46, ty0);
+            for (int li = 0; li < vLines.Count; li++)
+                g.DrawString(PdfKit.Fit(g, vLines[li], fVt, textW), fVt, PdfKit.B(PdfKit.Ink2), M + 46, ty0 + 14 + li * 11);
             PdfKit.Dot(g, W - M - 14 - vwW - 8, y + vH / 2 - 0.5, 3.2, vCol);
             g.DrawString(vWord, fVw, PdfKit.B(vCol), W - M - 14 - vwW, y + vH / 2 + 3);
             y += vH + 10;
@@ -169,9 +186,9 @@ namespace SMDWin.Views
             var gpuRows = new List<(string, string)>
             {
                 ("Temperature", _gpuMin.HasValue && _gpuMax.HasValue ? $"{TNum(_gpuMin)} – {Temp(_gpuMax)}" : Temp(_gpuMax)),
-                ("Load (peak)", _gpuLoadMax > 0 ? $"{_gpuLoadMax:F0} %" : "—"),
-                ("Clock (max)", _gpuFreqMax > 0 ? (_gpuFreqMax >= 1000 ? $"{_gpuFreqMax / 1000f:F2} GHz" : $"{_gpuFreqMax:F0} MHz") : "—"),
-                ("Video memory (peak)", _gpuVramMax.HasValue ? $"{_gpuVramMax:F0} MB" : "—"),
+                ("Load (peak)", _gpuLoadMax > 0 ? $"{_gpuLoadMax:F0} %" : "not reported by the driver"),
+                ("Clock (max)", _gpuFreqMax > 0 ? (_gpuFreqMax >= 1000 ? $"{_gpuFreqMax / 1000f:F2} GHz" : $"{_gpuFreqMax:F0} MHz") : "not reported by the driver"),
+                ("Video memory (peak)", _gpuVramMax.HasValue ? $"{_gpuVramMax:F0} MB" : "not reported by the driver"),
                 ("Power (peak)", _gpuPowerMax > 0 ? $"{_gpuPowerMax:F1} W" : "not reported"),
             };
             double tH = 28 + cpuRows.Count * 17 + 4;
@@ -187,7 +204,7 @@ namespace SMDWin.Views
                     var (l, v) = rows[i];
                     if (i > 0) g.DrawLine(new XPen(PdfKit.Grid, 0.6), x + 12, ry, x + cW - 12, ry);
                     g.DrawString(l, fl, PdfKit.B(PdfKit.Ink2), x + 12, ry + 11.5);
-                    bool muted = v is "—" or "not reported";
+                    bool muted = v is "—" or "not reported" or "not reported by the driver";
                     var vf = muted ? fl : fv;
                     double vw = g.MeasureString(v, vf).Width;
                     g.DrawString(v, vf, PdfKit.B(muted ? PdfKit.Ink3 : PdfKit.Ink), x + cW - 12 - vw, ry + 11.5);
@@ -225,7 +242,7 @@ namespace SMDWin.Views
                 double span = Math.Max(1, (t1 - t0).TotalSeconds);
                 float tMax = Math.Max(100f, Math.Max(cpuWarn, gpuWarn) + 10f);
                 StressChart(g, M, y, W - 2 * M, chH, "Temperature", hist, spans, t0, span,
-                    h => h.cpuT, h => h.gpuT, 20f, tMax, Math.Min(cpuWarn, gpuWarn), TempUnit.Symbol, true);
+                    h => h.cpuT, h => h.gpuT, 20f, tMax, Math.Min(cpuWarn, gpuWarn), TempUnit.Symbol, true, _cpuMax, _gpuMax);
                 StressChart(g, M, y + chH + 10, W - 2 * M, chH, "Load", hist, spans, t0, span,
                     h => h.cpuL, h => h.gpuL, 0f, 100f, null, "%", false);
             }
@@ -236,7 +253,7 @@ namespace SMDWin.Views
             }
 
             string footL = ReportBranding.Workshop.Length > 0 ? $"{ReportBranding.Workshop} · made with SMD Win" : "Generated by SMD Win";
-            PdfKit.Footer(g, W, H, M, $"{footL}  ·  one reading every 5 s  ·  dashed line = warning limit", "Page 1 / 1");
+            PdfKit.Footer(g, W, H, M, $"{footL}  ·  one reading every 5 s  ·  dashed line = warning limit  ·  shaded = stress test running", "Page 1 / 1");
             doc.Save(path);
         }
 
@@ -244,7 +261,7 @@ namespace SMDWin.Views
             List<(DateTime t, float cpuT, float gpuT, float cpuL, float gpuL)> hist, List<StressSpan> spans, DateTime t0, double spanSec,
             Func<(DateTime t, float cpuT, float gpuT, float cpuL, float gpuL), float> cpuSel,
             Func<(DateTime t, float cpuT, float gpuT, float cpuL, float gpuL), float> gpuSel,
-            float yMin, float yMax, float? warnAt, string unit, bool isTemp)
+            float yMin, float yMax, float? warnAt, string unit, bool isTemp, float? cpuPeakCard = null, float? gpuPeakCard = null)
         {
             PdfKit.Card(g, x, y, w, h);
             g.DrawString(title, PdfKit.F(10, true), PdfKit.B(PdfKit.Ink), x + 12, y + 19);
@@ -298,10 +315,12 @@ namespace SMDWin.Views
             }
 
             // the lines: smooth, broken where reads are missing
-            void Series(Func<(DateTime t, float cpuT, float gpuT, float cpuL, float gpuL), float> sel, XColor c)
+            void Series(Func<(DateTime t, float cpuT, float gpuT, float cpuL, float gpuL), float> sel, XColor c, float? cardPeak)
             {
                 var pen = new XPen(c, 1.5) { LineCap = XLineCap.Round, LineJoin = XLineJoin.Round };
                 var run = new List<XPoint>();
+                var clipState = g.Save();
+                g.IntersectClip(new XRect(ax, ay - 1, aw, ah + 2));
                 DateTime prev = DateTime.MinValue;
                 float peak = float.MinValue; XPoint peakPt = default;
                 foreach (var hp in hist)
@@ -316,19 +335,22 @@ namespace SMDWin.Views
                     if (v > peak) { peak = v; peakPt = pt; }
                 }
                 PdfKit.SmoothLine(g, pen, run);
+                g.Restore(clipState);   // the curve never leaves the plot area (no overshoot under the axis)
                 if (peak > float.MinValue)
                 {
+                    // the same figure as the card at the top (the card keeps the highest reading, the chart only the sampled ones)
+                    if (isTemp && cardPeak.HasValue && cardPeak.Value > peak) peak = cardPeak.Value;
                     g.DrawEllipse(new XPen(XColors.White, 1.2), PdfKit.B(c), peakPt.X - 2.6, peakPt.Y - 2.6, 5.2, 5.2);
                     string pl = isTemp ? $"{TempUnit.Convert(peak):F0}°" : $"{peak:F0}%";
                     var fp = PdfKit.F(7, true);
                     double pw = g.MeasureString(pl, fp).Width;
-                    double px = Math.Clamp(peakPt.X - pw / 2, ax, ax + aw - pw);
+                    double px = Math.Clamp(peakPt.X - pw / 2, ax + 4, ax + aw - pw);
                     double py = peakPt.Y - 5 < ay + 6 ? peakPt.Y + 11 : peakPt.Y - 5;
                     g.DrawString(pl, fp, PdfKit.B(PdfKit.Ink), px, py);
                 }
             }
-            Series(gpuSel, PdfKit.Orange);
-            Series(cpuSel, PdfKit.Accent);
+            Series(gpuSel, PdfKit.Orange, gpuPeakCard);
+            Series(cpuSel, PdfKit.Accent, cpuPeakCard);
 
             // ora: inceput, mijloc, sfarsit
             var fT = PdfKit.F(7);

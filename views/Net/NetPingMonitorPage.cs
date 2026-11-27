@@ -560,24 +560,33 @@ namespace SMDWin.Views.Net
             if (visibleCount < 2) { DrawHover(); return; }
 
             // ── grouped measurements: at most one point per 2 px ──
-            int nb = Math.Max(1, Math.Min(visibleCount, (int)(cW / 2)));
+            // The groups are tied to the measurement's own number (not to the start of the visible window, which moves by one
+            // every second): a group that is complete never changes, so the peaks keep their height as new pings arrive.
+            // (Before, every new ping shifted all the groups by one, the same peak was averaged with different neighbours each
+            // second, and the chart "breathed".)
+            int groupSize = Math.Max(1, (int)Math.Ceiling(windowSamples / Math.Max(1.0, cW / 2)));
+            long firstAbs = histIdx - visibleCount;                      // the number of the first visible measurement
+            long endAbs = histIdx;                                       // one past the last
             double SlotX(double slot) => pL + cW * (windowSamples - visibleCount + slot) / (windowSamples - 1.0);
-            for (int b = 0; b < nb; b++)
+            for (long g0 = firstAbs / groupSize * groupSize; g0 < endAbs; g0 += groupSize)
             {
-                int i0 = (int)((long)b * visibleCount / nb), i1 = (int)((long)(b + 1) * visibleCount / nb);
-                if (i1 <= i0) continue;
+                long a0 = Math.Max(g0, firstAbs), a1 = Math.Min(g0 + groupSize, endAbs);
+                // at the left edge, a group cut by the moving window would change with every ping: leave it out
+                if (a0 > g0 && visibleCount >= windowSamples && groupSize > 1) continue;
+                if (a1 <= a0) continue;
                 double sum = 0; float mx = 0; int n = 0, lost = 0; long t0 = 0, t1 = 0;
-                for (int i = i0; i < i1; i++)
+                for (long ai = a0; ai < a1; ai++)
                 {
-                    int k = (start + i) % hist.Length;
+                    int k = (start + (int)(ai - firstAbs)) % hist.Length;
                     long t = ticks[k];
                     if (t != 0) { if (t0 == 0) t0 = t; t1 = t; }
                     float v = hist[k];
                     if (float.IsNaN(v)) { lost++; continue; }
                     sum += v; n++; if (v > mx) mx = v;
                 }
-                _buckets.Add(new PingBucket(SlotX((i0 + i1 - 1) / 2.0), n > 0 ? (float)(sum / n) : float.NaN, mx, n, lost, t0, t1));
+                _buckets.Add(new PingBucket(SlotX((a0 + a1 - 1) / 2.0 - firstAbs), n > 0 ? (float)(sum / n) : float.NaN, mx, n, lost, t0, t1));
             }
+            if (_buckets.Count == 0) { DrawHover(); return; }
 
             bool isLight = SMDWin.Services.ThemeManager.IsLight(SMDWin.Services.SettingsService.Current.ThemeName);
             var lineColor = (Application.Current.Resources["DataBrush"] as SolidColorBrush)?.Color

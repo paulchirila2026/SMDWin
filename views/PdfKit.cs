@@ -72,7 +72,13 @@ namespace SMDWin.Views
             var fR = F(8.5);
             foreach (var s in right) rightW = Math.Max(rightW, g.MeasureString(s, fR).Width);
             double titleMaxW = pageW - 2 * m - rightW - 20;
+            // a long model name gets a smaller font before it gets cut
             var fT = F(20, true);
+            foreach (double sz in new[] { 20.0, 17.0, 14.5, 12.5 })
+            {
+                fT = F(sz, true);
+                if (g.MeasureString(title, fT).Width <= titleMaxW) break;
+            }
             string t = Fit(g, title, fT, titleMaxW);
             g.DrawString(t, fT, B(Ink), m, top + 38);
             if (!string.IsNullOrWhiteSpace(subtitle))

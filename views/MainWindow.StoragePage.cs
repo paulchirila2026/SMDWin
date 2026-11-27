@@ -750,6 +750,7 @@ namespace SMDWin.Views
                     foreach (var o in src) if (o is not SmartInfoRow) merged.Add(o);
                 merged.AddRange(extra);
                 SmartGrid.ItemsSource = merged;
+                ApplySmartColumns();
                 UpdateSmartLife(disk, extra);
             }
             catch (Exception ex) { AppLogger.Debug($"MergeNvmeRowsIntoSmartGrid: {ex.Message}"); }

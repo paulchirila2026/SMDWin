@@ -96,7 +96,7 @@ namespace SMDWin.Services
 
                 long ft = (long)U64(buf, 0xFA8);
                 if (ft > 0)
-                    try { info.SystemTimeUtc = DateTime.FromFileTimeUtc(ft); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
+                    info.SystemTimeUtc = PlausibleFileTime(ft);
 
                 // The driver list exists only in triage dumps (Minidump, type 4).
                 if (dumpType == 4)
@@ -114,7 +114,7 @@ namespace SMDWin.Services
                 info.DumpTypeName = DumpTypeName(dumpType);
                 long ft = (long)U64(buf, 0xFC0);
                 if (ft > 0)
-                    try { info.SystemTimeUtc = DateTime.FromFileTimeUtc(ft); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); }
+                    info.SystemTimeUtc = PlausibleFileTime(ft);
                 // On 32-bit only the driver names are reported (no base calibration — x86 systems are rare today; the header stays
                 // the main information).
                 if (dumpType == 4)
@@ -125,6 +125,19 @@ namespace SMDWin.Services
             (info.BugCheckName, info.ExplanationRo) = DescribeBugCheck(info.BugCheckCode);
             PickCulprit(info);
             return info;
+        }
+
+        /// <summary>The crash time from the dump header, only when it is a believable date (2001 … tomorrow). A wrong offset or a
+        /// damaged header used to give dates like 2125 or 2253; then the caller keeps the file's own time.</summary>
+        private static DateTime? PlausibleFileTime(long ft)
+        {
+            try
+            {
+                if (ft <= 0) return null;
+                var d = DateTime.FromFileTimeUtc(ft);
+                return d.Year >= 2001 && d <= DateTime.UtcNow.AddDays(1) ? d : null;
+            }
+            catch (System.Exception ex) { SMDWin.Services.AppLogger.Swallowed(ex); return null; }
         }
 
         // ── 64-bit triage: names + base/size calibration by voting ──────────────
