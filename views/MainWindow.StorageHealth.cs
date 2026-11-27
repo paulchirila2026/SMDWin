@@ -114,7 +114,7 @@ namespace SMDWin.Views
             var f = CollectDriveFacts(d);
             if (!f.HasSmart)
             {
-                var none = Txt2(DS("NoSmartBand", "This drive does not report health data (SMART), so there are no values to show. This is common for USB sticks, memory cards and some adapters."),
+                var none = Txt2(NoSmartReason(d),
                                 "TextSecondaryBrush", Ui.FontS);
                 none.TextWrapping = TextWrapping.Wrap;
                 none.Margin = new Thickness(0, 0, 0, 16);

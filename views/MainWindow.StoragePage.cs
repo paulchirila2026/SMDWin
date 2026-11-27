@@ -413,6 +413,9 @@ namespace SMDWin.Views
                 (DS("Serial", "Serial"), (d.SerialNumber ?? "").Trim().TrimEnd('.')),
                 (DS("Capacity", "Capacity"), d.Size ?? ""),
             };
+            // a USB drive: how it is connected (speed, transfer mode, adapter chip) — a slow link shows in amber
+            string usbLine = UsbConnectionText(d);
+            if (usbLine.Length > 0) cells.Insert(0, (PT("Connection"), usbLine));
             var meta = new Grid { Margin = new Thickness(20, 0, 0, 0), VerticalAlignment = VAlign.Center };
             meta.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             meta.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -426,12 +429,38 @@ namespace SMDWin.Views
                 var vt = new TextBlock { Text = string.IsNullOrWhiteSpace(v) || v == "—" ? "—" : v, FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 1, 0, 1),
                                          MaxWidth = 280, TextTrimming = TextTrimming.CharacterEllipsis };
                 if (vt.Text != "—") vt.ToolTip = vt.Text;
-                vt.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+                vt.SetResourceReference(TextBlock.ForegroundProperty, ci == 0 && usbLine.Length > 0 && d.UsbSlowLink ? "StatusWarnBrush" : "TextPrimaryBrush");
+                if (ci == 0 && usbLine.Length > 0 && d.UsbSlowLink)
+                    vt.ToolTip = vt.Text + "\n" + PT("A USB 3 device on a USB 2 link: another port (blue / USB 3), cable or hub gives up to 10 times the speed.");
                 Grid.SetRow(vt, ci); Grid.SetColumn(vt, 1); meta.Children.Add(vt);
             }
             Grid.SetColumn(meta, 4);
             body.Children.Add(meta);
             return card;
+        }
+
+        /// <summary>Why a drive shows no SMART data — with the adapter named when it is a USB enclosure (UsbLinkInfo.BridgeMaker).</summary>
+        internal static string NoSmartReason(DiskHealthEntry d)
+        {
+            string kind = d.Kind ?? "";
+            if (kind is "USB stick" or "SD card")
+                return PT("USB sticks and memory cards have no SMART health data — the only way to check them is to read them (Surface Scan).");
+            if (d.UsbConnected.Length > 0 || d.UsbVidPid.Length > 0)
+                return d.UsbBridge.Length > 0
+                    ? PT("The USB adapter ({0} chip) does not pass the drive's health data. Connected directly (SATA / M.2) or through another adapter, it would show.", d.UsbBridge)
+                    : PT("The USB adapter does not pass the drive's health data. Connected directly (SATA / M.2) or through another adapter, it would show.");
+            return PT("The drive does not report SMART data here (common for USB sticks and some adapters).");
+        }
+
+        /// <summary>The USB connection in one line: "USB 3.0 · 5 Gb/s · UAS · JMicron adapter" (empty for internal drives).</summary>
+        internal static string UsbConnectionText(DiskHealthEntry d)
+        {
+            if (d.UsbLinkText.Length == 0) return "";
+            var parts = new List<string> { d.UsbLinkText };
+            if (d.UsbTransfer == "UAS") parts.Add(PT("UAS (fast mode)"));
+            else if (d.UsbTransfer == "BOT") parts.Add(PT("BOT (older, slower mode)"));
+            if (d.UsbBridge.Length > 0) parts.Add(PT("{0} adapter", d.UsbBridge));
+            return string.Join(" · ", parts);
         }
 
         /// <summary>"[1] Drive 1 of 2 · model ……… C: Windows  D: Data" — the band across the top of a disk card.</summary>
@@ -571,7 +600,7 @@ namespace SMDWin.Views
                 string status, key, text;
                 if (count == 0) { status = "No data"; key = "TextSecondaryBrush"; text = disk.Bus == "NVMe" || (disk.Kind ?? "").Contains("NVMe", StringComparison.OrdinalIgnoreCase)
                     ? PT("Windows reports this drive as Healthy, but its storage driver does not pass on the detailed counters (temperature, wear, power-on hours). This is common when the laptop uses the Intel RST / VMD driver; the drive maker's own tool (for example SanDisk Dashboard) can read them.")
-                    : PT("The drive does not report SMART data here (common for USB sticks and some adapters)."); }
+                    : NoSmartReason(disk); }
                 else if (dv.Level == DriveVerdict.State.Good)
                 {
                     status = "Healthy"; key = "StatusOkBrush";

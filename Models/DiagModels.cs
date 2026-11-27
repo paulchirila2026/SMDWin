@@ -125,6 +125,12 @@ namespace SMDWin.Models
         public string UsbConnected { get; set; } = "";
         /// <summary>A USB 3 device running at a lower speed (USB 2 port, cable or old hub).</summary>
         public bool UsbSlowLink { get; set; }
+        /// <summary>The maker of the USB adapter / enclosure chip, from its USB vendor ID ("JMicron", "ASMedia"…); "" if unknown.</summary>
+        public string UsbBridge { get; set; } = "";
+        /// <summary>"USB\VID_152D&amp;PID_0583" — the adapter's USB IDs.</summary>
+        public string UsbVidPid { get; set; } = "";
+        /// <summary>The transfer mode: "UAS" (UASP, the fast one) or "BOT" (the old Bulk-Only mode); "" if unknown.</summary>
+        public string UsbTransfer { get; set; } = "";
 
         /// <summary>
         /// The disk type in one line, as people say it: "M.2 NVMe SSD", "M.2 SATA SSD", "2.5\" SATA SSD",

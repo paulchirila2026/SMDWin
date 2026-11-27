@@ -253,7 +253,9 @@ namespace SMDWin.Services
             // USB enclosures that hide SMART behind their bridge chip: the NVMe-to-USB bridges (JMicron JMS583, ASMedia ASM2362,
             // Realtek RTL9210) and old SATA bridges that only accept the short command form. Tried only after the usual forms
             // failed, so normal disks never get these commands.
-            foreach (var bridge in new[] { "sntjmicron", "sntasmedia", "sntrealtek", "sat,12" })
+            // + the older SATA bridges smartctl knows by name (JMicron JM20329/JM20335, Cypress CY7C68300, Prolific PL2571/2771/2773/2775,
+            // Sunplus SPIF215/225): many old 2.5" / 3.5" enclosures show SMART only with these
+            foreach (var bridge in new[] { "sntjmicron", "sntasmedia", "sntrealtek", "sat,12", "usbjmicron", "usbcypress", "usbprolific", "usbsunplus" })
                 yield return (normalized, bridge);
             var m = _rxPhysDrive.Match(normalized);
             if (m.Success && int.TryParse(m.Groups[1].Value, out int n))

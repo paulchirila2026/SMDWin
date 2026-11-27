@@ -39,6 +39,17 @@ namespace SMDWin.Services
             }
             if (dev == 0) return;
 
+            // the adapter: its chip maker from the vendor ID, and the transfer mode from the driver of the USB device
+            var vid = System.Text.RegularExpressions.Regex.Match(devId, @"VID_([0-9A-F]{4})&PID_([0-9A-F]{4})", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (vid.Success)
+            {
+                d.UsbVidPid = $"VID_{vid.Groups[1].Value.ToUpperInvariant()}&PID_{vid.Groups[2].Value.ToUpperInvariant()}";
+                d.UsbBridge = BridgeMaker(vid.Groups[1].Value);
+            }
+            string service = RegistryString(dev, CM_DRP_SERVICE) ?? "";
+            d.UsbTransfer = service.Equals("UASPStor", StringComparison.OrdinalIgnoreCase) ? "UAS"
+                          : service.Equals("USBSTOR", StringComparison.OrdinalIgnoreCase) ? "BOT" : "";
+
             int port = (int)(RegistryDword(dev, CM_DRP_ADDRESS) ?? 0);
             if (port <= 0 || CM_Get_Parent(out uint hub, dev, 0) != 0) return;
             string? hubPath = HubInterfacePath(DeviceId(hub));
@@ -79,7 +90,26 @@ namespace SMDWin.Services
             d.UsbConnected = Text(connected);
             d.UsbSupported = Text(supported);
             d.UsbSlowLink = supported >= 3 && connected < supported;
-            AppLogger.Debug($"UsbLinkInfo: disk #{d.DiskIndex} {devId} port {port}: speed {speed}, bcdUSB 0x{bcdUsb:X4}, flags 0x{flags:X} → {d.UsbLinkText}");
+            AppLogger.Debug($"UsbLinkInfo: disk #{d.DiskIndex} {devId} port {port}: speed {speed}, bcdUSB 0x{bcdUsb:X4}, flags 0x{flags:X} → {d.UsbLinkText} · {d.UsbTransfer} · {d.UsbBridge}");
+        }
+
+        /// <summary>The maker of a USB storage bridge / enclosure from its USB vendor ID (the common ones in adapters and docks).</summary>
+        internal static string BridgeMaker(string vid) => vid.ToUpperInvariant() switch
+        {
+            "152D" => "JMicron", "174C" => "ASMedia", "0BDA" => "Realtek", "05E3" => "Genesys Logic", "067B" => "Prolific",
+            "04B4" => "Cypress", "13FD" => "Initio", "1F75" => "Innostor", "2109" => "VIA Labs", "357D" => "Sunplus",
+            "1B1C" => "Corsair", "0480" => "Toshiba", "1058" => "Western Digital", "0BC2" => "Seagate", "04E8" => "Samsung",
+            "0781" => "SanDisk", "090C" => "Silicon Motion", "0951" => "Kingston", "8564" => "Transcend", "13FE" => "Phison",
+            "058F" => "Alcor", "1E68" => "TrekStor", "059F" => "LaCie", "07AB" => "Freecom", "2537" => "Norelsys", "7825" => "OWC",
+            _ => "",
+        };
+
+        private static string? RegistryString(uint node, uint prop)
+        {
+            var b = new byte[512];
+            uint len = (uint)b.Length;
+            if (CM_Get_DevNode_Registry_PropertyW(node, prop, out _, b, ref len, 0) != 0 || len < 2) return null;
+            return Encoding.Unicode.GetString(b, 0, (int)len).TrimEnd('\0');
         }
 
         private static string? PnpIdOfDisk(int index)
@@ -121,6 +151,7 @@ namespace SMDWin.Services
         // ── interop ──────────────────────────────────────────────────────
         private static Guid GUID_DEVINTERFACE_USB_HUB = new("f18a0e88-c30c-11d0-8815-00a0c906bed8");
         private const uint CM_DRP_ADDRESS = 0x1D;
+        private const uint CM_DRP_SERVICE = 0x05;
         private const uint IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX    = 0x220448;
         private const uint IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX_V2 = 0x22045C;
         private const uint GENERIC_WRITE = 0x40000000, FILE_SHARE_WRITE = 2, OPEN_EXISTING = 3;
