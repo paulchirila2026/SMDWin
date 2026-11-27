@@ -85,12 +85,20 @@ namespace SMDWin.Views
             {
                 // Light: one soft white glow behind the page title (the "spotlight"), so the white cards seem to float, and two
                 // very faint blue-grey lights in the opposite corners that give the page a little character
-                lights = new[]
-                {
-                    new AuroraLight(w * 0.58,     -120 * sy,   1000 * sx, 440 * sy, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.92),
-                    new AuroraLight(180 * sx,     -60 * sy,    700 * sx,  520 * sy, Color.FromRgb(0x8F, 0xA6, 0xD8), 0.08),
-                    new AuroraLight(w - 60 * sx,  h + 40 * sy, 760 * sx,  420 * sy, Color.FromRgb(0x9A, 0xA9, 0xC4), 0.06),
-                };
+                lights = level > 0
+                    // danger on Light: the same spotlight, with a soft red wash over the page instead of the blue-grey corners
+                    ? new[]
+                    {
+                        new AuroraLight(w * 0.58,     -120 * sy,   1000 * sx, 440 * sy, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.80),
+                        new AuroraLight(180 * sx,     -60 * sy,    Math.Max(900 * sx, w * 0.82), Math.Max(720 * sy, h * 1.05), Color.FromRgb(0xF0, 0x6A, 0x6A), 0.24),
+                        new AuroraLight(w - 60 * sx,  h * 0.55,    Math.Max(800 * sx, w * 0.66), Math.Max(780 * sy, h * 1.00), Color.FromRgb(0xE8, 0x7A, 0x9A), 0.16),
+                    }
+                    : new[]
+                    {
+                        new AuroraLight(w * 0.58,     -120 * sy,   1000 * sx, 440 * sy, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.92),
+                        new AuroraLight(180 * sx,     -60 * sy,    700 * sx,  520 * sy, Color.FromRgb(0x8F, 0xA6, 0xD8), 0.08),
+                        new AuroraLight(w - 60 * sx,  h + 40 * sy, 760 * sx,  420 * sy, Color.FromRgb(0x9A, 0xA9, 0xC4), 0.06),
+                    };
             }
             else
             {
@@ -135,9 +143,9 @@ namespace SMDWin.Views
             try
             {
                 if (AuroraImage == null || BuildAuroraSpec(0) is not AuroraSpec spec) return;
-                if (!spec.Dark)
+                if (_auroraAlertLevel == 0)
                 {
-                    // no alert picture on Light
+                    // no alert: no alert picture
                     if (AuroraAlertImage != null)
                     {
                         AuroraAlertImage.BeginAnimation(UIElement.OpacityProperty, null);
@@ -159,7 +167,7 @@ namespace SMDWin.Views
                     });
                 }
 
-                if (spec.Dark && _auroraAlertLevel > 0) RenderAlertImage();
+                if (_auroraAlertLevel > 0) RenderAlertImage();
             }
             catch (Exception ex) { AppLogger.Debug($"RenderAurora: {ex.Message}"); }
         }
@@ -191,9 +199,13 @@ namespace SMDWin.Views
         /// <summary>Called on every sensor tick with the latest temperatures.</summary>
         private void NoteAuroraTemps(float? cpu, float? gpu)
         {
-            bool hot = (cpu is float c && c > AuroraHotC) || (gpu is float g && g > AuroraHotC);
+            // red above 90 °C; back to normal only below 87 °C, so a reading hovering around the limit does not make the
+            // background flicker between the two
+            float limit = _auroraHot ? AuroraHotC - 3f : AuroraHotC;
+            bool hot = (cpu is float c && c > limit) || (gpu is float g && g > limit);
             if (hot == _auroraHot) return;
             _auroraHot = hot;
+            AppLogger.Debug($"Background alert: {(hot ? "on" : "off")} (CPU {cpu?.ToString("F0") ?? "-"}, GPU {gpu?.ToString("F0") ?? "-"})");
             UpdateAuroraAlert();
         }
 
@@ -203,7 +215,7 @@ namespace SMDWin.Views
             try
             {
                 int level = _auroraAlertLevel;
-                if (level == 0 || AuroraAlertImage == null || BuildAuroraSpec(level) is not AuroraSpec spec || !spec.Dark) return;
+                if (level == 0 || AuroraAlertImage == null || BuildAuroraSpec(level) is not AuroraSpec spec) return;
                 if (_auroraAlertLast == (spec.W, spec.H, spec.Dark, spec.Bg, level) && AuroraAlertImage.Source != null)
                 {
                     FadeAuroraAlert(1);

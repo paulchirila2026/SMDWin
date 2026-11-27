@@ -102,7 +102,7 @@ namespace SMDWin.Views
                                 SMDWin.Services.DualChannelStatus.SingleChannel => "Single Channel",
                                 _                                             => "Not reported",
                             };
-                            TxtRamChannel.ToolTip = channelInfo.Description;
+                            TxtRamChannel.ToolTip = PT(channelInfo.Description);
                             TxtRamChannel.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty,
                                 channelInfo.Status == SMDWin.Services.DualChannelStatus.SingleChannel ? "StatusWarnBrush" : "TextPrimaryBrush");
                         }
@@ -115,7 +115,7 @@ namespace SMDWin.Views
                             }
                             else
                             {
-                                chAdv.Text = channelInfo.Advice;
+                                chAdv.Text = PT(channelInfo.Advice);
                                 chAdv.Visibility = Visibility.Visible;
                             }
                         }

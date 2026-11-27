@@ -119,6 +119,9 @@ namespace SMDWin.Views
         private double _last;
         // smoothed fan loads (index = fan source) and their accumulated phases
         private readonly double[] _load = new double[4], _rot = new double[4], _edge = new double[4];
+        // the spin speed has its own, much slower smoothing: the live load changes in steps twice a second, and a speed that
+        // follows every step makes the fan turn in jerks at idle
+        private readonly double[] _spin = new double[4];
         private double _air, _trace, _ringSpin;
         private readonly double[] _glow = new double[4];
         private LiveData _live = new();
@@ -728,8 +731,10 @@ namespace SMDWin.Views
             for (int i = 0; i < 4; i++)
             {
                 _load[i] = anim ? _load[i] + (target[i] - _load[i]) * Math.Min(1, dt * 1.6) : target[i];
-                _rot[i] = (_rot[i] + dt * 360 * (0.06 + 2.3 * _load[i])) % 360;
-                _edge[i] = (_edge[i] + dt * 18 * (0.25 + 3.75 * _load[i])) % 18;
+                // a test spins the fan up in about two seconds; the small ups and downs of an idle processor are averaged out
+                _spin[i] = anim ? _spin[i] + (_load[i] - _spin[i]) * Math.Min(1, dt * 0.45) : _load[i];
+                _rot[i] = (_rot[i] + dt * 360 * (0.06 + 2.3 * _spin[i])) % 360;
+                _edge[i] = (_edge[i] + dt * 18 * (0.25 + 3.75 * _spin[i])) % 18;
                 // the glow: full while tested, otherwise a little with the temperature (60 °C faint, 90 °C clear)
                 double tf = i == 3 ? gpuTempF : i == 0 ? cpuTempF : 0;
                 double gTarget = hot[i] ? 0.75 + 0.25 * tf : 0.4 * tf;

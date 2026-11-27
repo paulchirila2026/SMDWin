@@ -97,7 +97,7 @@ namespace SMDWin.Services
                 {
                     Status = DualChannelStatus.SingleChannel,
                     Description = "Single channel — only 1 module installed.",
-                    Advice = totalSlots >= 2 ? "A second matching module would double the memory speed." : "",
+                    Advice = totalSlots >= 2 ? "A second matching module would turn on Dual Channel: up to twice the memory transfer speed." : "",
                     BandwidthMultiplier = 1.0,
                 };
 

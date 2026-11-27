@@ -2975,6 +2975,8 @@
     "the_storage_test_could_not_run": "Testul de stocare nu a putut rula.",
     "storage_test_skipped": "Test de stocare sărit",
     "welcome_to_smd_win": "Bun venit în SMD Win",
+    "a_second_matching_module_would_turn_on_dual_channel_up_to_tw": "Un al doilea modul identic ar activa Dual Channel: până la dublul vitezei de transfer a memoriei.",
+    "single_channel_only_1_module_installed": "Single channel — este instalat un singur modul.",
     "no": "Nu",
     "ok": "OK",
     "restore_the_original_value_for_these_settings": "Readuci valoarea inițială pentru aceste setări?",

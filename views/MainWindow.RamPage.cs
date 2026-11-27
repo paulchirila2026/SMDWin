@@ -226,7 +226,8 @@ namespace SMDWin.Views
                 Padding = new Thickness(14, 12, 14, 12), Margin = new Thickness(0, 0, lastInRow ? 0 : 12, 0),
             };
             tile.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
-            var sp = new StackPanel { VerticalAlignment = VAlign.Center };
+            // from the top: an occupied and an empty slot have different amounts of text, and centred they started at different heights
+            var sp = new StackPanel { VerticalAlignment = VAlign.Top };
             tile.Child = sp;
 
             // the title is always "Slot 1…4" (in board order); the BIOS label ("DIMM0 #1", "ChannelA-DIMM0") and the bank sit

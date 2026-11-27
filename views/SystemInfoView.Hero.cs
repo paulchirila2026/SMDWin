@@ -279,7 +279,7 @@ namespace SMDWin.Views
                 if (mode.Length > 0)
                     facts.Children.Add(HeroFact("Channels", hue, mode, "",
                         channel.Status == DualChannelStatus.SingleChannel ? "StatusWarningBrush" : "TextPrimaryBrush",
-                        string.IsNullOrWhiteSpace(channel.Advice) ? channel.Description : $"{channel.Description}\n{channel.Advice}".Trim()));
+                        MainWindow.PT(channel.Description) + (string.IsNullOrWhiteSpace(channel.Advice) ? "" : "\n" + MainWindow.PT(channel.Advice))));
             }
             catch (Exception ex) { AppLogger.Debug($"Memory hero channel mode: {ex.Message}"); }
 

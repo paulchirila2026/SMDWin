@@ -3167,6 +3167,8 @@
     "the_storage_test_could_not_run": "Le test de stockage n'a pas pu s'exécuter.",
     "storage_test_skipped": "Test de stockage ignoré",
     "welcome_to_smd_win": "Bienvenue dans SMD Win",
+    "a_second_matching_module_would_turn_on_dual_channel_up_to_tw": "Un second module identique activerait le Dual Channel : jusqu'à deux fois le débit de la mémoire.",
+    "single_channel_only_1_module_installed": "Single channel — un seul module installé.",
     "no": "Non",
     "ok": "OK",
     "restore_the_original_value_for_these_settings": "Restaurer la valeur d'origine de ces paramètres ?",

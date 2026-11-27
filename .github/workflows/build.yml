@@ -1,9 +1,10 @@
-# Checks every push to main: the project compiles and the tests pass. Nothing is published.
+# Checks every push to main (and to a check/* branch, used to test a change before it reaches main): the project compiles
+# and the tests pass. Nothing is published.
 name: Build check
 
 on:
   push:
-    branches: [main]
+    branches: [main, "check/**"]
   pull_request:
   workflow_dispatch:
 
@@ -14,9 +15,9 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "8.0.x"
 

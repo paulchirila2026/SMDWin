@@ -23,22 +23,40 @@ namespace SMDWin.Views
 
         private HashSet<Style>? _cardStyles;
 
+        /// <summary>
+        /// Opening a page has ONE motion: the cards coming in one after another. The page itself stays hidden until that starts
+        /// (set here, before the first frame), so it is never shown whole and then restarted card by card. A page without
+        /// cards of the shared styles gets a short fade of the whole page instead.
+        /// </summary>
         private void AnimateCardsIn(FrameworkElement page)
         {
-            if (SettingsService.Current.EnableAnimations == false) return;
+            if (!Fx.Motion) return;
+            page.BeginAnimation(UIElement.OpacityProperty, null);
+            page.Opacity = 0;
             // after layout, so the positions (for the order) are known
             _ = Dispatcher.InvokeAsync(() =>
             {
-                try { RunCardsIn(page); }
+                bool animated = false;
+                try { animated = RunCardsIn(page); }
                 catch (Exception ex) { AppLogger.Debug($"AnimateCardsIn: {ex.Message}"); }
+                finally
+                {
+                    if (animated) page.Opacity = 1;   // the cards now hold the motion (each starts at 0)
+                    else
+                    {
+                        var fade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                        fade.Completed += (_, _) => { page.BeginAnimation(UIElement.OpacityProperty, null); page.Opacity = 1; };
+                        page.BeginAnimation(UIElement.OpacityProperty, fade);
+                    }
+                }
             }, DispatcherPriority.Loaded);
         }
 
-        private void RunCardsIn(FrameworkElement page)
+        private bool RunCardsIn(FrameworkElement page)
         {
-            if (!page.IsVisible) return;
+            if (!page.IsVisible) return false;
             _cardStyles ??= new HashSet<Style>(CardStyleKeys.Select(k => TryFindResource(k)).OfType<Style>());
-            if (_cardStyles.Count == 0) return;
+            if (_cardStyles.Count == 0) return false;
 
             var cards = new List<Border>();
             void Walk(DependencyObject d)
@@ -64,6 +82,7 @@ namespace SMDWin.Views
                 try { return b.TransformToAncestor(page).Transform(new Point(0, 0)); }
                 catch (InvalidOperationException) { return new Point(0, 0); }
             }
+            if (cards.Count == 0) return false;
             var ordered = cards.Select(b => (b, p: Pos(b)))
                                .OrderBy(t => Math.Round(t.p.Y / 40)).ThenBy(t => t.p.X)
                                .Select(t => t.b).ToList();
@@ -88,6 +107,7 @@ namespace SMDWin.Views
                     tt.BeginAnimation(TranslateTransform.YProperty, rise);
                 }
             }
+            return true;
         }
     }
 }

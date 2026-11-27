@@ -2975,6 +2975,8 @@
     "the_storage_test_could_not_run": "The storage test could not run.",
     "storage_test_skipped": "Storage test skipped",
     "welcome_to_smd_win": "Welcome to SMD Win",
+    "a_second_matching_module_would_turn_on_dual_channel_up_to_tw": "A second matching module would turn on Dual Channel: up to twice the memory transfer speed.",
+    "single_channel_only_1_module_installed": "Single channel — only 1 module installed.",
     "no": "No",
     "ok": "OK",
     "restore_the_original_value_for_these_settings": "Restore the original value for these settings?",

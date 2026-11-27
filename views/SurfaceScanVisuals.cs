@@ -74,12 +74,18 @@ namespace SMDWin.Views
             // the number of columns is chosen on every draw by the current card size (the largest square that fits): the number of
             // cells is fixed at the start of the scan, and the card may widen afterwards
             cols = Math.Max(1, Math.Min(_cols, n));
+            // only column counts that divide the number of cells exactly, so the last row is always complete (no missing squares
+            // at the bottom right); the fallback below is for an array whose length has no usable divisor
             double best = 0;
-            for (int c = 4; c <= Math.Min(n, 400); c++)
+            for (int pass = 0; pass < 2 && best <= 0; pass++)
             {
-                int r = (int)Math.Ceiling(n / (double)c);
-                double sz = Math.Min(w / c, h / r);
-                if (sz > best + 0.01) { best = sz; cols = c; }
+                for (int c = 4; c <= Math.Min(n, 400); c++)
+                {
+                    if (pass == 0 && n % c != 0) continue;
+                    int r = (int)Math.Ceiling(n / (double)c);
+                    double sz = Math.Min(w / c, h / r);
+                    if (sz > best + 0.01) { best = sz; cols = c; }
+                }
             }
             rows = (int)Math.Ceiling(n / (double)cols);
             cell = Math.Max(3, Math.Floor(Math.Min(w / cols, h / rows)));

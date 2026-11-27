@@ -263,6 +263,11 @@ namespace SMDWin.Views
             // the viewport changes size with the window only (not with the content), so this cannot loop
             sv.SizeChanged += (_, e) => { if (e.HeightChanged || e.WidthChanged) QueueDriveFit(); };
             sv.IsVisibleChanged += (_, _) => { if (sv.IsVisible) QueueDriveFit(); };
+            // the other blocks of the page (above and below the cards) change height when their content arrives; they do not
+            // depend on the chart height, so this cannot loop
+            if (FindName("StorageDriveRows") is FrameworkElement hostEl && hostEl.Parent is Grid pg)
+                foreach (var blk in pg.Children.OfType<FrameworkElement>().Where(el => !ReferenceEquals(el, hostEl)))
+                    blk.SizeChanged += (_, e) => { if (e.HeightChanged) QueueDriveFit(); };
         }
 
         private void FitDriveCards()
@@ -273,8 +278,11 @@ namespace SMDWin.Views
                 if (FindName("StorageDriveRows") is not FrameworkElement host || host.Parent is not Grid page) return;
                 var shown = _driveFits.Where(f => f.Card.Visibility == Visibility.Visible && f.ChartShown()).ToList();
                 if (shown.Count == 0) return;
-                double above = page.Children.OfType<FrameworkElement>().Where(c => Grid.GetRow(c) == 0).Sum(c => c.ActualHeight);
-                double avail = sv.ViewportHeight - above - 4;
+                // everything on the page that is not the drive cards: the part above them AND the maintenance cards (TRIM, file
+                // system, free up space) under them - without the second, one tall card pushed them out of the visible area
+                double Taken(FrameworkElement c) => c.ActualHeight + c.Margin.Top + c.Margin.Bottom;
+                double others = page.Children.OfType<FrameworkElement>().Where(c => !ReferenceEquals(c, host) && c.Visibility != Visibility.Collapsed).Sum(el => Taken(el));
+                double avail = sv.ViewportHeight - others - 4;
                 if (avail < 200) return;
                 int k = Math.Min(2, shown.Count);
                 double target = avail / k;   // a card's measured height includes the space under it

@@ -214,7 +214,7 @@ namespace SMDWin.Views
             if (_netTrafficChartReady) return;
             _netTrafficChartReady = true;
             // rounded upper limit + its label on the chart: shows how much a peak means
-            NetTrafficChart.NiceMax = peak => SMDWin.Services.ChartScale.NiceRateMaxKBs(peak, 64);
+            NetTrafficChart.NiceMax = peak => SMDWin.Services.ChartScale.NiceRateMaxKBs(peak, 500);   // at least 500 KB/s (4 Mbit/s): a few hundred KB/s of background traffic does not fill half the chart
             NetTrafficChart.ScaleText = SMDWin.Services.ChartScale.FormatRateKBs;
             ChartRangeMenu.Attach(NetTrafficChart, NetTrafficWindows, NetTrafficWindowSec, sec =>
             {
