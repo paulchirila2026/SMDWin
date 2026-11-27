@@ -11,6 +11,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SMDWin.Services;
 using Border = System.Windows.Controls.Border;
+using Brushes = System.Windows.Media.Brushes;
+using Control = System.Windows.Controls.Control;
 using Button = System.Windows.Controls.Button;
 using Cursors = System.Windows.Input.Cursors;
 using HAlign = System.Windows.HorizontalAlignment;
