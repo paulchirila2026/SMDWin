@@ -111,7 +111,7 @@ namespace SMDWin.Views
 
             var hdr = NetWindowHelper.ToolHeader("USB Monitor",
                 "Watches USB devices connect and drop out — leave it open while the problem happens", out var actions);
-            _chkSound = new CheckBox { Content = "Sound on disconnect", IsChecked = true, VerticalAlignment = VerticalAlignment.Center,
+            _chkSound = new CheckBox { Content = MainWindow.PT("Sound on disconnect"), IsChecked = true, VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 12, 0), Foreground = NetWindowHelper.Res("TextSecondaryBrush") };
             actions.Children.Add(_chkSound);
             var btnSave = NetWindowHelper.SecondaryButton("Save log", "Saves the devices and the log as a text report");
@@ -309,7 +309,7 @@ namespace SMDWin.Views
             while (_events.Count > 500) _events.RemoveAt(_events.Count - 1);
             RefreshGrid();
             int conn = _devices.Count(x => x.Connected);
-            _txtStatus.Text = $"Watching since {_startedAt:HH:mm:ss} · {conn} device(s) connected · {_events.Count(e => !e.Connected)} disconnection(s) seen";
+            _txtStatus.Text = MainWindow.PT("Watching since {0} · {1} device(s) connected · {2} disconnection(s) seen", _startedAt.ToString("HH:mm:ss"), conn, _events.Count(e => !e.Connected));
         }
 
         private void ApplyStarts(Dictionary<string, int> starts)
@@ -319,7 +319,7 @@ namespace SMDWin.Views
             RefreshGrid();
             var flaky = _byId.Values.Where(x => x.StartsSinceBoot > 1).OrderByDescending(x => x.StartsSinceBoot).ToList();
             if (starts.Count == 0)
-                _txtReconnects.Text = "Log not available";
+                _txtReconnects.Text = MainWindow.PT("Log not available");
             else if (flaky.Count == 0)
                 _txtReconnects.Text = "None";
             else

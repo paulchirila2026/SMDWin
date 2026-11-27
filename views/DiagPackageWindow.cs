@@ -40,7 +40,7 @@ namespace SMDWin.Views
         {
             PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
             _exportCallback = exportCallback;
-            Title  = "Generate Diagnostic Package";
+            Title  = MainWindow.PT("Generate Diagnostic Package");
             Width  = 560; Height = 540;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             ResizeMode = ResizeMode.NoResize;
@@ -97,7 +97,7 @@ namespace SMDWin.Views
             titleBar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var titleTxt = new TextBlock
             {
-                Text = "Generate Diagnostic Package",
+                Text = MainWindow.PT("Generate Diagnostic Package"),
                 FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold,
                 Foreground = GetBrush("TextPrimaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center,
@@ -119,7 +119,7 @@ namespace SMDWin.Views
             var headerSp = new StackPanel();
             headerSp.Children.Add(new TextBlock
             {
-                Text = "Select the data to include in the diagnostic ZIP.",
+                Text = MainWindow.PT("Select the data to include in the diagnostic ZIP."),
                 FontSize = Ui.FontM, Foreground = GetBrush("TextPrimaryBrush"),
                 TextWrapping = TextWrapping.Wrap,
             });
@@ -222,7 +222,7 @@ namespace SMDWin.Views
 
             _btnExport = new System.Windows.Controls.Button
             {
-                Content = "Export ZIP →",
+                Content = MainWindow.PT("Export ZIP →"),
                 Padding = new Thickness(20, 7, 20, 7),
             };
             try { _btnExport.Style = (Style)FindResource("PrimaryButtonStyle"); } catch (Exception ex) { SMDWin.Services.AppLogger.Debug(ex.Message); }

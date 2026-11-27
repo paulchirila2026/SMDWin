@@ -635,8 +635,8 @@ namespace SMDWin.Views
             {
                 double days = h / 24.0;
                 // time with the disk powered on, not the disk's age — the days are stated directly
-                if (days < 730) return $"{days:N0} days powered on";
-                return $"{days / 365:0.#} years powered on";
+                if (days < 730) return PT("{0} days powered on", days.ToString("N0"));
+                return PT("{0} years powered on", (days / 365).ToString("0.#"));
             }
         }
 
@@ -652,7 +652,7 @@ namespace SMDWin.Views
             sp.Children.Add(v);
             if (sub.Length > 0)
             {
-                var subTb = Txt2(sub, "TextSecondaryBrush", Ui.FontXS);
+                var subTb = Txt2(PT(sub), "TextSecondaryBrush", Ui.FontXS);
                 subTb.Tag = "sub";   // FitSmartVerdict hides it first when there is no room
                 subTb.TextTrimming = TextTrimming.CharacterEllipsis;
                 sp.Children.Add(subTb);

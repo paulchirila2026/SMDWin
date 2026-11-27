@@ -114,8 +114,7 @@ namespace SMDWin.Views
 
             _txtNote = new TextBlock { FontSize = Ui.FontXS, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(2, 8, 0, 0),
                 Foreground = NetWindowHelper.Res("TextSecondaryBrush"),
-                Text = "Counted by Windows' own network events (TCP and UDP, IPv4 and IPv6) since the monitor started. Site names come " +
-                       "from the DNS answers seen meanwhile; names in brackets are reverse lookups (the provider, not the site). Country: DB-IP (CC BY 4.0)." };
+                Text = MainWindow.PT("Counted by Windows' own network events (TCP and UDP, IPv4 and IPv6) since the monitor started. Site names come from the DNS answers seen meanwhile; names in brackets are reverse lookups (the provider, not the site). Country: DB-IP (CC BY 4.0).") };
             Grid.SetRow(_txtNote, 4); root.Children.Add(_txtNote);
             return root;
         }
@@ -127,7 +126,7 @@ namespace SMDWin.Views
                 var mon = EtwNetMonitor.Instance;
                 if (!mon.EnsureStarted())
                 {
-                    _txtNow.Text = "Live traffic per address is not available";
+                    _txtNow.Text = MainWindow.PT("Live traffic per address is not available");
                     _txtTotals.Text = mon.LastError.Length > 0 ? $"Windows did not start the network event session ({mon.LastError})." : "";
                     return;
                 }
@@ -135,7 +134,7 @@ namespace SMDWin.Views
                 if (t == null)
                 {
                     _txtNow.Text = "↓ 0 KB/s   ↑ 0 KB/s";
-                    _txtTotals.Text = $"No traffic seen yet (monitoring since {mon.StartedUtc.ToLocalTime():HH:mm:ss})";
+                    _txtTotals.Text = MainWindow.PT("No traffic seen yet (monitoring since {0})", mon.StartedUtc.ToLocalTime().ToString("HH:mm:ss"));
                     return;
                 }
                 _txtNow.Text = $"↓ {Rate(t.RecvKBs)}   ↑ {Rate(t.SendKBs)}";

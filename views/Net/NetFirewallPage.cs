@@ -64,15 +64,15 @@ namespace SMDWin.Views.Net
             hdr.ColumnDefinitions.Add(new ColumnDefinition());
             hdr.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var hdrSp = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            hdrSp.Children.Add(new TextBlock { Text = "Firewall Rules", FontSize = Ui.FontXL, FontWeight = FontWeights.Bold,
+            hdrSp.Children.Add(new TextBlock { Text = MainWindow.PT("Firewall Rules"), FontSize = Ui.FontXL, FontWeight = FontWeights.Bold,
                 Foreground = NetWindowHelper.Res("TextPrimaryBrush") });
-            hdrSp.Children.Add(new TextBlock { Text = "Windows Defender Firewall — inbound & outbound",
+            hdrSp.Children.Add(new TextBlock { Text = MainWindow.PT("Windows Defender Firewall — inbound & outbound"),
                 FontSize = Ui.FontS, Foreground = NetWindowHelper.Res("TextSecondaryBrush"), Margin = new Thickness(0,2,0,0), Opacity = 0.7 });
             Grid.SetColumn(hdrSp, 0); hdr.Children.Add(hdrSp);
             var hdrRight = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             hdrRight.Children.Add(new TextBlock { Text = "Filter:", VerticalAlignment = VerticalAlignment.Center,
                 Foreground = NetWindowHelper.Res("TextSecondaryBrush"), Margin = new Thickness(0,0,8,0) });
-            _txtFilter = new TextBox { Style = (Style)System.Windows.Application.Current.Resources["VanillaTextBoxStyle"], Width = 180, Margin = new Thickness(0,0,10,0), ToolTip = "Filter by name, direction, action…" };
+            _txtFilter = new TextBox { Style = (Style)System.Windows.Application.Current.Resources["VanillaTextBoxStyle"], Width = 180, Margin = new Thickness(0,0,10,0), ToolTip = MainWindow.PT("Filter by name, direction, action…") };
             _txtFilter.TextChanged += (_, _) => ApplyFilter();
             hdrRight.Children.Add(_txtFilter);
             _btnLoad = NetWindowHelper.SecondaryButton("↻ Refresh", "Reload current Windows Firewall rules");
@@ -83,7 +83,7 @@ namespace SMDWin.Views.Net
             Grid.SetRow(hdr, 0); root.Children.Add(hdr);
             NetWindowHelper.MakeDraggable(hdr, this);
 
-            _txtStatus = new TextBlock { Text = "Loading firewall rules…",
+            _txtStatus = new TextBlock { Text = MainWindow.PT("Loading firewall rules…"),
                 FontSize = Ui.FontS, Foreground = NetWindowHelper.Res("TextSecondaryBrush"), Margin = new Thickness(0,0,0,8) };
             Grid.SetRow(_txtStatus, 1); root.Children.Add(_txtStatus);
 
@@ -94,11 +94,11 @@ namespace SMDWin.Views.Net
 
             // Context menu
             var ctxMenu = new ContextMenu();
-            var miAllow = new MenuItem { Header = "Allow this rule" };
+            var miAllow = new MenuItem { Header = MainWindow.PT("Allow this rule") };
             miAllow.Click += FirewallAllow_ContextClick;
-            var miDeny  = new MenuItem { Header = "Block this rule" };
+            var miDeny  = new MenuItem { Header = MainWindow.PT("Block this rule") };
             miDeny.Click += FirewallDeny_ContextClick;
-            var miReload = new MenuItem { Header = "Reload rules" };
+            var miReload = new MenuItem { Header = MainWindow.PT("Reload rules") };
             miReload.Click += LoadFirewallRules_Click;
             ctxMenu.Items.Add(miAllow); ctxMenu.Items.Add(miDeny);
             ctxMenu.Items.Add(new Separator()); ctxMenu.Items.Add(miReload);
@@ -115,7 +115,7 @@ namespace SMDWin.Views.Net
             dirTpl.VisualTree = dirFef; dirCol.CellTemplate = dirTpl;
             _grid.Columns.Add(dirCol);
 
-            var nameCol = new DataGridTextColumn { Header = "Rule Name", Binding = new System.Windows.Data.Binding("DisplayName"), Width = new DataGridLength(1.4, DataGridLengthUnitType.Star) };
+            var nameCol = new DataGridTextColumn { Header = MainWindow.PT("Rule Name"), Binding = new System.Windows.Data.Binding("DisplayName"), Width = new DataGridLength(1.4, DataGridLengthUnitType.Star) };
             nameCol.ElementStyle = new Style(typeof(TextBlock));
             nameCol.ElementStyle.Setters.Add(new Setter(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis));
             nameCol.ElementStyle.Setters.Add(new Setter(FrameworkElement.ToolTipProperty, new System.Windows.Data.Binding("Name")));

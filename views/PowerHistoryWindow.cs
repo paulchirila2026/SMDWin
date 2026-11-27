@@ -163,7 +163,7 @@ namespace SMDWin.Views
         {
             UpdateLightFlag();
             PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
-            Title                 = "Power & Session History — SMDWin";
+            Title                 = MainWindow.PT("Power & Session History — SMDWin");
             Width                 = 960;
             Height                = 780;
             MinWidth              = 720;

@@ -585,7 +585,7 @@ namespace SMDWin.Views
             SetNavTaskBadge("TaskBadgeDisk", true);
 
             BtnSurfaceStart.IsEnabled  = true;
-            if (TxtSurfaceStartLabel != null) TxtSurfaceStartLabel.Text = "Stop Scan";
+            if (TxtSurfaceStartLabel != null) TxtSurfaceStartLabel.Text = MainWindow.PT("Stop Scan");
             // The main action is coloured (accent) while it waits to start; while running
             // the scan button becomes "Stop Scan", red.
             SetStopLook(BtnSurfaceStart, running: true);

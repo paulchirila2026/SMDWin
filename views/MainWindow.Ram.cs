@@ -448,7 +448,7 @@ namespace SMDWin.Views
                 }
             }
 
-            if (modules.Count == 0) { TxtRamSlotInfo.Text = "No RAM modules detected."; return; }
+            if (modules.Count == 0) { TxtRamSlotInfo.Text = MainWindow.PT("No RAM modules detected."); return; }
 
             // Header: cate sloturi populate / total
             int populatedCount = modules.Count(m => !m.IsEmpty);
@@ -456,7 +456,7 @@ namespace SMDWin.Views
                 slotsHdr.Text = $"{populatedCount} / {modules.Count} populated";
 
             if (FindName("TxtRamSlotInfo") is System.Windows.Controls.TextBlock slotInfoTb && modules.Count > 4)
-                slotInfoTb.Text = $"Hover a module for details  ·  {modules.Count} memory devices reported — on systems with on-package/soldered memory (e.g. Intel Lunar Lake), these represent internal channels, not swappable physical slots.";
+                slotInfoTb.Text = PT("Hover a module for details  ·  {0} memory devices reported — on systems with on-package/soldered memory (e.g. Intel Lunar Lake), these represent internal channels, not swappable physical slots.", modules.Count);
 
             var mbBorder = new Border
             {

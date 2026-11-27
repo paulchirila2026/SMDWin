@@ -312,7 +312,7 @@ namespace SMDWin.Views.Net
             void Changed() { SettingsService.Save(); NetAlerts.Apply(); UpdateAlertsButton(); }
 
             var newApp = new MenuItem { Header = "A program uses the internet for the first time", IsCheckable = true, IsChecked = s.NetAlertNewApp,
-                ToolTip = "Compared with the programs already seen on this PC. The first 2 minutes after switching it on only learn what already runs." };
+                ToolTip = MainWindow.PT("Compared with the programs already seen on this PC. The first 2 minutes after switching it on only learn what already runs.") };
             newApp.Click += (_, _) => { s.NetAlertNewApp = newApp.IsChecked; Changed(); };
             menu.Items.Add(newApp);
 
@@ -325,14 +325,13 @@ namespace SMDWin.Views.Net
             }
             menu.Items.Add(traffic);
 
-            var bl = new MenuItem { Header = "Contact with known malware control servers", IsCheckable = true, IsChecked = s.NetAlertBlocklist,
-                ToolTip = "Uses the abuse.ch Feodo Tracker list (CC0), downloaded when switched on and then once a day — the only thing sent for " +
-                          "this alert is that download; the traffic itself never leaves the PC." };
+            var bl = new MenuItem { Header = MainWindow.PT("Contact with known malware control servers"), IsCheckable = true, IsChecked = s.NetAlertBlocklist,
+                ToolTip = MainWindow.PT("Uses the abuse.ch Feodo Tracker list (CC0), downloaded when switched on and then once a day — the only thing sent for this alert is that download; the traffic itself never leaves the PC.") };
             bl.Click += (_, _) => { s.NetAlertBlocklist = bl.IsChecked; Changed(); };
             menu.Items.Add(bl);
 
             menu.Items.Add(new Separator());
-            var reset = new MenuItem { Header = "Forget the known programs", ToolTip = "The next 2 minutes learn again, without alerts" };
+            var reset = new MenuItem { Header = MainWindow.PT("Forget the known programs"), ToolTip = MainWindow.PT("The next 2 minutes learn again, without alerts") };
             reset.Click += (_, _) => NetAlerts.ResetKnown();
             menu.Items.Add(reset);
             menu.Items.Add(new MenuItem

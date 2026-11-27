@@ -373,7 +373,7 @@ namespace SMDWin.Views
             {
                 legend.Children.Add(new Border { Width = 13, Height = 13, CornerRadius = new CornerRadius(3), Background = CalCellColor(u, 0, false), Margin = new Thickness(2, 0, 2, 0) });
             }
-            legend.Children.Add(new TextBlock { Text = "More uptime", FontSize = Ui.FontXS, Foreground = Res("TextSecondaryBrush"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 14, 0) });
+            legend.Children.Add(new TextBlock { Text = MainWindow.PT("More uptime"), FontSize = Ui.FontXS, Foreground = Res("TextSecondaryBrush"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 14, 0) });
             legend.Children.Add(new Border { Width = 13, Height = 13, CornerRadius = new CornerRadius(3), Background = new SolidColorBrush(WpfColor.FromRgb(239, 68, 68)), Margin = new Thickness(0, 0, 6, 0) });
             legend.Children.Add(new TextBlock { Text = "Crash", FontSize = Ui.FontXS, Foreground = Res("TextSecondaryBrush"), VerticalAlignment = VerticalAlignment.Center });
             _timelinePanel.Children.Add(legend);

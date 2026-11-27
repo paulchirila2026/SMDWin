@@ -86,7 +86,7 @@ namespace SMDWin.Views.Net
             Grid.SetRow(hdrLan, 0); root.Children.Add(hdrLan);
             NetWindowHelper.MakeDraggable(hdrLan, this);
 
-            _txtStatus = new TextBlock { Text = "Press Scan to discover devices on the local network.",
+            _txtStatus = new TextBlock { Text = MainWindow.PT("Press Scan to discover devices on the local network."),
                 FontSize = Ui.FontS, Foreground = NetWindowHelper.Res("TextSecondaryBrush"), Margin = new Thickness(0,0,0,8) };
             Grid.SetRow(_txtStatus, 1); root.Children.Add(_txtStatus);
 
@@ -119,7 +119,7 @@ namespace SMDWin.Views.Net
             vendorStyle.Setters.Add(new Setter(FrameworkElement.ToolTipProperty, new System.Windows.Data.Binding("Vendor")));
             vendorCol.ElementStyle = vendorStyle;
             _grid.Columns.Add(vendorCol);
-            _grid.Columns.Add(new DataGridTextColumn { Header = "Ping (ms)", Binding = new System.Windows.Data.Binding("PingDisplay"),Width = new DataGridLength(1, DataGridLengthUnitType.SizeToHeader), MinWidth = 110 });
+            _grid.Columns.Add(new DataGridTextColumn { Header = MainWindow.PT("Ping (ms)"), Binding = new System.Windows.Data.Binding("PingDisplay"),Width = new DataGridLength(1, DataGridLengthUnitType.SizeToHeader), MinWidth = 110 });
             _grid.Columns.Add(new DataGridTextColumn { Header = "Status",    Binding = new System.Windows.Data.Binding("Status"),     Width = new DataGridLength(1, DataGridLengthUnitType.SizeToHeader), MinWidth = 80 });
             _grid.MouseDoubleClick += LanDeviceGrid_DoubleClick;
 
@@ -127,13 +127,13 @@ namespace SMDWin.Views.Net
             var ctx = new ContextMenu();
             string? SelIp() => (_grid.SelectedItem as SMDWin.Models.LocalNetworkDevice)?.IpAddress;
             string? SelMac() => (_grid.SelectedItem as SMDWin.Models.LocalNetworkDevice)?.MacAddress;
-            var miIp = new MenuItem { Header = "Copy IP address" };
+            var miIp = new MenuItem { Header = MainWindow.PT("Copy IP address") };
             miIp.Click += (_, _) => { if (SelIp() is { Length: > 0 } ip) System.Windows.Clipboard.SetText(ip); };
-            var miMac = new MenuItem { Header = "Copy MAC address" };
+            var miMac = new MenuItem { Header = MainWindow.PT("Copy MAC address") };
             miMac.Click += (_, _) => { if (SelMac() is { Length: > 0 } m && m != "—") System.Windows.Clipboard.SetText(m); };
-            var miPing = new MenuItem { Header = "Ping this device" };
+            var miPing = new MenuItem { Header = MainWindow.PT("Ping this device") };
             miPing.Click += (_, _) => { if (SelIp() is { Length: > 0 } ip) NetToolPage.OpenTool("Ping", ip); };
-            var miWeb = new MenuItem { Header = "Open in browser" };
+            var miWeb = new MenuItem { Header = MainWindow.PT("Open in browser") };
             miWeb.Click += (_, _) =>
             {
                 if (SelIp() is not { Length: > 0 } ip) return;
@@ -166,7 +166,7 @@ namespace SMDWin.Views.Net
             _detailTitle = new TextBlock { FontSize = Ui.FontXL, FontWeight = FontWeights.Bold,
                 Foreground = NetWindowHelper.Res("TextPrimaryBrush"),
                 Cursor = Cursors.Hand,
-                ToolTip = "Click to open this IP in your browser (useful for printers, routers, and other devices with a web interface)" };
+                ToolTip = MainWindow.PT("Click to open this IP in your browser (useful for printers, routers, and other devices with a web interface)") };
             // the address shown in the title is the one opened (it does not depend on the table selection, which changes on rescan)
             _detailTitle.PreviewMouseLeftButtonUp += (_, e) =>
             {
@@ -269,7 +269,7 @@ namespace SMDWin.Views.Net
             }
             catch (Exception ex)
             {
-                if (myGen == _scanGeneration) _txtStatus.Text = $"Scan error: {ex.Message}";
+                if (myGen == _scanGeneration) _txtStatus.Text = MainWindow.PT("Scan error: {0}", ex.Message);
             }
             finally
             {

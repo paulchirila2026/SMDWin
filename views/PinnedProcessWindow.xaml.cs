@@ -448,7 +448,7 @@ namespace SMDWin.Views
 
         public ProcessPickerWindow()
         {
-            Title  = "Pick a Process";
+            Title  = MainWindow.PT("Pick a Process");
             Width  = 340; Height = 420;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             WindowStyle     = WindowStyle.None;
@@ -556,7 +556,7 @@ namespace SMDWin.Views
 
             sp.Children.Add(new System.Windows.Controls.TextBlock
             {
-                Text = "Search process:",
+                Text = MainWindow.PT("Search process:"),
                 Foreground = (System.Windows.Media.Brush)System.Windows.Application.Current.FindResource("TextSecondaryBrush"),
                 Margin = new Thickness(0, 0, 0, 4), FontSize = Ui.FontS,
             });
@@ -569,7 +569,7 @@ namespace SMDWin.Views
             titleBar.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = System.Windows.GridLength.Auto });
             var titleTb = new System.Windows.Controls.TextBlock
             {
-                Text = "Pick a Process", FontSize = Ui.FontL, FontWeight = System.Windows.FontWeights.SemiBold,
+                Text = MainWindow.PT("Pick a Process"), FontSize = Ui.FontL, FontWeight = System.Windows.FontWeights.SemiBold,
                 Foreground = (System.Windows.Media.Brush)System.Windows.Application.Current.FindResource("TextPrimaryBrush"),
                 VerticalAlignment = System.Windows.VerticalAlignment.Center,
             };

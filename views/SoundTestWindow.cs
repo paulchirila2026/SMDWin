@@ -77,7 +77,7 @@ namespace SMDWin.Views
 
             _win = new Window
             {
-                Title = "Sound Test",
+                Title = MainWindow.PT("Sound Test"),
                 Width = 520, Height = 360,
                 MinWidth = 420, MinHeight = 300,
                 WindowStyle = WindowStyle.None,
@@ -156,7 +156,7 @@ namespace SMDWin.Views
             });
             titleStack.Children.Add(new TextBlock
             {
-                Text = "Click a speaker to test that channel. Click the PC (center) to test both.",
+                Text = MainWindow.PT("Click a speaker to test that channel. Click the PC (center) to test both."),
                 FontSize = Ui.FontXS,
                 Foreground = new SolidColorBrush(FgSec),
                 Margin = new Thickness(0, 2, 0, 0),
@@ -213,7 +213,7 @@ namespace SMDWin.Views
             // ── Status ────────────────────────────────────────────────────────
             _statusLabel = new TextBlock
             {
-                Text = "Click a speaker to play a test sound.",
+                Text = MainWindow.PT("Click a speaker to play a test sound."),
                 FontSize = Ui.FontXS,
                 Foreground = new SolidColorBrush(FgSec),
                 HorizontalAlignment = HorizontalAlignment.Center,

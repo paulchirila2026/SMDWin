@@ -246,9 +246,9 @@ namespace SMDWin.Views.Net
             NetWindowHelper.SetupWindow(this, "Quick fixes — SMDWin", 640, 420);
 
             var root = new StackPanel { Margin = new Thickness(20, 16, 20, 16) };
-            var title = new TextBlock { Text = "Quick fixes", FontSize = Ui.FontXL, FontWeight = FontWeights.Bold };
+            var title = new TextBlock { Text = MainWindow.PT("Quick fixes"), FontSize = Ui.FontXL, FontWeight = FontWeights.Bold };
             title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-            var sub = new TextBlock { Text = "Common repairs for a connection that misbehaves", FontSize = Ui.FontS, Margin = new Thickness(0, 2, 0, 12) };
+            var sub = new TextBlock { Text = MainWindow.PT("Common repairs for a connection that misbehaves"), FontSize = Ui.FontS, Margin = new Thickness(0, 2, 0, 12) };
             sub.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
             root.Children.Add(title); root.Children.Add(sub);
 

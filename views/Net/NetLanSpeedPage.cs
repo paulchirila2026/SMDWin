@@ -127,7 +127,7 @@ namespace SMDWin.Views.Net
 
             // Status + log
             var bottom = new StackPanel();
-            _txtStatus = new TextBlock { Text = "Enter target IP and press Run Test.",
+            _txtStatus = new TextBlock { Text = MainWindow.PT("Enter target IP and press Run Test."),
                 FontSize = Ui.FontM, Foreground = NetWindowHelper.Res("TextSecondaryBrush"),
                 Margin = new Thickness(0,0,0,8), TextWrapping = TextWrapping.Wrap };
             bottom.Children.Add(_txtStatus);
@@ -283,7 +283,7 @@ namespace SMDWin.Views.Net
                         Dispatcher.Invoke(() =>
                         {
                             _txtDown.Text = $"{dlMbps:F0}"; _txtUp.Text = $"{ulMbps:F0}";
-                            _txtStatus.Text = $"Loopback done. ↓{dlMbps:F0} Mbps  ↑{ulMbps:F0} Mbps  (local stack speed)";
+                            _txtStatus.Text = MainWindow.PT("Loopback done. ↓{0} Mbps  ↑{1} Mbps  (local stack speed)", dlMbps.ToString("F0"), ulMbps.ToString("F0"));
                         });
                         Log("Self-test complete. This shows your PC's TCP stack speed, NOT actual LAN speed.");
                         // Start remote server

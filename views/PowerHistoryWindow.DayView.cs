@@ -209,7 +209,7 @@ namespace SMDWin.Views
             {
                 _timelinePanel.Children.Add(new TextBlock
                 {
-                    Text = "No events recorded for this day.",
+                    Text = MainWindow.PT("No events recorded for this day."),
                     FontSize = Ui.FontM, Foreground = Res("TextSecondaryBrush"),
                     Margin = new Thickness(0, 4, 0, 0), Opacity = 0.7
                 });

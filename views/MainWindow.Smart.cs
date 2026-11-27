@@ -513,7 +513,7 @@ namespace SMDWin.Views
             if (FindName("BtnSmartShowAll") is not TextBlock link) return;
             link.Visibility = hidden > 0 ? Visibility.Visible : Visibility.Collapsed;
             link.Text = _smartShowAll ? PT("Show fewer") : PT("Show all (+{0})", hidden);
-            link.ToolTip = "Values with no standard meaning that are 0 (vendor counters)";
+            link.ToolTip = MainWindow.PT("Values with no standard meaning that are 0 (vendor counters)");
         }
 
         /// <summary>NVMe disks report no Value/Worst/Limit figures: those three columns are hidden when no row has them.</summary>

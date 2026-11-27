@@ -260,7 +260,7 @@ namespace SMDWin.Views
             {
                 var dlg = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title            = "Export Stress Report",
+                    Title            = MainWindow.PT("Export Stress Report"),
                     Filter           = "PDF Document|*.pdf",
                     FileName         = $"SMDWin_Stress_{DateTime.Now:yyyyMMdd_HHmm}.pdf",
                     InitialDirectory = SMDWin.Services.SettingsService.GetEffectiveReportFolder(),

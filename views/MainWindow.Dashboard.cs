@@ -392,7 +392,7 @@ namespace SMDWin.Views
             {
                 int days = (int)(DateTime.Today - d.Date).TotalDays;
                 tb.SetResourceReference(TextBlock.ForegroundProperty, "StatusWarnBrush");
-                tb.ToolTip = $"No Windows update for {days} days";
+                tb.ToolTip = PT("No Windows update for {0} days", days);
             }
             else
             {
@@ -1628,7 +1628,7 @@ namespace SMDWin.Views
                     if (active.Count == 0)
                     {
                         if (TxtDashBatNetMain != null) TxtDashBatNetMain.Text = "—";
-                        if (TxtDashBatNetSub  != null) TxtDashBatNetSub.Text  = "No active connection";
+                        if (TxtDashBatNetSub  != null) TxtDashBatNetSub.Text  = MainWindow.PT("No active connection");
                         return;
                     }
 

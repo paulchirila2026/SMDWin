@@ -258,7 +258,7 @@ namespace SMDWin.Views
             TxtAppDetStartup.ToolTip = startupHits > 0 ? "Click to see it in Startup Manager" : null;
             if (startupHits < 0)
             {
-                TxtAppDetStartup.Text = "Open Startup Manager to check";
+                TxtAppDetStartup.Text = MainWindow.PT("Open Startup Manager to check");
                 TxtAppDetStartup.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
             }
             else if (startupHits == 0)

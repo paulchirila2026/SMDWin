@@ -51,7 +51,7 @@ namespace SMDWin.Views
 
         private void BuildWindow(EventData ev, List<EventData> all)
         {
-            Title = $"Event Details — {ev.Time:dd MMM yyyy HH:mm:ss}";
+            Title = MainWindow.PT("Event Details — {0}", ev.Time.ToString("dd MMM yyyy HH:mm:ss"));
             Width = 620; Height = 480;
             MinWidth = 480; MinHeight = 360;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -101,7 +101,7 @@ namespace SMDWin.Views
 
             var titleTb = new TextBlock
             {
-                Text = $"Event Details — {ev.Time:dd MMM yyyy  HH:mm:ss}",
+                Text = MainWindow.PT("Event Details — {0}", ev.Time.ToString("dd MMM yyyy  HH:mm:ss")),
                 FontSize = Ui.FontM, FontWeight = FontWeights.SemiBold,
                 Foreground = Res("TextPrimaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center
@@ -196,7 +196,7 @@ namespace SMDWin.Views
             {
                 body.Children.Add(new TextBlock
                 {
-                    Text = $"Previous occurrences of \"{ev.KindLabel}\" ({similar.Count} shown):",
+                    Text = MainWindow.PT("Previous occurrences of \"{0}\" ({1} shown):", ev.KindLabel, similar.Count),
                     FontSize = Ui.FontS, FontWeight = FontWeights.SemiBold,
                     Foreground = Res("TextSecondaryBrush"), Margin = new Thickness(0, 12, 0, 6)
                 });

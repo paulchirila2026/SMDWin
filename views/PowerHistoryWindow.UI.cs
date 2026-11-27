@@ -50,7 +50,7 @@ namespace SMDWin.Views
             var titleSp = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             titleSp.Children.Add(new TextBlock
             {
-                Text = "Power & Session History", FontSize = Ui.FontXXL, FontWeight = FontWeights.Bold,
+                Text = MainWindow.PT("Power & Session History"), FontSize = Ui.FontXXL, FontWeight = FontWeights.Bold,
                 Foreground = Res("TextPrimaryBrush")
             });
             titleSp.Children.Add(new TextBlock
@@ -300,7 +300,7 @@ namespace SMDWin.Views
             });
             _grid.Columns.Add(new DataGridTextColumn
             {
-                Header  = "Date / Time",
+                Header  = MainWindow.PT("Date / Time"),
                 Binding = new System.Windows.Data.Binding("Time") { StringFormat = "dd MMM yyyy  HH:mm:ss" },
                 Width   = new DataGridLength(175)
             });
@@ -373,16 +373,16 @@ namespace SMDWin.Views
 
             // Context menu: Copy + Search Google + Details
             var ctxMenu = new ContextMenu();
-            var miDetails = new MenuItem { Header = "View details..." };
+            var miDetails = new MenuItem { Header = MainWindow.PT("View details...") };
             miDetails.Click += (_, _) => { if (_grid.SelectedItem is PowerEvent ev) OpenEventDetail(ev); };
-            var miCopy = new MenuItem { Header = "Copy row" };
+            var miCopy = new MenuItem { Header = MainWindow.PT("Copy row") };
             miCopy.Click += (_, _) =>
             {
                 if (_grid.SelectedItem is PowerEvent ev)
                     System.Windows.Clipboard.SetText(
                         $"{ev.Time:dd MMM yyyy HH:mm:ss}\t{ev.KindLabel}\t{ev.Duration}\t{ev.Notes}");
             };
-            var miSearch = new MenuItem { Header = "Search on Google" };
+            var miSearch = new MenuItem { Header = MainWindow.PT("Search on Google") };
             miSearch.Click += (_, _) =>
             {
                 if (_grid.SelectedItem is PowerEvent ev && !string.IsNullOrWhiteSpace(ev.Notes))
@@ -429,7 +429,7 @@ namespace SMDWin.Views
             }
             catch (Exception ex)
             {
-                _txtStatus.Text = $"Error reading Event Log: {ex.Message}";
+                _txtStatus.Text = MainWindow.PT("Error reading Event Log: {0}", ex.Message);
             }
             finally { _btnRefresh.IsEnabled = true; }
         }

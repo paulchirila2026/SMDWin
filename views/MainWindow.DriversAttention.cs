@@ -61,7 +61,7 @@ namespace SMDWin.Views
 
                 if (total == 0)
                 {
-                    TxtDriversAttnCaption.Text = "All good";
+                    TxtDriversAttnCaption.Text = MainWindow.PT("All good");
                     TxtDriversAttnSub.Text = _allDevices.Count == 0 ? "Scanning devices…" : $"All {_allDevices.Count} devices have a working, signed driver";
                     DriversAttnIcon.Data = SMDWin.Services.FluentIcons.Get("checkmark_circle");
                     return;

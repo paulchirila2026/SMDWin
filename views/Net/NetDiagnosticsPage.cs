@@ -137,10 +137,10 @@ namespace SMDWin.Views.Net
 
             var monitorLink = new TextBlock
             {
-                Text = "Monitor →", FontSize = Ui.FontS, Cursor = System.Windows.Input.Cursors.Hand,
+                Text = MainWindow.PT("Monitor →"), FontSize = Ui.FontS, Cursor = System.Windows.Input.Cursors.Hand,
                 TextDecorations = TextDecorations.Underline, VerticalAlignment = VerticalAlignment.Center,
                 Foreground = NetWindowHelper.Res("AccentBrush"),
-                ToolTip = "Open continuous ping monitoring for this target.",
+                ToolTip = MainWindow.PT("Open continuous ping monitoring for this target."),
             };
             string pingTarget = target.StartsWith("http") ? new Uri(target).Host : target;
             monitorLink.MouseLeftButtonUp += (_, _) =>

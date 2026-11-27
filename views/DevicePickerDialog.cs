@@ -59,7 +59,7 @@ namespace SMDWin.Views
             _borderClr = AppColor("CardBorderBrush",    isLight ? WpfColor.FromRgb(203,213,225) : WpfColor.FromRgb(42,51,69));
             _hoverClr  = AppColor("BgCardBrush",         isLight ? WpfColor.FromRgb(255,255,255) : WpfColor.FromRgb(28,36,49));
 
-            Title                 = "Select a device to block";
+            Title                 = MainWindow.PT("Select a device to block");
             SizeToContent         = SizeToContent.Manual;
             Width                 = 560;
             Height                = 520;
@@ -114,7 +114,7 @@ namespace SMDWin.Views
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var titleTb = new TextBlock
             {
-                Text = "Select a device",
+                Text = MainWindow.PT("Select a device"),
                 FontSize = Ui.FontXL, FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(_fgColor)
             };
@@ -128,7 +128,7 @@ namespace SMDWin.Views
 
             var subtitleTb = new TextBlock
             {
-                Text = "Pick the device whose driver Windows Update should stop replacing.",
+                Text = MainWindow.PT("Pick the device whose driver Windows Update should stop replacing."),
                 FontSize = Ui.FontS, Foreground = new SolidColorBrush(_fgSub),
                 Margin = new Thickness(0, 4, 0, 10), TextWrapping = TextWrapping.Wrap
             };
@@ -186,7 +186,7 @@ namespace SMDWin.Views
             {
                 _listPanel.Children.Add(new TextBlock
                 {
-                    Text = "No matching devices.",
+                    Text = MainWindow.PT("No matching devices."),
                     Foreground = new SolidColorBrush(_fgSub),
                     FontSize = Ui.FontS,
                     Margin = new Thickness(4, 12, 4, 4),

@@ -126,7 +126,7 @@ namespace SMDWin.Views
                     PanelBootTimeSummary.Visibility = Visibility.Collapsed;
                     BootDegradationBanner.Visibility = Visibility.Collapsed;
                     ListBootHistory.ItemsSource = null;
-                    TxtBootTimeSub.Text = "No start recorded yet";
+                    TxtBootTimeSub.Text = MainWindow.PT("No start recorded yet");
                     TxtBootLastDate.Text = "—";
                     return;
                 }
@@ -150,7 +150,7 @@ namespace SMDWin.Views
 
                 BootDegradationBanner.Visibility = latest.IsDegradation ? Visibility.Visible : Visibility.Collapsed;
                 if (latest.IsDegradation)
-                    TxtBootDegradationInfo.Text = "Windows marked the last start as slower than usual — look for anything new in the list below, or check the drivers.";
+                    TxtBootDegradationInfo.Text = MainWindow.PT("Windows marked the last start as slower than usual — look for anything new in the list below, or check the drivers.");
 
                 ListBootHistory.ItemTemplate = null;
                 ListBootHistory.ItemsSource = new[] { BuildBootHistoryChart(boots) };

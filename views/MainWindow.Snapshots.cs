@@ -257,7 +257,7 @@ namespace SMDWin.Views
             {
                 Content = new Viewbox { Width = 14, Height = 14, Child = trash },
                 Width = 28, Height = 28, Padding = new Thickness(0), VerticalAlignment = System.Windows.VerticalAlignment.Center,
-                Style = TryFindResource("GhostButtonStyle") as Style, ToolTip = "Delete snapshot",
+                Style = TryFindResource("GhostButtonStyle") as Style, ToolTip = MainWindow.PT("Delete snapshot"),
             };
             btnDelete.Click += (s, e) =>
             {
@@ -285,7 +285,7 @@ namespace SMDWin.Views
 
             var win = new Window
             {
-                Title = "Snapshot Comparison",
+                Title = MainWindow.PT("Snapshot Comparison"),
                 Width = 560, SizeToContent = SizeToContent.Height,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
@@ -324,7 +324,7 @@ namespace SMDWin.Views
             });
             titleStack.Children.Add(new TextBlock
             {
-                Text = "Snapshot Comparison", FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold,
+                Text = MainWindow.PT("Snapshot Comparison"), FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold,
                 Foreground = textPrimary, VerticalAlignment = System.Windows.VerticalAlignment.Center
             });
             Grid.SetColumn(titleStack, 0);

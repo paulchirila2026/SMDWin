@@ -82,7 +82,7 @@ namespace SMDWin.Views
 
             var ico = new TextBlock { Text = "⏱", FontSize = Ui.FontL, VerticalAlignment = WpfVAlign.Center,
                 Margin = new Thickness(0, 0, 6, 0) };
-            var lbl = new TextBlock { Text = "Shutdown Timer", FontSize = Ui.FontXS,
+            var lbl = new TextBlock { Text = MainWindow.PT("Shutdown Timer"), FontSize = Ui.FontXS,
                 Foreground = new SolidColorBrush(FgDim), VerticalAlignment = WpfVAlign.Center };
             var closeBtn = new WpfButton
             {
@@ -90,7 +90,7 @@ namespace SMDWin.Views
                 Foreground = new SolidColorBrush(FgFaint),
                 Background = WpfBrushes.Transparent, BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                ToolTip = "Hide widget (timer still running)",
+                ToolTip = MainWindow.PT("Hide widget (timer still running)"),
             };
             closeBtn.Click += (_, _) => Hide();
             Grid.SetColumn(ico, 0); Grid.SetColumn(lbl, 1); Grid.SetColumn(closeBtn, 2);

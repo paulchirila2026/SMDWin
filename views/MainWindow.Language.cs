@@ -448,7 +448,7 @@ namespace SMDWin.Views
             T(TxtBenchNote,
 "Measures read and write speed · about 1 min",
 "Măsoară viteza de citire și scriere · cam 1 min");
-            if (TxtBenchNote != null) TxtBenchNote.ToolTip = "Sequential read / write, random 4K, response time";
+            if (TxtBenchNote != null) TxtBenchNote.ToolTip = MainWindow.PT("Sequential read / write, random 4K, response time");
             T(TxtBenchUseAboveHint, "Use the Start Benchmark button above", "Folosește butonul Start Benchmark de mai sus");
 
             T(TxtRamPageTitle,"RAM Memory", "Memorie RAM");

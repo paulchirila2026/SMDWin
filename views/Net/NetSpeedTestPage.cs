@@ -244,7 +244,7 @@ namespace SMDWin.Views.Net
             Grid.SetRow(_progress, 4); root.Children.Add(_progress);
 
             // Phase label
-            _txtPhase = new TextBlock { Text = "Press Start Test to begin", FontSize = Ui.FontS,
+            _txtPhase = new TextBlock { Text = MainWindow.PT("Press Start Test to begin"), FontSize = Ui.FontS,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Foreground = NetWindowHelper.Res("TextSecondaryBrush"), Opacity = 0.7 };
             Grid.SetRow(_txtPhase, 5); root.Children.Add(_txtPhase);
@@ -566,7 +566,7 @@ namespace SMDWin.Views.Net
             _historyList.Children.Clear();
             if (_history.Count == 0)
             {
-                var none = new TextBlock { Text = "No test yet — press Start Test.", FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap };
+                var none = new TextBlock { Text = MainWindow.PT("No test yet — press Start Test."), FontSize = Ui.FontS, TextWrapping = TextWrapping.Wrap };
                 none.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 _historyList.Children.Add(none);
                 return;

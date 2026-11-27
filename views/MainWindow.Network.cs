@@ -743,7 +743,7 @@ PT("This will reset the Winsock catalog.\nA system restart is required afterward
                 string quality = optimalMtu >= 1500 ? "Excellent (standard)" :
                                  optimalMtu >= 1400 ? "Slightly reduced (VPN/tunnel?)" :
 "Low — may affect performance";
-                if (TxtMtuResult  != null) TxtMtuResult.Text  = $"Optimal MTU: {optimalMtu} bytes — {quality}";
+                if (TxtMtuResult  != null) TxtMtuResult.Text  = PT("Optimal MTU: {0} bytes — {1}", optimalMtu, quality);
                 if (TxtNetUtilStatus != null) TxtNetUtilStatus.Text = "";
             }
             catch (Exception ex)

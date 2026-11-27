@@ -107,7 +107,7 @@ namespace SMDWin.Views
             if (TxtPublicLocation != null) TxtPublicLocation.Text = $"{result.City}, {result.Region}, {result.Country}";
             if (TxtPublicAsn      != null) TxtPublicAsn.Text      = result.Asn.Length > 40 ? result.Asn[..40] + "…" : result.Asn;
             if (TxtPublicTimezone != null) TxtPublicTimezone.Text = result.Timezone;
-            if (TxtPublicStatus   != null) TxtPublicStatus.Text   = $"Last updated: {DateTime.Now:HH:mm:ss}"
+            if (TxtPublicStatus   != null) TxtPublicStatus.Text   = PT("Last updated: {0}", DateTime.Now.ToString("HH:mm:ss"))
                 + (result.Provider == "ipapi.co" ? " (fallback source)" : "");
 
             // None of the providers used here offers proxy/hosting/VPN detection on the free tier — the badge always stays hidden

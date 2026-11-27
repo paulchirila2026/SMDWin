@@ -117,7 +117,7 @@ namespace SMDWin.Views
                              .GroupBy(x => x.Title, StringComparer.OrdinalIgnoreCase)
                              .OrderByDescending(g => g.Count()).Take(3)
                              .Select(g => $"{g.Key} ({g.Count()}×)").ToList();
-            TxtStabilityTopApps.Text = topApps.Count > 0 ? "Apps that crash or freeze most often: " + string.Join(", ", topApps) : "";
+            TxtStabilityTopApps.Text = topApps.Count > 0 ? PT("Apps that crash or freeze most often: {0}", string.Join(", ", topApps)) : "";
             StabilityRecentPanel.Visibility = others.Count > 0 || topApps.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             if (TxtOtherProblemsNone != null) TxtOtherProblemsNone.Visibility = others.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -187,13 +187,13 @@ namespace SMDWin.Views
                 {
                     var adv = BsodAdvisor.Get(c.KernelInfo?.BugCheckName ?? c.StopCode, c.FaultingModuleKind,
                                               c.KernelInfo?.CulpritName, c.KernelInfo?.CulpritIsGeneric ?? false);
-                    c.AdviceArea = adv.Area;
+                    c.AdviceArea = PT(adv.Area);
                     c.AdviceSummary = adv.Summary;
                 }
                 CrashGrid.ItemsSource = crashes;
                 if (TxtCrashListSub != null)
-                    TxtCrashListSub.Text = crashes.Count == 0 ? $"None found in {_crashService.MinidumpFolder}"
-                        : $"{crashes.Count} found in {_crashService.MinidumpFolder} · click one to see what happened";
+                    TxtCrashListSub.Text = crashes.Count == 0 ? PT("None found in {0}", _crashService.MinidumpFolder)
+                        : PT("{0} found in {1} · click one to see what happened", crashes.Count, _crashService.MinidumpFolder);
                 if (crashes.Count > 0) CrashGrid.SelectedIndex = 0;
                 else { CrashDetailPanel.Visibility = Visibility.Collapsed; CrashDetailEmpty.Visibility = Visibility.Visible; }
                 UpdateCrashPattern(crashes);
@@ -238,7 +238,7 @@ namespace SMDWin.Views
             var kd = entry.KernelInfo;
 
             var win = new Window { Owner = this };
-            SMDWin.Views.Net.NetWindowHelper.SetupWindow(win, "Crash — " + entry.FileName, 760, 680);
+            SMDWin.Views.Net.NetWindowHelper.SetupWindow(win, PT("Crash — {0}", entry.FileName), 760, 680);
             win.WindowStartupLocation = WindowStartupLocation.CenterOwner; // over the CenterScreen from SetupWindow
 
             var root = SMDWin.Views.Net.NetWindowHelper.BuildWindowRoot(
@@ -307,10 +307,10 @@ namespace SMDWin.Views
                 advCard.SetResourceReference(Border.BorderBrushProperty, "BorderBrush2");
                 advCard.SetResourceReference(Border.BackgroundProperty, "BgHoverBrush");
                 var sp = new StackPanel();
-                var area = new TextBlock { Text = "Likely area: " + adv.Area, FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold, Foreground = TxtPri() };
+                var area = new TextBlock { Text = PT("Likely area: {0}", PT(adv.Area)), FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold, Foreground = TxtPri() };
                 sp.Children.Add(area);
                 sp.Children.Add(new TextBlock { Text = adv.Summary, FontSize = Ui.FontM, Foreground = TxtSec(), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 8) });
-                sp.Children.Add(new TextBlock { Text = "What to do", FontSize = Ui.FontS, FontWeight = FontWeights.Bold, Foreground = TxtSec(), Margin = new Thickness(0, 0, 0, 4) });
+                sp.Children.Add(new TextBlock { Text = PT("What to do"), FontSize = Ui.FontS, FontWeight = FontWeights.Bold, Foreground = TxtSec(), Margin = new Thickness(0, 0, 0, 4) });
                 int i = 1;
                 foreach (var step in adv.Steps)
                     sp.Children.Add(new TextBlock { Text = $"{i++}.  {step}", FontSize = Ui.FontM, Foreground = TxtPri(), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 1, 0, 1) });
@@ -568,8 +568,8 @@ namespace SMDWin.Views
         {
             if (TxtBtnWinDbg != null)
                 TxtBtnWinDbg.Text = _crashService.IsWinDbgAvailable()
-                    ? "Analyze with WinDbg"
-                    : "Install WinDbg (winget)";
+                    ? PT("Analyze with WinDbg")
+                    : PT("Install WinDbg (winget)");
         }
 
         private async void OpenWinDbg_Click(object s, RoutedEventArgs e)

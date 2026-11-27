@@ -227,48 +227,54 @@ namespace SMDWin.Models
         /// <summary>Friendly explanation for an ordinary user, shown in the "What it means" column.</summary>
         public string FriendlyDescription => Id switch
         {
-            0x01 => RawValue == 0 ? "No read errors — OK" : $"Raw counter {RawValue:N0} — judge by the normalized value vs. threshold (large raw values are normal on many drives)",
-            0x05 => RawValue == 0 ? "No bad sectors — OK" : $"⚠ {RawValue} bad sector(s) remapped — disk may be failing",
-            0x09 => $"{RawValue:N0} hours powered on ({RawValue/24:N0} days)",
-            0x0C => $"{RawValue:N0} power cycles (on/off)",
-            0xBB => RawValue == 0 ? "No uncorrectable errors — OK" : $"⚠ {RawValue} uncorrectable error(s) — data loss risk",
-            0xBC => RawValue == 0 ? "No command timeouts — OK" : $"{RawValue} timeout(s) — possible cable/controller issue",
-            0xBE or 0xC2 => $"{TempUnit.Fmt(RawValue & 0xFF)} — {(( RawValue & 0xFF) < 45 ? "normal" : (RawValue & 0xFF) < 55 ? "warm" : "⚠ hot")}",
-            0xC4 => RawValue == 0 ? "No reallocation events — OK" : $"{RawValue} reallocation attempt(s)",
-            0xC5 => RawValue == 0 ? "No unstable sectors — OK" : $"⚠ {RawValue} unstable sector(s) pending — backup data now",
-            0xC6 => RawValue == 0 ? "No unreadable sectors — OK" : $"⚠ {RawValue} unreadable sector(s) — data loss risk",
-            0xC7 => RawValue == 0 ? "No transfer errors — OK" : $"{RawValue} CRC error(s) — check cable/port",
+            0x01 => RawValue == 0 ? P("No read errors — OK") : P("Raw counter {0} — judge by the normalized value vs. threshold (large raw values are normal on many drives)", N(RawValue)),
+            0x05 => RawValue == 0 ? P("No bad sectors — OK") : P("⚠ {0} bad sector(s) remapped — disk may be failing", RawValue),
+            0x09 => P("{0} hours powered on ({1} days)", N(RawValue), N(RawValue / 24)),
+            0x0C => P("{0} power cycles (on/off)", N(RawValue)),
+            0xBB => RawValue == 0 ? P("No uncorrectable errors — OK") : P("⚠ {0} uncorrectable error(s) — data loss risk", RawValue),
+            0xBC => RawValue == 0 ? P("No command timeouts — OK") : P("{0} timeout(s) — possible cable/controller issue", RawValue),
+            0xBE or 0xC2 => (RawValue & 0xFF) < 45 ? P("{0} — normal", TempUnit.Fmt(RawValue & 0xFF)) : (RawValue & 0xFF) < 55 ? P("{0} — warm", TempUnit.Fmt(RawValue & 0xFF)) : P("{0} — ⚠ hot", TempUnit.Fmt(RawValue & 0xFF)),
+            0xC4 => RawValue == 0 ? P("No reallocation events — OK") : P("{0} reallocation attempt(s)", RawValue),
+            0xC5 => RawValue == 0 ? P("No unstable sectors — OK") : P("⚠ {0} unstable sector(s) pending — backup data now", RawValue),
+            0xC6 => RawValue == 0 ? P("No unreadable sectors — OK") : P("⚠ {0} unreadable sector(s) — data loss risk", RawValue),
+            0xC7 => RawValue == 0 ? P("No transfer errors — OK") : P("{0} CRC error(s) — check cable/port", RawValue),
             // 0xA9 / 0xE9 do not mean "life left" for every manufacturer (on Kingston/Phison 0xA9 = bad blocks, 0xE9 = data written
             // to NAND). The percentage is shown only when the attribute name says life / wear; otherwise the raw value, without an
             // invented "100 %".
-            0xE7 or 0xA9 or 0xE9 when !NameSaysLife => RawValue == 0 ? "0 — OK" : $"Maker-specific counter: {RawValue:N0} (normalized {CurrentValue}/100, within limits)",
+            0xE7 or 0xA9 or 0xE9 when !NameSaysLife => RawValue == 0 ? "0 — OK" : P("Maker-specific counter: {0} (normalized {1}/100, within limits)", N(RawValue), CurrentValue),
             0xE7 or 0xA9 or 0xE9 => ThresholdValue == 0
-                ? $"{CurrentValue}% life remaining (reported by the drive)"
-                : $"{CurrentValue}% life remaining — {(CurrentValue > 50 ? "good" : CurrentValue > 20 ? "degraded" : "⚠ near end of life")}",
-            0xAA or 0xE8 => $"Spare blocks: normalized {CurrentValue}/100{(ThresholdValue > 0 ? $" (limit {ThresholdValue})" : "")} — {(ThresholdValue > 0 && CurrentValue <= ThresholdValue ? "⚠ reserve used up" : "OK")}",
-            0xAB or 0xB5 => RawValue == 0 ? "No write (program) failures — OK" : $"{RawValue:N0} write failure(s) — the drive replaced the blocks",
-            0xAC or 0xB6 => RawValue == 0 ? "No erase failures — OK" : $"{RawValue:N0} erase failure(s) — the drive replaced the blocks",
-            0xAE or 0xC0 => RawValue == 0 ? "No unsafe shutdowns" : $"{RawValue:N0} unsafe shutdown(s) — power lost while running (not an error by itself)",
-            0xB1 => $"Wear spread between blocks: normalized {CurrentValue}/100",
-            0xB3 or 0xB4 => $"Unused reserve blocks: normalized {CurrentValue}/100 — {(CurrentValue > 20 ? "OK" : "⚠ low")}",
-            0xB7 when IsRuntimeBadBlock => RawValue == 0 ? "No bad blocks appeared in use — OK" : $"⚠ {RawValue:N0} block(s) went bad in use and were replaced from the reserve",
-            0xB7 => RawValue == 0 ? "No SATA speed drops — OK" : $"{RawValue:N0} SATA speed drop(s) — check cable/port",
-            0xB8 => RawValue == 0 ? "No internal data errors — OK" : $"⚠ {RawValue:N0} internal data error(s)",
-            0xC1 => $"{RawValue:N0} head park cycles",
-            0xC3 => $"Errors corrected by the drive: {RawValue:N0} (normal on many drives)",
-            0x03 => $"Spin-up time: normalized {CurrentValue}/100",
-            0x04 => $"{RawValue:N0} start/stop cycles",
-            0x07 => $"Seek errors: normalized {CurrentValue}/100 (raw values are vendor-encoded)",
-            0x0A => RawValue == 0 ? "No spin-up retries — OK" : $"⚠ {RawValue:N0} spin-up retries — motor problem",
-            0xF0 => $"{RawValue:N0} head flying hours",
-            0xF9 => $"{RawValue:N0} GB written to the flash memory (lifetime)",
-            0xAD => $"Wear leveling normalized: {CurrentValue}/100 — {(CurrentValue > 50 ? "good" : CurrentValue > 20 ? "degraded" : "⚠ near end of life")}",
-            0xF1 => $"{LifetimeData.Format(SsdLifeDetector.AttributeToBytes(this))} written (lifetime)",
-            0xF2 => $"{LifetimeData.Format(SsdLifeDetector.AttributeToBytes(this))} read (lifetime)",
+                ? P("{0}% life remaining (reported by the drive)", CurrentValue)
+                : CurrentValue > 50 ? P("{0}% life remaining — good", CurrentValue) : CurrentValue > 20 ? P("{0}% life remaining — degraded", CurrentValue) : P("{0}% life remaining — ⚠ near end of life", CurrentValue),
+            0xAA or 0xE8 => ThresholdValue > 0
+                ? (CurrentValue <= ThresholdValue ? P("Spare blocks: normalized {0}/100 (limit {1}) — ⚠ reserve used up", CurrentValue, ThresholdValue) : P("Spare blocks: normalized {0}/100 (limit {1}) — OK", CurrentValue, ThresholdValue))
+                : P("Spare blocks: normalized {0}/100 — OK", CurrentValue),
+            0xAB or 0xB5 => RawValue == 0 ? P("No write (program) failures — OK") : P("{0} write failure(s) — the drive replaced the blocks", N(RawValue)),
+            0xAC or 0xB6 => RawValue == 0 ? P("No erase failures — OK") : P("{0} erase failure(s) — the drive replaced the blocks", N(RawValue)),
+            0xAE or 0xC0 => RawValue == 0 ? P("No unsafe shutdowns") : P("{0} unsafe shutdown(s) — power lost while running (not an error by itself)", N(RawValue)),
+            0xB1 => P("Wear spread between blocks: normalized {0}/100", CurrentValue),
+            0xB3 or 0xB4 => CurrentValue > 20 ? P("Unused reserve blocks: normalized {0}/100 — OK", CurrentValue) : P("Unused reserve blocks: normalized {0}/100 — ⚠ low", CurrentValue),
+            0xB7 when IsRuntimeBadBlock => RawValue == 0 ? P("No bad blocks appeared in use — OK") : P("⚠ {0} block(s) went bad in use and were replaced from the reserve", N(RawValue)),
+            0xB7 => RawValue == 0 ? P("No SATA speed drops — OK") : P("{0} SATA speed drop(s) — check cable/port", N(RawValue)),
+            0xB8 => RawValue == 0 ? P("No internal data errors — OK") : P("⚠ {0} internal data error(s)", N(RawValue)),
+            0xC1 => P("{0} head park cycles", N(RawValue)),
+            0xC3 => P("Errors corrected by the drive: {0} (normal on many drives)", N(RawValue)),
+            0x03 => P("Spin-up time: normalized {0}/100", CurrentValue),
+            0x04 => P("{0} start/stop cycles", N(RawValue)),
+            0x07 => P("Seek errors: normalized {0}/100 (raw values are vendor-encoded)", CurrentValue),
+            0x0A => RawValue == 0 ? P("No spin-up retries — OK") : P("⚠ {0} spin-up retries — motor problem", N(RawValue)),
+            0xF0 => P("{0} head flying hours", N(RawValue)),
+            0xF9 => P("{0} GB written to the flash memory (lifetime)", N(RawValue)),
+            0xAD => CurrentValue > 50 ? P("Wear leveling normalized: {0}/100 — good", CurrentValue) : CurrentValue > 20 ? P("Wear leveling normalized: {0}/100 — degraded", CurrentValue) : P("Wear leveling normalized: {0}/100 — ⚠ near end of life", CurrentValue),
+            0xF1 => P("{0} written (lifetime)", LifetimeData.Format(SsdLifeDetector.AttributeToBytes(this))),
+            0xF2 => P("{0} read (lifetime)", LifetimeData.Format(SsdLifeDetector.AttributeToBytes(this))),
             _ => Description.Length > 0 ? Description
                : RawValue == 0 ? "0 — OK"
-               : $"Maker-specific counter: {RawValue:N0} (normalized {CurrentValue}/100, within limits)"
+               : P("Maker-specific counter: {0} (normalized {1}/100, within limits)", N(RawValue), CurrentValue)
         };
+
+        // text in the app language (the English template is the key in the language files); numbers with thousands separators
+        private static string P(string en, params object[] a) => SMDWin.Views.MainWindow.PT(en, a);
+        private static string N(long v) => v.ToString("N0");
 
         /// <summary>Attribute 183 on Samsung SSDs: blocks that went bad while in use (not SATA speed drops).</summary>
         public bool IsRuntimeBadBlock => Id == 0xB7 && (Name ?? "").IndexOf("bad block", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -302,43 +308,43 @@ namespace SMDWin.Models
             {
                 var desc = Id switch
                 {
-                    0xB7 when IsRuntimeBadBlock => "Runtime Bad Block — blocks of flash memory that failed while the drive was in use and were replaced from the reserve. A count that keeps growing means the drive is wearing out or faulty.",
-                    0x01 => "Read Error Rate — Rate of hardware read errors. High raw value = possible disk failure.",
-                    0x02 => "Throughput Performance — Overall drive throughput. Low = degraded performance.",
-                    0x03 => "Spin-Up Time — Time needed to spin disk platters to full speed (HDDs only).",
-                    0x04 => "Start/Stop Count — Number of times the disk has been started and stopped.",
-                    0x05 => "Reallocated Sectors Count — Bad sectors remapped to spare area. ANY non-zero value is serious.",
-                    0x07 => "Seek Error Rate — Rate of seek errors. High = mechanical issues (HDD).",
-                    0x08 => "Seek Time Performance — Average seek performance. Low = slowdowns.",
-                    0x09 => "Power-On Hours — Total hours the drive has been powered on.",
-                    0x0A => "Spin Retry Count — Retries needed to spin up to speed. High = motor problems.",
-                    0x0B => "Recalibration Retries — Times the drive had to recalibrate. High = mechanical wear.",
-                    0x0C => "Power Cycle Count — Number of full power cycles (off → on).",
-                    0xB7 => "SATA Downshift Error Count — SATA interface speed downgrades. High = cable/port issues.",
-                    0xB8 => "End-to-End Error Count — Data errors between cache and host. High = possible RAM or controller issue.",
-                    0xBB => "Uncorrectable Error Count — Errors that could NOT be corrected. Non-zero = concern.",
-                    0xBC => "Command Timeout Count — Commands that timed out. High = connectivity or drive issue.",
-                    0xBD => "High Fly Writes — Write head too far from surface. High = physical damage risk.",
-                    0xBE => "Airflow Temperature — Drive temperature measured at airflow sensor.",
-                    0xBF => "G-Sense Error Rate — Errors caused by external shock/vibration.",
-                    0xC0 => "Power-Off Retract Count — Emergency head parking events (unsafe shutdowns).",
-                    0xC1 => "Load/Unload Cycle Count — Times the head was parked/unparked.",
-                    0xC2 => "Temperature — Current drive temperature in Celsius. Keep below 55°C.",
-                    0xC3 => "Hardware ECC Recovered — ECC error correction activations. High = reliability concern.",
-                    0xC4 => "Reallocation Event Count — Total reallocation attempts (successful or not).",
-                    0xC5 => "Current Pending Sector Count — Unstable sectors waiting to be remapped. Non-zero = bad sign.",
-                    0xC6 => "Uncorrectable Sector Count — Sectors that cannot be read. Non-zero = data loss risk.",
-                    0xC7 => "UltraDMA CRC Error Count — Data transfer errors on the interface cable.",
-                    0xC8 => "Write Error Rate — Rate of write errors. High = failing write head.",
-                    0xCA => "Data Address Mark Errors — Positioning errors during read/write.",
-                    0xCE => "Flying Height — Distance between read head and disk platter.",
-                    0xF0 => "Head Flying Hours — Total hours the read/write head has been flying.",
-                    0xF1 => "Total LBAs Written — Total data written (lifetime). Relevant for SSD wear.",
-                    0xF2 => "Total LBAs Read — Total data read (lifetime).",
-                    0xFE => "Free Fall Protection — Freefall events detected by accelerometer.",
-                    _    => $"Vendor-specific attribute (0x{Id:X2}) — no universal standard meaning; varies by manufacturer/controller. Raw value: {RawValue}"
+                    0xB7 when IsRuntimeBadBlock => P("Runtime Bad Block — blocks of flash memory that failed while the drive was in use and were replaced from the reserve. A count that keeps growing means the drive is wearing out or faulty."),
+                    0x01 => P("Read Error Rate — Rate of hardware read errors. High raw value = possible disk failure."),
+                    0x02 => P("Throughput Performance — Overall drive throughput. Low = degraded performance."),
+                    0x03 => P("Spin-Up Time — Time needed to spin disk platters to full speed (HDDs only)."),
+                    0x04 => P("Start/Stop Count — Number of times the disk has been started and stopped."),
+                    0x05 => P("Reallocated Sectors Count — Bad sectors remapped to spare area. ANY non-zero value is serious."),
+                    0x07 => P("Seek Error Rate — Rate of seek errors. High = mechanical issues (HDD)."),
+                    0x08 => P("Seek Time Performance — Average seek performance. Low = slowdowns."),
+                    0x09 => P("Power-On Hours — Total hours the drive has been powered on."),
+                    0x0A => P("Spin Retry Count — Retries needed to spin up to speed. High = motor problems."),
+                    0x0B => P("Recalibration Retries — Times the drive had to recalibrate. High = mechanical wear."),
+                    0x0C => P("Power Cycle Count — Number of full power cycles (off → on)."),
+                    0xB7 => P("SATA Downshift Error Count — SATA interface speed downgrades. High = cable/port issues."),
+                    0xB8 => P("End-to-End Error Count — Data errors between cache and host. High = possible RAM or controller issue."),
+                    0xBB => P("Uncorrectable Error Count — Errors that could NOT be corrected. Non-zero = concern."),
+                    0xBC => P("Command Timeout Count — Commands that timed out. High = connectivity or drive issue."),
+                    0xBD => P("High Fly Writes — Write head too far from surface. High = physical damage risk."),
+                    0xBE => P("Airflow Temperature — Drive temperature measured at airflow sensor."),
+                    0xBF => P("G-Sense Error Rate — Errors caused by external shock/vibration."),
+                    0xC0 => P("Power-Off Retract Count — Emergency head parking events (unsafe shutdowns)."),
+                    0xC1 => P("Load/Unload Cycle Count — Times the head was parked/unparked."),
+                    0xC2 => P("Temperature — Current drive temperature in Celsius. Keep below 55°C."),
+                    0xC3 => P("Hardware ECC Recovered — ECC error correction activations. High = reliability concern."),
+                    0xC4 => P("Reallocation Event Count — Total reallocation attempts (successful or not)."),
+                    0xC5 => P("Current Pending Sector Count — Unstable sectors waiting to be remapped. Non-zero = bad sign."),
+                    0xC6 => P("Uncorrectable Sector Count — Sectors that cannot be read. Non-zero = data loss risk."),
+                    0xC7 => P("UltraDMA CRC Error Count — Data transfer errors on the interface cable."),
+                    0xC8 => P("Write Error Rate — Rate of write errors. High = failing write head."),
+                    0xCA => P("Data Address Mark Errors — Positioning errors during read/write."),
+                    0xCE => P("Flying Height — Distance between read head and disk platter."),
+                    0xF0 => P("Head Flying Hours — Total hours the read/write head has been flying."),
+                    0xF1 => P("Total LBAs Written — Total data written (lifetime). Relevant for SSD wear."),
+                    0xF2 => P("Total LBAs Read — Total data read (lifetime)."),
+                    0xFE => P("Free Fall Protection — Freefall events detected by accelerometer."),
+                    _    => P("Vendor-specific attribute (0x{0}) — no universal standard meaning; varies by manufacturer/controller. Raw value: {1}", Id.ToString("X2"), RawValue)
                 };
-                return $"[0x{Id:X2}] {Name}\n{desc}\n\nCurrent: {CurrentValue}  Worst: {WorstValue}  Raw: {RawValue}";
+                return $"[0x{Id:X2}] {Name}\n{desc}\n\n" + P("Current: {0}  Worst: {1}  Raw: {2}", CurrentValue, WorstValue, RawValue);
             }
         }
     }

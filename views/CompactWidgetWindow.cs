@@ -697,7 +697,7 @@ namespace SMDWin.Views
             TextOptions.SetTextRenderingMode(menu, TextRenderingMode.ClearType);
             TextOptions.SetTextFormattingMode(menu, TextFormattingMode.Display);
 
-            var resetItem = new MenuItem { Header = "Reset position" };
+            var resetItem = new MenuItem { Header = MainWindow.PT("Reset position") };
             resetItem.Click += (_, _) =>
             {
                 SMDWin.Services.WidgetManager.ClearPosition(this);
@@ -731,11 +731,11 @@ namespace SMDWin.Views
             menu.Items.Add(new Separator());
 
             var clickItem = new MenuItem { Header = _clickThrough ? "Disable click-through" : "Enable click-through",
-                ToolTip = "When enabled, mouse clicks pass through the widget" };
+                ToolTip = MainWindow.PT("When enabled, mouse clicks pass through the widget") };
             clickItem.Click += (_, _) => EnableClickThrough(!_clickThrough);
             menu.Items.Add(clickItem);
 
-            var closeItem = new MenuItem { Header = "Close widget" };
+            var closeItem = new MenuItem { Header = MainWindow.PT("Close widget") };
             closeItem.Click += (_, _) => Close();
             menu.Items.Add(closeItem);
 

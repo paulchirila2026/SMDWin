@@ -347,7 +347,7 @@ namespace SMDWin.Views
                     else if (!cpuOn && _cpuStressStartUtc == null && _lastCpuStressHadRun)
                     {
                         tCpu.Text = "✓ Last session: no integrity errors";
-                        tCpu.ToolTip = "The test verifies calculation results (FMA), not just temperature — a CPU can be unstable even without overheating.";
+                        tCpu.ToolTip = MainWindow.PT("The test verifies calculation results (FMA), not just temperature — a CPU can be unstable even without overheating.");
                     }
                     else
                     {
@@ -369,12 +369,12 @@ namespace SMDWin.Views
                     if (errCountGpu > 0)
                     {
                         tGpu.Text = elapsedGpu + $" · ⚠ {errCountGpu} integrity error(s)";
-                        tGpu.ToolTip = "Divergence detected between the GPU result and the expected value — a real sign of hardware instability (GPU memory, silicon, or driver), not just a normal arithmetic overflow.";
+                        tGpu.ToolTip = MainWindow.PT("Divergence detected between the GPU result and the expected value — a real sign of hardware instability (GPU memory, silicon, or driver), not just a normal arithmetic overflow.");
                     }
                     else if (!gpuOn && _gpuStressStartUtc == null && _lastGpuStressHadRun)
                     {
                         tGpu.Text = "✓ Last session: no integrity errors";
-                        tGpu.ToolTip = "The test verifies GPU calculation results, not just temperature.";
+                        tGpu.ToolTip = MainWindow.PT("The test verifies GPU calculation results, not just temperature.");
                     }
                     else
                     {
@@ -402,12 +402,12 @@ namespace SMDWin.Views
                     if (errCountRam > 0)
                     {
                         tRam.Text = ramDiskElapsed + $" · ⚠ {errCountRam} integrity error(s)";
-                        tRam.ToolTip = "Discrepancy detected between what was written and what was read back from the buffer — a real sign of RAM instability. If it persists across multiple sessions, consider Windows Memory Diagnostic (RAM Memory page) or testing modules individually.";
+                        tRam.ToolTip = MainWindow.PT("Discrepancy detected between what was written and what was read back from the buffer — a real sign of RAM instability. If it persists across multiple sessions, consider Windows Memory Diagnostic (RAM Memory page) or testing modules individually.");
                     }
                     else if (!ramDiskOn && _ramDiskStressStartUtc == null && _lastRamDiskStressHadRun)
                     {
                         tRam.Text = "✓ Last session: no integrity errors";
-                        tRam.ToolTip = "The test verifies what is read back from the buffer against what was written, not just bandwidth.";
+                        tRam.ToolTip = MainWindow.PT("The test verifies what is read back from the buffer against what was written, not just bandwidth.");
                     }
                     else
                     {
@@ -495,7 +495,7 @@ namespace SMDWin.Views
                     row.Cursor = System.Windows.Input.Cursors.Hand;
                     row.Background = System.Windows.Media.Brushes.Transparent;
                     row.MouseLeftButtonUp += SensorRow_Click;
-                    row.ToolTip = "Show on chart (hottest drive)";
+                    row.ToolTip = MainWindow.PT("Show on chart (hottest drive)");
                     var chk = new Border
                     {
                         Width = 14, Height = 14, CornerRadius = new CornerRadius(3), BorderThickness = new Thickness(1.5),

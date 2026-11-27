@@ -1108,7 +1108,7 @@ namespace SMDWin.Views
                     }
                     else if (isBenignPowerLimit)
                     {
-                        thl2.Text = "Power Limit (normal)";
+                        thl2.Text = MainWindow.PT("Power Limit (normal)");
                         thl2.Foreground = _brCoolBlue;
                         if (FindName("ThrottleDot") is System.Windows.Shapes.Ellipse dot2) dot2.Fill = _brCoolBlue;
                         if (FindName("TxtThrottleInfo") is System.Windows.Controls.TextBlock ti2)
