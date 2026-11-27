@@ -48,8 +48,14 @@ namespace SMDWin.Views
                 if (btn == null) return;
                 try
                 {
-                    using var sc = new System.ServiceProcess.ServiceController(svcName);
-                    bool enabled = sc.StartType != System.ServiceProcess.ServiceStartMode.Disabled;
+                    bool enabled;
+                    // Windows Update is turned off with a pause + policy (the service stays enabled): ask the blocker
+                    if (svcName == "wuauserv") enabled = !SMDWin.Services.WindowsUpdateBlocker.IsBlocked();
+                    else
+                    {
+                        using var sc = new System.ServiceProcess.ServiceController(svcName);
+                        enabled = sc.StartType != System.ServiceProcess.ServiceStartMode.Disabled;
+                    }
                     string state = enabled ? "ON" : "OFF";
                     // labelEn/labelRo are identical in all current calls (Windows service names — Win Update, SysMain, Win Search — are not
                     // translated), so labelEn is enough and correct for any language.
@@ -80,6 +86,7 @@ namespace SMDWin.Views
             void SyncCheckBox(System.Windows.Controls.CheckBox? chk, string svcName)
             {
                 if (chk == null) return;
+                if (svcName == "wuauserv") { chk.IsChecked = !SMDWin.Services.WindowsUpdateBlocker.IsBlocked(); return; }
                 try
                 {
                     using var sc = new System.ServiceProcess.ServiceController(svcName);
@@ -121,11 +128,10 @@ namespace SMDWin.Views
             if (!blocked)
             {
                 bool go = AppDialog.Confirm(
-                    "Turn off Windows Update completely?\n\n" +
-                    "• Windows Update, Update Orchestrator and Update Medic will be disabled, so Windows can't switch them back on by itself.\n" +
-                    "• While off, NO updates are installed — including security fixes. Turn it back on regularly.\n" +
-                    "• A restore script is saved in " + SMDWin.Services.WindowsUpdateBlocker.MachineFolder +
-                    " — it works even if SMD Win is no longer on this PC.",
+                    PT("Turn off Windows Update?") + "\n\n" +
+                    "• " + PT("Updates are paused for 10 years and automatic updates are turned off by policy. The update services stay as Windows wants them, so Settings shows \"Updates paused\" instead of an error.") + "\n" +
+                    "• " + PT("While off, NO updates are installed — including security fixes. Turn it back on regularly.") + "\n" +
+                    "• " + PT("A restore script is saved in {0} — it works even if SMD Win is no longer on this PC.", SMDWin.Services.WindowsUpdateBlocker.MachineFolder),
                     "Windows Update");
                 if (!go) { RefreshServiceToggleLabels(); return; }
             }
@@ -138,16 +144,21 @@ namespace SMDWin.Views
             bool criticalOk = steps.Where(x => x.Critical).All(x => x.Ok);
             var sb = new System.Text.StringBuilder();
             sb.AppendLine(blocked
-                ? (criticalOk ? "Windows Update is back ON (original settings restored)." : "Windows Update could not be fully restored.")
-                : (criticalOk ? "Windows Update is now OFF." : "Windows Update could not be fully turned off."));
-            sb.AppendLine($"{okCount} of {steps.Count} steps succeeded:");
+                ? (criticalOk ? PT("Windows Update is back ON (original settings restored).") : PT("Windows Update could not be fully restored."))
+                : (criticalOk ? PT("Windows Update is now OFF.") : PT("Windows Update could not be fully turned off.")));
+            sb.AppendLine(PT("{0} of {1} steps succeeded:", okCount, steps.Count));
             sb.AppendLine();
             foreach (var st in steps)
                 sb.AppendLine($"{(st.Ok ? "✓" : st.Critical ? "✗" : "–")}  {st.Step}{(st.Ok || st.Detail == null ? "" : "  (" + st.Detail + ")")}");
             if (!blocked && criticalOk)
             {
                 sb.AppendLine();
-                sb.AppendLine("To turn it back on without SMD Win, run:");
+                sb.AppendLine(PT("Settings › Windows Update now shows \"Updates paused\" and \"Some settings are managed by your organization\" — that is expected."));
+                // updates installed before the block can still ask for a restart: say so, or it looks as if the block did not work
+                if (SMDWin.Services.WindowsUpdateBlocker.RestartPending())
+                    sb.AppendLine(PT("Windows still asks for a restart: it finishes updates that were installed BEFORE they were turned off. No new updates will come after it."));
+                sb.AppendLine();
+                sb.AppendLine(PT("To turn it back on without SMD Win, run:"));
                 sb.AppendLine(SMDWin.Services.WindowsUpdateBlocker.RestoreScript);
             }
             AppDialog.Show(sb.ToString().TrimEnd(), "Windows Update",

@@ -6,6 +6,7 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Windows Update off: now done with the pause Windows itself offers (stretched to 10 years) plus the "no automatic updates" policy, instead of disabling the update services — Settings shows "Updates paused" instead of an error. A PC turned off with the old method is switched over automatically; turning it back on restores the exact previous values. When Windows still asks for a restart, the app explains that it finishes updates installed before the pause (also in Health check).
 - Disk health: one verdict for every screen and report (Storage, SMART, Dashboard, System Info, Surface Scan, Health check, notifications, exports). The figure is the lower of the SMART score and the life left an SSD reports; the state no longer depends on the temperature or on time once spent hot, so an NVMe no longer shows "93 %" on one page, "100 % — Needs attention" on another and "minimum 100 %" in Health check. Disks without SMART data are shown as "no health data" instead of 0 %.
 - Health check: Windows Update paused from SMD Win is shown as information, not as pending updates; the most frequent critical event is named; Secure Boot / TPM text shortened (the explanation is in the tooltip); "Clock" renamed "Time sync"; new check "Hardware errors (WHEA)" for the last 30 days; the verdict explains why the dial counts fewer checks than the groups.
 - Storage: every disk card starts with a title band ("Drive 1 of 2", the model and its drive letters), so the cards of two disks cannot be mixed up.

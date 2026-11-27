@@ -483,6 +483,8 @@ namespace SMDWin.Services
                         result.Success = true;
                         result.Summary = count == 0 ? Tx("Updates are paused from SMD Win")
                                                     : Tx("Updates are paused from SMD Win · {0} waiting", count);
+                        if (WindowsUpdateBlocker.RestartPending())
+                            result.Summary += " · " + Tx("a restart finishes updates installed before the pause");
                         result.Details["Info"] = "1";
                         result.Details["PendingCount"] = count.ToString();
                         LastPendingUpdates = 0;
