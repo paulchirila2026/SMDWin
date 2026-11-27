@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using SMDWin.Services;
 using Brush = System.Windows.Media.Brush;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using FlowDirection = System.Windows.FlowDirection;
