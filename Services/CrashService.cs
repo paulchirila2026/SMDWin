@@ -10,8 +10,11 @@ namespace SMDWin.Services
     {
         // Windows writes dumps where CrashControl in the registry says (default %SystemRoot%\Minidump and
         // %SystemRoot%\MEMORY.DMP); Windows may be installed on a drive other than C:.
-        private static readonly string MiniDumpPath = ReadCrashControlPath("MinidumpDir", "Minidump");
-        private static readonly string MemoryDumpPath = ReadCrashControlPath("DumpFile", "MEMORY.DMP");
+        private static readonly string LiveMiniDumpPath = ReadCrashControlPath("MinidumpDir", "Minidump");
+        private static readonly string LiveMemoryDumpPath = ReadCrashControlPath("DumpFile", "MEMORY.DMP");
+        // this PC, or the Windows on another drive chosen in Event Viewer / BSOD (AnalyzedWindows)
+        private static string MiniDumpPath => AnalyzedWindows.OfflineMinidumpFolder ?? LiveMiniDumpPath;
+        private static string MemoryDumpPath => AnalyzedWindows.OfflineMemoryDump ?? LiveMemoryDumpPath;
 
         /// <summary>Folder where Windows saves minidumps on this system.</summary>
         public string MinidumpFolder => MiniDumpPath;
@@ -219,9 +222,9 @@ namespace SMDWin.Services
                 string xpath = $"*[System[(EventID=41 or EventID=1001 or EventID=1003)" +
                                $" and TimeCreated[@SystemTime>='{from}' and @SystemTime<='{to}']]]";
 
+                var (logPath, logType) = AnalyzedWindows.LogSource("System");   // this PC or the Windows on another drive
                 using var reader = new System.Diagnostics.Eventing.Reader.EventLogReader(
-                    new System.Diagnostics.Eventing.Reader.EventLogQuery("System",
-                        System.Diagnostics.Eventing.Reader.PathType.LogName, xpath));
+                    new System.Diagnostics.Eventing.Reader.EventLogQuery(logPath, logType, xpath));
 
                 string? fallbackEventId = null;
                 System.Diagnostics.Eventing.Reader.EventRecord? rec;

@@ -178,7 +178,9 @@ namespace SMDWin.Views
 
         private async Task LoadCrashesInternalAsync()
         {
-            _ = LoadStabilityAsync();   // in parallel with the minidumps, does not block the page
+            EnsureWinPEChoice();
+            // the stability history is Windows' own (Reliability Monitor) — only for this PC, not for a Windows on another drive
+            if (!AnalyzedWindows.IsOffline) _ = LoadStabilityAsync();   // in parallel with the minidumps, does not block the page
             ShowLoading(_LS("Crash", "Loading"));
             try
             {

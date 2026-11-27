@@ -49,7 +49,8 @@ namespace SMDWin.Services
                 if (ct.IsCancellationRequested) break;
                 try
                 {
-                    var q = new EventLogQuery(log, PathType.LogName,
+                    var (srcPath, srcType) = AnalyzedWindows.LogSource(log);   // this PC or the Windows on another drive
+                    var q = new EventLogQuery(srcPath, srcType,
                         $"*[System[TimeCreated[@SystemTime>='{fromStr}'] and (Level=1 or Level=2 or Level=3)]]");
                     using var reader = new EventLogReader(q) { BatchSize = 256 };
                     int n = 0;
@@ -71,7 +72,8 @@ namespace SMDWin.Services
             // the first record still kept in the System log
             try
             {
-                using var first = new EventLogReader(new EventLogQuery("System", PathType.LogName, "*"));
+                var (sp, st) = AnalyzedWindows.LogSource("System");
+                using var first = new EventLogReader(new EventLogQuery(sp, st, "*"));
                 using var r0 = first.ReadEvent();
                 raw.OldestSystem = r0?.TimeCreated;
             }

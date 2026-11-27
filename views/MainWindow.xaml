@@ -1157,6 +1157,14 @@
                   <Setter Property="Padding" Value="12,6"/>
                 </Style>
               </WrapPanel.Resources>
+              <!-- which Windows is read: this PC or a Windows on another drive (MainWindow.OfflineWindows.cs) -->
+              <ui:Button x:Name="BtnEvOtherWindows" Height="28" Appearance="Secondary" Click="OpenOtherWindows_Click" Padding="10,5" Margin="0,0,8,4"
+                      ToolTip="Read the event logs and blue screens of a Windows on another drive (a PC started from a rescue stick, or a disk connected by USB)">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M4,5.5 A1.5,1.5 0 0 1 5.5,4 L18.5,4 A1.5,1.5 0 0 1 20,5.5 L20,14.5 A1.5,1.5 0 0 1 18.5,16 L13,16 L13,18.5 L16,18.5 A0.75,0.75 0 0 1 16,20 L8,20 A0.75,0.75 0 0 1 8,18.5 L11,18.5 L11,16 L5.5,16 A1.5,1.5 0 0 1 4,14.5 Z M5.5,5.5 L5.5,14.5 L18.5,14.5 L18.5,5.5 Z"/></Canvas></Viewbox>
+                  <TextBlock x:Name="TxtEvOtherWindows" Text="This PC" VerticalAlignment="Center"/>
+                </StackPanel>
+              </ui:Button>
               <ui:Button x:Name="BtnScanEvents" Height="28" Appearance="Primary" Click="ScanEvents_Click" Padding="10,5"
                       ToolTip="Scan the Windows Event Log with the current filters and time range">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -1479,6 +1487,13 @@
                   <Setter Property="Padding" Value="12,6"/>
                 </Style>
               </WrapPanel.Resources>
+            <ui:Button x:Name="BtnCrashOtherWindows" Appearance="Secondary" Click="OpenOtherWindows_Click"
+                    ToolTip="Read the blue screens and event logs of a Windows on another drive (a PC started from a rescue stick, or a disk connected by USB)">
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Viewbox Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"><Canvas Width="24" Height="24"><Path Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" Data="F1 M4,5.5 A1.5,1.5 0 0 1 5.5,4 L18.5,4 A1.5,1.5 0 0 1 20,5.5 L20,14.5 A1.5,1.5 0 0 1 18.5,16 L13,16 L13,18.5 L16,18.5 A0.75,0.75 0 0 1 16,20 L8,20 A0.75,0.75 0 0 1 8,18.5 L11,18.5 L11,16 L5.5,16 A1.5,1.5 0 0 1 4,14.5 Z M5.5,5.5 L5.5,14.5 L18.5,14.5 L18.5,5.5 Z"/></Canvas></Viewbox>
+                <TextBlock x:Name="TxtCrashOtherWindows" Text="This PC" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ui:Button>
             <ui:Button x:Name="BtnOpenMiniDump" Appearance="Secondary" 
                     Click="OpenMiniDumpFolder_Click">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -1501,8 +1516,8 @@
             </WrapPanel>
           </Grid>
 
-          <!-- ① Stability over 30 days (Reliability Monitor) — LoadStabilityAsync -->
-          <Border Grid.Row="1" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Margin="0,0,0,12">
+          <!-- ① Stability over 30 days (Reliability Monitor) — LoadStabilityAsync; hidden for a Windows on another drive -->
+          <Border x:Name="StabilityCard" Grid.Row="1" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Margin="0,0,0,12">
             <StackPanel>
               <DockPanel LastChildFill="False" Margin="0,0,0,8">
                 <Viewbox DockPanel.Dock="Left" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M3,5.75 C3,5.34 3.34,5 3.75,5 Q7.74,5 11.55,2.15 C11.82,1.95 12.18,1.95 12.45,2.15 Q16.26,5 20.25,5 C20.66,5 21,5.34 21,5.75 L21,11 C21,16 18.04,19.68 12.27,21.95 A0.8,0.8 0 0 1 11.73,21.95 C5.96,19.68 3,16 3,11 Z M4.5,6.48 L4.5,11 C4.5,15.26 6.95,18.38 12,20.44 C17.05,18.38 19.5,15.26 19.5,11 L19.5,6.48 A14.4,14.4 0 0 1 12,3.68 A14.4,14.4 0 0 1 4.5,6.48"/></Viewbox>

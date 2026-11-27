@@ -192,6 +192,7 @@ namespace SMDWin.Views
             var level  = _selectedEventLevel;
             var search = TxtSearch?.Text.Trim() ?? "";
 
+            EnsureWinPEChoice();   // from a rescue stick: read the PC's own Windows (MainWindow.OfflineWindows.cs)
             SyncEventRangeButtons();
             ShowLoading(_LS("Events", "Scanning"));
             SMDWin.Services.PerfmonService.Instance.PollPaused = true;

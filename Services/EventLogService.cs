@@ -78,7 +78,8 @@ namespace SMDWin.Services
                     if (ct.IsCancellationRequested) break;
                     try
                     {
-                        var evQuery = new EventLogQuery(logName, PathType.LogName, BuildQuery(logName, from, to, levelFilter))
+                        var src = AnalyzedWindows.LogSource(logName);   // this PC, or the .evtx of a Windows on another drive
+                        var evQuery = new EventLogQuery(src.path, src.type, BuildQuery(logName, from, to, levelFilter))
                         {
                             ReverseDirection = true     // newest first
                         };
@@ -206,7 +207,8 @@ namespace SMDWin.Services
                     try
                     {
                         var query = BuildQuery(logName, from, to, levelFilter);
-                        var evQuery = new EventLogQuery(logName, PathType.LogName, query)
+                        var src = AnalyzedWindows.LogSource(logName);
+                        var evQuery = new EventLogQuery(src.path, src.type, query)
                         {
                             ReverseDirection = true
                         };
