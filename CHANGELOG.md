@@ -6,6 +6,10 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Storage: every disk card starts with a title band ("Drive 1 of 2", the model and its drive letters), so the cards of two disks cannot be mixed up.
+- Storage: the hard-disk drawing moves — the platter spins fast while it is on screen and the head arm jumps between tracks when the disk reads or writes (never over the hub). Nothing moves with animations turned off.
+- Event Viewer: a "Last year" calendar (GitHub style) on the chart card — red = blue screen, orange = serious errors, light orange = small problems; months and days are labelled, a click on a day loads it in the table; under it: the first serious error of the year, the blue screens and the last 30 days.
+- Dark background: the blue lights are back at 80 % of the 0.4 Beta strength (the red alert likewise).
 - Benchmark drawings: a fan's spin speed now follows the load much more slowly (about two seconds to speed up or slow down), so at idle it turns steadily instead of in jerks when the processor load flickers
 - Opening a page has one motion: the cards come in one after another. The page is no longer shown whole first and then restarted card by card (the extra fade and slide are gone)
 - Background alert (red above 90 °C) also works on the Light theme, as a soft red wash; it goes back to normal only below 87 °C, so a reading hovering around the limit no longer makes it flicker

@@ -162,7 +162,7 @@ namespace SMDWin.Views
                 host.Children.Clear();
                 _perDiskUi.Clear();
                 _driveFits.Clear();
-                foreach (var d in disks) host.Children.Add(MakeDriveRow(d));
+                for (int i = 0; i < disks.Count; i++) host.Children.Add(MakeDriveRow(disks[i], i + 1, disks.Count));
                 // from now on the activity of each disk is read (MainWindow.StorageDiskActivity.cs)
                 _perDiskOn = true;
                 HookDriveRowsResize();
@@ -274,7 +274,7 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Debug($"RenderFindingChips: {ex.Message}"); }
         }
 
-        private Border MakeDriveRow(DiskHealthEntry d)
+        private Border MakeDriveRow(DiskHealthEntry d, int number = 1, int total = 1)
         {
             var card = new Border { Style = TryFindResource("CompCardStyle") as Style, Cursor = System.Windows.Input.Cursors.Arrow,
                                     Margin = new Thickness(0, 0, 0, 12), Padding = new Thickness(18, 14, 18, 0) };
@@ -285,7 +285,14 @@ namespace SMDWin.Views
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            card.Child = root;
+            // the title band at the top of the card: which disk this is and which drive letters live on it, so the cards of two
+            // disks one under the other cannot be mixed up (round 4, variant C)
+            var head = MakeDriveHeadBand(d, number, total);
+            var outer = new DockPanel();
+            DockPanel.SetDock(head, Dock.Top);
+            outer.Children.Add(head);
+            outer.Children.Add(root);
+            card.Child = outer;
 
             var body = new Grid { Margin = new Thickness(0, 0, 0, 14), VerticalAlignment = VAlign.Top };
             // picture · name · (spacer) · partitions · interface / serial / capacity (the old footer moved up here)
@@ -301,6 +308,9 @@ namespace SMDWin.Views
             int hp = noHealth ? 0 : d.HealthPercent;
             var pic = new Viewbox { Width = 176, Height = 122, Child = HardwareIllustrations.Drive(DriveForm.PictureKind(d.Kind, d.Model, formFactor: d.FormFactor), DriveHealth.From(hp, !noHealth)), VerticalAlignment = VAlign.Center, HorizontalAlignment = HAlign.Center };
             body.Children.Add(pic);
+            // an HDD drawing moves: the platter spins while it is on screen, the head arm jumps when the disk works (HddMotion)
+            var hddMotion = (pic.Child as Canvas)?.Tag as HddMotion;
+            hddMotion?.Attach(pic);
 
             // 2. type, name, interface, state
             bool isSys = d.Partitions.Any(p => p.Letter.StartsWith("C", StringComparison.OrdinalIgnoreCase));
@@ -353,6 +363,7 @@ namespace SMDWin.Views
                 QueueDriveFit();
             };
             _perDiskUi[d.DiskIndex] = actUi;
+            if (hddMotion != null) actUi.Activity = hddMotion.SetActivity;
 
             // tight layout, when two disks have to fit the visible height (FitDriveCards): a smaller picture and name, less spacing
             bool tightOn = false;
@@ -369,6 +380,8 @@ namespace SMDWin.Views
                     nameT.FontSize = tight ? 17 : 20; nameT.MaxHeight = tight ? 46 : 56;
                     stRow.Margin = new Thickness(0, tight ? 3 : 10, 0, 0);
                     card.Padding = new Thickness(18, tight ? 10 : 14, 18, 0);
+                    head.Margin = new Thickness(-18, tight ? -10 : -14, -18, tight ? 8 : 12);
+                    head.Padding = new Thickness(18, tight ? 6 : 9, 18, tight ? 6 : 9);
                     body.Margin = new Thickness(0, 0, 0, tight ? 6 : 14);
                     actUi.SetTight(tight);
                 },
@@ -419,6 +432,59 @@ namespace SMDWin.Views
             Grid.SetColumn(meta, 4);
             body.Children.Add(meta);
             return card;
+        }
+
+        /// <summary>"[1] Drive 1 of 2 · model ……… C: Windows  D: Data" — the band across the top of a disk card.</summary>
+        private Border MakeDriveHeadBand(DiskHealthEntry d, int number, int total)
+        {
+            var band = new Border { Margin = new Thickness(-18, -14, -18, 12), Padding = new Thickness(18, 9, 18, 9),
+                                    BorderThickness = new Thickness(0, 0, 0, 1), CornerRadius = new CornerRadius(8, 8, 0, 0) };
+            band.SetResourceReference(Border.BackgroundProperty, "BgHoverBrush");
+            band.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
+            var dock = new DockPanel { LastChildFill = true };
+            band.Child = dock;
+
+            var badge = new Border { MinWidth = 22, Height = 22, CornerRadius = new CornerRadius(5), Padding = new Thickness(6, 0, 6, 0),
+                                     Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VAlign.Center };
+            badge.SetResourceReference(Border.BackgroundProperty, "AccentBrush");
+            badge.Child = new TextBlock { Text = number.ToString(CultureInfo.InvariantCulture), Foreground = System.Windows.Media.Brushes.White,
+                                          FontWeight = FontWeights.Bold, FontSize = Ui.FontS, HorizontalAlignment = HAlign.Center, VerticalAlignment = VAlign.Center };
+            DockPanel.SetDock(badge, Dock.Left);
+            dock.Children.Add(badge);
+
+            // the drive letters on this disk, as small labels on the right
+            var chips = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VAlign.Center, Margin = new Thickness(12, 0, 0, 0) };
+            foreach (var p in d.Partitions.Take(6))
+            {
+                string letter = (p.Letter ?? "").TrimEnd('\\');
+                if (letter.Length == 0) continue;
+                var chip = new Border { CornerRadius = new CornerRadius(5), Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(6, 0, 0, 0) };
+                chip.SetResourceReference(Border.BackgroundProperty, "BgCardBrush");
+                var ct = new TextBlock { FontSize = Ui.FontS, VerticalAlignment = VAlign.Center };
+                ct.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+                ct.Inlines.Add(new System.Windows.Documents.Run(letter) { FontWeight = FontWeights.SemiBold });
+                string label = string.IsNullOrWhiteSpace(p.Label) || p.Label == "Local Disk" ? PT("Local Disk") : p.Label;
+                var lr = new System.Windows.Documents.Run("  " + label);
+                lr.SetResourceReference(System.Windows.Documents.TextElement.ForegroundProperty, "TextSecondaryBrush");
+                ct.Inlines.Add(lr);
+                chip.Child = ct;
+                chips.Children.Add(chip);
+            }
+            DockPanel.SetDock(chips, Dock.Right);
+            dock.Children.Add(chips);
+
+            var title = new TextBlock { VerticalAlignment = VAlign.Center, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = Ui.FontM };
+            title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+            title.Inlines.Add(new System.Windows.Documents.Run(PT("Drive {0} of {1}", number, total)) { FontWeight = FontWeights.SemiBold });
+            string model = string.IsNullOrWhiteSpace(d.Model) ? "" : d.Model.Trim();
+            if (model.Length > 0)
+            {
+                var mr = new System.Windows.Documents.Run("   " + model);
+                mr.SetResourceReference(System.Windows.Documents.TextElement.ForegroundProperty, "TextSecondaryBrush");
+                title.Inlines.Add(mr);
+            }
+            dock.Children.Add(title);
+            return band;
         }
 
         private FrameworkElement MakePartitionRow(PartitionEntry p)

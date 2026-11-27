@@ -110,14 +110,14 @@ namespace SMDWin.Views
                 double rx2 = Math.Max(800 * sx, w * 0.66), ry2 = Math.Max(780 * sy, h * 1.00);   // right
                 double rx3 = Math.Max(980 * sx, w * 0.72), ry3 = Math.Max(540 * sy, h * 0.60);   // bottom
                 double y2 = h * 0.38;
-                // all well: blue, between the first strength and the halved one (a hint of colour, not a glow the eye goes to)
+                // all well: blue at 80 % of the first strength (0.16 / 0.10 / 0.05, the 0.4 Beta look)
                 lights = level switch
                 {
                     0 => new[]
                     {
-                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.125),
-                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.078),
-                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.038),
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0x4C, 0x6E, 0xFF), 0.128),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xA7, 0x8B, 0xFA), 0.080),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x2D, 0xD4, 0xBF), 0.040),
                     },
                     // a warning: the same places in a faint amber (weaker than the blue, so it is felt more than seen)
                     1 => new[]
@@ -126,12 +126,12 @@ namespace SMDWin.Views
                         new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xD9, 0x77, 0x3A), 0.065),
                         new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0xB0, 0x6C, 0x2E), 0.035),
                     },
-                    // danger: deep red, wine, dark rose — subtle, below the earlier alert strength
+                    // danger: deep red, wine, dark rose at 80 % of the first alert strength (0.26 / 0.15 / 0.10)
                     _ => new[]
                     {
-                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0xE0, 0x30, 0x3C), 0.19),
-                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xC2, 0x38, 0x6A), 0.11),
-                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x9A, 0x2E, 0x4C), 0.07),
+                        new AuroraLight(180 * sx,     -60 * sy,    rx1, ry1, Color.FromRgb(0xE0, 0x30, 0x3C), 0.21),
+                        new AuroraLight(w - 80 * sx,  y2,          rx2, ry2, Color.FromRgb(0xC2, 0x38, 0x6A), 0.12),
+                        new AuroraLight(w * 0.55,     h + 80 * sy, rx3, ry3, Color.FromRgb(0x9A, 0x2E, 0x4C), 0.08),
                     },
                 };
             }

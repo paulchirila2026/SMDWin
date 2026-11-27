@@ -203,6 +203,7 @@ namespace SMDWin.Views
                 if (FindName("EventsPerfmonCard") is System.Windows.Controls.Border epc)
                     epc.Visibility = Visibility.Visible;
                 ShowEvents(_eventScan);
+                EnsureEventCalendar();   // the "Last year" calendar on the same card (MainWindow.EventsCalendar.cs)
             }
             catch (OperationCanceledException)
             {

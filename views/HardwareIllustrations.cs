@@ -161,6 +161,8 @@ namespace SMDWin.Views
         public static Canvas Drive(string kind, DriveHealthState health = DriveHealthState.Unknown)
         {
             var c = new Canvas { Width = 110, Height = 76 };
+            Canvas cur = c;   // where the helpers below draw: the canvas itself, or a moving part (platter, head arm)
+            HddMotion? motion = null;
             // the disk state shows in the drawing: the label / board takes the state colour and an LED appears; no data → the neutral drawing
             string? healthKey = health switch
             {
@@ -172,13 +174,13 @@ namespace SMDWin.Views
             {
                 var e = new Rectangle { Width = w, Height = h, RadiusX = r, RadiusY = r, Opacity = op };
                 if (key != null) e.SetResourceReference(Shape.FillProperty, key); else e.Fill = fill;
-                Canvas.SetLeft(e, x); Canvas.SetTop(e, y); c.Children.Add(e);
+                Canvas.SetLeft(e, x); Canvas.SetTop(e, y); cur.Children.Add(e);
             }
             void E(double cx, double cy, double rr, Brush? fill = null, string? key = null, double op = 1)
             {
                 var e = new Ellipse { Width = rr * 2, Height = rr * 2, Opacity = op };
                 if (key != null) e.SetResourceReference(Shape.FillProperty, key); else e.Fill = fill;
-                Canvas.SetLeft(e, cx - rr); Canvas.SetTop(e, cy - rr); c.Children.Add(e);
+                Canvas.SetLeft(e, cx - rr); Canvas.SetTop(e, cy - rr); cur.Children.Add(e);
             }
             void Led(double x, double y)
             {
@@ -192,47 +194,70 @@ namespace SMDWin.Views
             {
                 var e = new Path { Data = Geometry.Parse(data), Opacity = op };
                 if (key != null) e.SetResourceReference(Shape.FillProperty, key); else e.Fill = fill;
-                c.Children.Add(e);
+                cur.Children.Add(e);
             }
             void S(string data, Brush stroke, double th, double op = 1)
             {
-                c.Children.Add(new Path { Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = th, Opacity = op,
+                cur.Children.Add(new Path { Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = th, Opacity = op,
                                           StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round });
             }
             void Ring(double cx, double cy, double rr, Brush stroke, double th, double op)
             {
                 var e = new Ellipse { Width = rr * 2, Height = rr * 2, Stroke = stroke, StrokeThickness = th, Opacity = op };
-                Canvas.SetLeft(e, cx - rr); Canvas.SetTop(e, cy - rr); c.Children.Add(e);
+                Canvas.SetLeft(e, cx - rr); Canvas.SetTop(e, cy - rr); cur.Children.Add(e);
             }
-            // the platter: dark rim, silver disc with a few tracks and two reflections, the hub with its screws
+            // a layer for a moving part, the full size of the drawing (its transform turns it around a point of the drawing)
+            Canvas Layer() { var g = new Canvas { Width = 110, Height = 76 }; c.Children.Add(g); return g; }
+            // the platter: dark rim, silver disc with a few tracks and two reflections, the hub with its screws. The tracks, the hub
+            // and its screws sit on layers that can turn around the spindle (HddMotion); the reflections belong to the light and
+            // stay still, as on a real disk
             void Platter(double cx, double cy, double r, double hub, bool screws)
             {
                 E(cx, cy, r + 1.4, PlatEdgeBr);
                 E(cx, cy, r, PlatterBr);
+                var spin = new RotateTransform(0, cx, cy);
+                var tracks = Layer(); tracks.RenderTransform = spin; cur = tracks;
                 foreach (double k in new[] { 0.82, 0.66, 0.5 }) if (r * k > hub + 3) Ring(cx, cy, r * k, ScrewBr, 0.6, 0.22);
+                // a slightly brighter quarter on two tracks: the only thing that shows the turning of a polished disc
+                foreach (double k in new[] { 0.74, 0.58 })
+                    if (r * k > hub + 3)
+                        S(FormattableString.Invariant($"M{cx + r * k:0.##},{cy} A{r * k:0.##},{r * k:0.##} 0 0 1 {cx},{cy + r * k:0.##}"), ScrewBr, 0.7, 0.28);
+                cur = c;
                 // the light wedge (upper left) and a fainter one opposite
                 double a1 = -128 * Math.PI / 180, a2 = -90 * Math.PI / 180;
                 string Wedge(double from, double to) => FormattableString.Invariant(
                     $"M{cx},{cy} L{cx + r * Math.Cos(from):0.##},{cy + r * Math.Sin(from):0.##} A{r},{r} 0 0 1 {cx + r * Math.Cos(to):0.##},{cy + r * Math.Sin(to):0.##} Z");
                 P(Wedge(a1, a2), Brushes.White, op: 0.45);
                 P(Wedge(a1 + Math.PI, a2 + Math.PI), Brushes.White, op: 0.16);
+                var hubLayer = Layer(); hubLayer.RenderTransform = spin; cur = hubLayer;
                 var h = new Ellipse { Width = hub * 2, Height = hub * 2, Fill = HubBr, Stroke = HubEdgeBr, StrokeThickness = 0.8 };
-                Canvas.SetLeft(h, cx - hub); Canvas.SetTop(h, cy - hub); c.Children.Add(h);
+                Canvas.SetLeft(h, cx - hub); Canvas.SetTop(h, cy - hub); cur.Children.Add(h);
                 if (screws)
                     for (int i = 0; i < 6; i++)
                     {
                         double a = (i * 60 - 90) * Math.PI / 180;
                         E(cx + hub * 0.6 * Math.Cos(a), cy + hub * 0.6 * Math.Sin(a), hub * 0.125, ScrewBr);
                     }
+                R(cx - 0.8, cy - hub + 0.4, 1.6, 1.3, 0.3, ScrewBr);   // a small balance mark on the hub rim
                 E(cx, cy, hub * 0.28, HubEdgeBr);
+                cur = c;
+                // the blur of the screws while the disk spins fast (shown only during the animation)
+                var blur = new Ellipse { Width = hub * 1.2, Height = hub * 1.2, Stroke = ScrewBr, StrokeThickness = hub * 0.25, Opacity = 0, IsHitTestVisible = false };
+                Canvas.SetLeft(blur, cx - hub * 0.6); Canvas.SetTop(blur, cy - hub * 0.6); c.Children.Add(blur);
+                motion = new HddMotion { Platter = spin, Blur = blur, Cx = cx, Cy = cy, R = r, Hub = hub };
             }
             // the head arm: from the pivot to the head over the platter, the pivot cap
-            void Arm(string body, double px, double py, double pr)
+            void Arm(string body, double px, double py, double pr, string? head = null, double tipX = 0, double tipY = 0)
             {
+                var turn = new RotateTransform(0, px, py);
+                var arm = Layer(); arm.RenderTransform = turn; cur = arm;
                 P(body, ArmBr);
+                if (head != null) P(head, ChipBr);
+                cur = c;
                 var piv = new Ellipse { Width = pr * 2, Height = pr * 2, Fill = PivotBr, Stroke = HubEdgeBr, StrokeThickness = 0.8 };
                 Canvas.SetLeft(piv, px - pr); Canvas.SetTop(piv, py - pr); c.Children.Add(piv);
                 E(px, py, pr * 0.33, ScrewBr);
+                if (motion != null) motion.SetArm(turn, px, py, tipX, tipY);
             }
             void SataPins(double x, double y1, double y2)
             {
@@ -305,8 +330,7 @@ namespace SMDWin.Views
                     Platter(44, 38, 27.5, 8, screws: true);
                     P("M84,50 L99,46 A3,3 0 0 1 102.6,48.6 L104,66 A3,3 0 0 1 101,69.2 L86,70 A3,3 0 0 1 83,67 Z", MagnetBr);
                     P("M86,52 L98,49 L99.5,64 L87,66 Z", MagnetTopBr);
-                    Arm("M88,57 L60,25.5 L57.5,27.5 L84,61 Z", 87, 59, 5.4);
-                    P("M55.2,25.6 L58.1,22.4 L60.6,24.6 L57.7,27.8 Z", ChipBr);   // the head
+                    Arm("M88,57 L60,25.5 L57.5,27.5 L84,61 Z", 87, 59, 5.4, "M55.2,25.6 L58.1,22.4 L60.6,24.6 L57.7,27.8 Z", 57.9, 25.1);   // + the head
                     S("M83,64 C78,68 72,69 66,70", GoldBr, 2.2);
                     foreach (var (sx, sy) in new[] { (12.0, 6.5), (98.0, 6.5), (12.0, 69.5), (98.0, 69.5) }) E(sx, sy, 1.6, CaseScrewBr);
                     Led(18, 63);
@@ -318,8 +342,7 @@ namespace SMDWin.Views
                     R(9, 13, 86, 50, 3.5, InnerBr);
                     Platter(37, 38, 21.7, 6.2, screws: true);
                     P("M73,46 L86,43 A2.5,2.5 0 0 1 89,45.2 L90,58 A2.5,2.5 0 0 1 87.4,60.6 L75,61 A2.5,2.5 0 0 1 72.5,58.5 Z", MagnetBr);
-                    Arm("M77,52 L52,26 L50,27.8 L73.5,55 Z", 76, 54, 4.6);
-                    P("M47.9,26.1 L50.5,23.2 L52.8,25.2 L50.2,28.1 Z", ChipBr);
+                    Arm("M77,52 L52,26 L50,27.8 L73.5,55 Z", 76, 54, 4.6, "M47.9,26.1 L50.5,23.2 L52.8,25.2 L50.2,28.1 Z", 50.35, 25.65);
                     R(99, 15, 6, 13, 1.4, PortBr); R(99, 31, 6, 30, 1.4, PortBr);
                     SataPins(101, 17, 33);
                     Led(16, 59);
@@ -331,7 +354,7 @@ namespace SMDWin.Views
                     R(9, 12, 76, 52, 6, InnerBr);
                     Platter(35, 38, 19.8, 5.6, screws: false);
                     P("M65,46 L76,43.5 A2.4,2.4 0 0 1 78.8,45.5 L80,57 A2.4,2.4 0 0 1 77.6,59.5 L67,60 A2.4,2.4 0 0 1 64.6,57.6 Z", MagnetBr);
-                    Arm("M69,52 L48,27.5 L46.2,29 L66,55 Z", 68, 54, 4.2);
+                    Arm("M69,52 L48,27.5 L46.2,29 L66,55 Z", 68, 54, 4.2, null, 47.1, 28.2);
                     R(90, 33, 7, 10, 1.5, PortBr);
                     S("M97,38 C102,38 103,34 107,34", CableBr, 3);
                     Led(80, 16);
@@ -381,6 +404,7 @@ namespace SMDWin.Views
                     Led(86, 59);
                     break;
             }
+            if (motion != null && motion.ArmTurn != null) c.Tag = motion;   // HDD drawings can be animated (HddMotion)
             return c;
         }
     }

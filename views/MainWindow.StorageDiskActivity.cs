@@ -40,6 +40,8 @@ namespace SMDWin.Views
             /// <summary>Tight (two disks must fit the screen): the values on two columns, no busy bar and no peak row.</summary>
             public Action<bool> SetTight = _ => { };
             public bool Hidden;
+            /// <summary>The busy % of each new reading, for the moving HDD drawing (HddMotion.SetActivity).</summary>
+            public Action<float>? Activity;
         }
 
         /// <summary>Background thread (OnTempTick, next to GetSystemDiskIO): one read of all disks.</summary>
@@ -94,6 +96,7 @@ namespace SMDWin.Views
                 ui.Write.Text = FormatKBps(float.IsFinite(w) ? w : 0f);
                 // no transfers = no response time to show (the counter reads 0)
                 ui.Latency.Text = float.IsFinite(lat) && lat > 0 ? (lat < 1 ? "<1 ms" : $"{lat:F1} ms") : PT("idle");
+                ui.Activity?.Invoke(busy);
                 if (float.IsFinite(busy))
                 {
                     ui.Busy.Text = $"{busy:F0} %";

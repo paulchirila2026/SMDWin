@@ -1280,7 +1280,7 @@
           <!-- Chart: how many errors (red) and warnings (orange) per hour / day, in the chosen interval. Built in code. -->
           <Border Grid.Row="2" Style="{StaticResource CompCardStyle}" Cursor="Arrow" Margin="0,0,0,12" Padding="18,12,18,10">
             <StackPanel>
-              <DockPanel LastChildFill="False" Margin="0,0,0,8">
+              <DockPanel x:Name="EvTimelineHead" LastChildFill="False" Margin="0,0,0,8">
                 <Viewbox DockPanel.Dock="Left" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,11,0"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.46,6.8 L11.75,20.43 C11.92,21.16 12.95,21.2 13.19,20.48 L16.45,10.36 L17.03,12.46 C17.13,12.78 17.42,13 17.75,13 L21.25,13 A0.75,0.75 0 0 0 21.25,11.5 L18.32,11.5 L17.22,7.55 A0.75,0.75 0 0 0 15.78,7.52 L12.58,17.48 L9.23,3.58 C9.04,2.82 7.97,2.81 7.77,3.56 L5.67,11.5 L2.75,11.5 A0.75,0.75 0 0 0 2.75,13 L6.25,13 C6.59,13 6.88,12.77 6.97,12.44 Z"/></Viewbox>
                 <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
                   <StackPanel Orientation="Horizontal">
@@ -1288,7 +1288,7 @@
                     <TextBlock x:Name="TxtEvTimelineSub" Text="Press Scan to load the event log" Style="{StaticResource DashRowInlineSub}"/>
                   </StackPanel>
                 </StackPanel>
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel x:Name="EvTimelineLegend" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                   <Border Width="14" Height="3" CornerRadius="1.5" Background="{DynamicResource StatusCritBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                   <TextBlock Text="critical / error" FontSize="{StaticResource FontSizeS}" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,16,0"/>
                   <Border Width="14" Height="3" CornerRadius="1.5" Background="{DynamicResource StatusWarningBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -1298,6 +1298,11 @@
               <UniformGrid x:Name="EvTimelineBars" Rows="1" Height="64"/>
               <!-- the label of each bar ("Mo 28", "14:00"), centred under it — MainWindow.EventsKb.cs → DrawEventsTimelineLabels -->
               <Canvas x:Name="EvTimelineLabels" Height="16" Margin="0,4,0,0"/>
+              <!-- the last year as a calendar, one square per day (GitHub style) — MainWindow.EventsCalendar.cs -->
+              <StackPanel x:Name="EvCalendarPanel" Visibility="Collapsed">
+                <Canvas x:Name="EvCalendarCanvas" Height="128" ClipToBounds="True" Background="Transparent"/>
+                <WrapPanel x:Name="EvCalendarFoot" Margin="0,6,0,0"/>
+              </StackPanel>
             </StackPanel>
           </Border>
 
