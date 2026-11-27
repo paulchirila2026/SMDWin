@@ -1705,7 +1705,8 @@ namespace SMDWin.Services
         {
             if (!string.IsNullOrEmpty(currentStatus) && currentStatus.StartsWith("\u26a0"))
                 return currentStatus;
-            return healthPercent >= 80 ? "Healthy" : healthPercent >= 50 ? "Warning" : "Critical";
+            // the same limits as DriveVerdict (90 / 60), so the status text and the verdict shown everywhere agree
+            return healthPercent >= 90 ? "Healthy" : healthPercent >= 60 ? "Warning" : "Critical";
         }
 
         public static string GetDiskHealthReason(DiskHealthEntry disk)

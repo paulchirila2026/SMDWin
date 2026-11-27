@@ -67,11 +67,6 @@ namespace SMDWin.Services
             bool hasData = d.SmartAttributes.Count > 0 || d.NvmeHealthRows.Count > 0;
             if (!hasData) return new DriveVerdict { HasData = false, Level = State.Unknown };
 
-            int score = d.HealthPercent > 0 ? Math.Clamp(d.HealthPercent, 0, 100) : 100;
-            int? life = LifeLeftOf(d);
-            int percent = life.HasValue ? Math.Min(score, life.Value) : score;
-            bool isLife = life.HasValue && life.Value <= score;
-
             var red = new List<string>();
             var amber = new List<string>();
             var notes = new List<string>();
@@ -91,6 +86,15 @@ namespace SMDWin.Services
                 if (name.Equals("Percentage Used", StringComparison.OrdinalIgnoreCase)) continue;   // wear: judged from the life left below
                 (c == Red && CriticalNvmeRows.Any(h => name.Equals(h, StringComparison.OrdinalIgnoreCase)) ? red : amber).Add(name);
             }
+
+            // the drive itself predicts a failure (SMART "predict failure" flag read by HardwareService)
+            if ((d.Status ?? "").StartsWith("\u26a0", StringComparison.Ordinal)) red.Insert(0, "SMART failure prediction");
+
+            // 0 % with no problem found means "not worked out", not "dead"
+            int score = d.HealthPercent > 0 ? Math.Clamp(d.HealthPercent, 0, 100) : red.Count > 0 ? 0 : 100;
+            int? life = LifeLeftOf(d);
+            int percent = life.HasValue ? Math.Min(score, life.Value) : score;
+            bool isLife = life.HasValue && life.Value <= score;
 
             State level;
             if (red.Count > 0 || score < 60 || life is <= 10) level = State.Failing;
