@@ -44,6 +44,8 @@ namespace SMDWin.Views.Net
 
         private Button _tabSaved = null!, _tabLive = null!;
         private Grid   _pageSaved = null!, _pageLive = null!;
+        private Button _tabChannels = null!;
+        private WifiChannelsView _pageChannels = null!;
         private System.Windows.Threading.DispatcherTimer? _liveTimer;
         private bool _liveMonitoringActive = false;
         private Wpf.Ui.Controls.Button _btnLiveMonitor = null!;
@@ -74,12 +76,15 @@ namespace SMDWin.Views.Net
         {
             NetWindowHelper.SetupWindow(this, "Wi-Fi Networks — SMDWin", 780, 640);
             Content = BuildRootUI();
-            Closed += (_, _) => _liveTimer?.Stop();
+            Closed += (_, _) => { _liveTimer?.Stop(); _pageChannels?.Stop(); };
             Loaded += (_, _) => { WifiScan_Click(this, new RoutedEventArgs()); _ = LoadRouterIdentityAsync(); };
             // monitoring stops when the page is not visible and resumes when it returns
             IsVisibleChanged += (_, e) =>
             {
                 bool visible = (bool)e.NewValue;
+                // the channel analysis scans only while it is on screen
+                if (!visible) _pageChannels?.Stop();
+                else if (_pageChannels?.Visibility == Visibility.Visible) _pageChannels.Start();
                 if (!visible && _liveMonitoringActive) { _resumeLive = true; ToggleLiveMonitor_Click(this, new RoutedEventArgs()); }
                 else if (visible && _resumeLive) { _resumeLive = false; if (!_liveMonitoringActive) ToggleLiveMonitor_Click(this, new RoutedEventArgs()); }
             };
@@ -101,6 +106,9 @@ namespace SMDWin.Views.Net
             _tabLive.Click  += (_, _) => SwitchTab(false);
             tabStrip.Children.Add(_tabSaved);
             tabStrip.Children.Add(_tabLive);
+            _tabChannels = MakeTabButton(SMDWin.Views.MainWindow.PT("Channel analysis"), false);
+            _tabChannels.Click += (_, _) => ShowChannels();
+            tabStrip.Children.Add(_tabChannels);
             // the tabs on the grey track, as in the rest of the app
             var tabTrack = new Border { Child = tabStrip, Tag = "SegTrack", VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 0, 0, 10) };
             tabTrack.SetResourceReference(FrameworkElement.StyleProperty, "SegmentTrackStyle");
@@ -120,6 +128,8 @@ namespace SMDWin.Views.Net
             _pageLive  = BuildLivePage();
             pageHost.Children.Add(_pageSaved);
             pageHost.Children.Add(_pageLive);
+            _pageChannels = new WifiChannelsView { Visibility = Visibility.Collapsed };
+            pageHost.Children.Add(_pageChannels);
             foreach (var action in new[] { _btnLiveMonitor, _btnExport })
             {
                 (action.Parent as System.Windows.Controls.Panel)?.Children.Remove(action);
@@ -158,8 +168,10 @@ namespace SMDWin.Views.Net
         {
             _pageSaved.Visibility = showSaved ? Visibility.Visible : Visibility.Collapsed;
             _pageLive.Visibility  = showSaved ? Visibility.Collapsed : Visibility.Visible;
+            if (_pageChannels != null) { _pageChannels.Stop(); _pageChannels.Visibility = Visibility.Collapsed; }
             SetTabActive(_tabSaved, showSaved);
             SetTabActive(_tabLive, !showSaved);
+            if (_tabChannels != null) SetTabActive(_tabChannels, false);
             if (_btnExport != null) _btnExport.Visibility = showSaved ? Visibility.Visible : Visibility.Collapsed;
             if (_btnLiveMonitor != null) _btnLiveMonitor.Visibility = showSaved ? Visibility.Collapsed : Visibility.Visible;
 
@@ -172,6 +184,21 @@ namespace SMDWin.Views.Net
             {
                 ToggleLiveMonitor_Click(this, new RoutedEventArgs()); // stop monitoring when leaving the tab
             }
+        }
+
+        /// <summary>The third tab: every access point in range, on the channels of a band (WifiChannelsView).</summary>
+        private void ShowChannels()
+        {
+            if (_liveMonitoringActive) ToggleLiveMonitor_Click(this, new RoutedEventArgs());   // one reader at a time
+            _pageSaved.Visibility = Visibility.Collapsed;
+            _pageLive.Visibility = Visibility.Collapsed;
+            _pageChannels.Visibility = Visibility.Visible;
+            SetTabActive(_tabSaved, false);
+            SetTabActive(_tabLive, false);
+            SetTabActive(_tabChannels, true);
+            if (_btnExport != null) _btnExport.Visibility = Visibility.Collapsed;
+            if (_btnLiveMonitor != null) _btnLiveMonitor.Visibility = Visibility.Collapsed;
+            _pageChannels.Start();
         }
 
         private void ToggleLiveMonitor_Click(object sender, RoutedEventArgs e)
