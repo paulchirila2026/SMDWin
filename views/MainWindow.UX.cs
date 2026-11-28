@@ -158,8 +158,12 @@ namespace SMDWin.Views
             ["Processes"] = "Processes",     ["Startup"]   = "Startup",
             ["Events"]    = "Event Viewer",  ["Crash"]     = "BSOD / Crash",
             ["Drivers"]   = "Drivers",       ["Settings"]  = "Settings",
-            ["Tools"]     = "Tools",         ["PowerShell"]= "PowerShell",
+            ["Tools"]     = "Tools",
         };
+
+        /// <summary>Menu entries that exist in the code but are not shown (the sidebar search must never bring them back).</summary>
+        private static readonly HashSet<string> HiddenNavTags = new(StringComparer.OrdinalIgnoreCase) { "PowerShell" };
+        private static bool IsHiddenNavTag(object? tag) => tag is string s && HiddenNavTags.Contains(s);
 
         /// <summary>The menu buttons: the page list and Settings, pinned at the bottom.</summary>
         private IEnumerable<WpfButton> AllNavButtons()
@@ -281,7 +285,7 @@ namespace SMDWin.Views
             ["Services"]   = new[]{ "services","windows service","sysMain","wsl","print","svchost" },
             ["Processes"]  = new[]{ "process","processes","task","cpu usage","memory usage","kill" },
             ["Startup"]    = new[]{ "startup","boot","autorun","autostart" },
-            ["Tools"]      = new[]{ "tools","timer","shutdown","hibernate","optimize","usb","powershell","commands","cleanup" },
+            ["Tools"]      = new[]{ "tools","timer","shutdown","hibernate","optimize","usb","cleanup" },
             ["Events"]     = new[]{ "events","event viewer","errors","warnings","log","bsod" },
             ["Crash"]      = new[]{ "crash","bsod","blue screen","dump","stop code" },
             ["Drivers"]    = new[]{ "drivers","driver","device","unsigned","outdated" },
@@ -303,9 +307,9 @@ namespace SMDWin.Views
             ForwardSidebarQueryToSettings(query);
             if (query.Length == 0)
             {
-                // Restore all nav buttons and category separators
+                // Restore all nav buttons and category separators (the ones hidden on purpose stay hidden)
                 foreach (var btn in AllNavButtons())
-                    btn.Visibility = Visibility.Visible;
+                    btn.Visibility = IsHiddenNavTag(btn.Tag) ? Visibility.Collapsed : Visibility.Visible;
                 foreach (var name in new[] {"NavCatPrincipal","NavCatHw","NavCatSys","NavCatDiag","NavCatCfg"})
                     if (FindName(name) is FrameworkElement el && el.Parent is Grid pg)
                         pg.Visibility = Visibility.Visible;
@@ -323,7 +327,7 @@ namespace SMDWin.Views
             {
                 var tag = btn.Tag?.ToString() ?? "";
                 if (string.IsNullOrEmpty(tag)) continue; // skip non-nav buttons
-                btn.Visibility = matchedTags.Contains(tag) ? Visibility.Visible : Visibility.Collapsed;
+                btn.Visibility = !IsHiddenNavTag(tag) && matchedTags.Contains(tag) ? Visibility.Visible : Visibility.Collapsed;
             }
 
             // Hide category separators (they look odd when all children are hidden)
@@ -403,7 +407,7 @@ namespace SMDWin.Views
             ["Services"]   = ("Windows Services","Start, stop and manage services"),
             ["Processes"]  = ("Process Monitor", "Live CPU and RAM per process"),
             ["Startup"]    = ("Startup Manager", "Programs that run at boot"),
-            ["Tools"]      = ("Tools",           "Timer, cleanup, optimize and PowerShell"),
+            ["Tools"]      = ("Tools",           "Timer, cleanup and optimize"),
             ["Events"]     = ("Event Viewer",    "Windows errors, warnings and system logs"),
             ["Crash"]      = ("BSOD / Crash",    "Blue screen dumps and stop codes"),
             ["Drivers"]    = ("Drivers",         "Device drivers — missing, unsigned or failing"),

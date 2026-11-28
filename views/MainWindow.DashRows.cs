@@ -89,74 +89,16 @@ namespace SMDWin.Views
 
         private void ApplyRowAlert(Border? row, bool on) => SetCardGlow(row, on ? "StatusCritBrush" : null);
 
-        // ══ Alert glow ══════════════════════════════════════════
-        // Critical value → an outline in the state colour + a very discreet coloured shadow around the card.
-        // The shadow is NOT put on the card (it would blur the text): an empty Border (CompGlow style) with a DropShadowEffect
-        // is placed behind it, in the same grid cell. brushKey = null → remove everything.
-        private readonly System.Collections.Generic.Dictionary<Border, Border> _cardGlows = new();
-        private readonly System.Collections.Generic.HashSet<System.Windows.Media.Effects.DropShadowEffect> _glowAnimated = new();
-
+        // ══ Alert outline ═══════════════════════════════════════
+        // Critical value → the card's own outline takes the state colour (the card keeps its normal translucent background).
+        // brushKey = null → back to the normal outline of the card style.
         internal void SetCardGlow(Border? card, string? brushKey)
         {
             if (card == null) return;
             try
             {
-                _cardGlows.TryGetValue(card, out var glow);
-                if (brushKey == null)
-                {
-                    if (glow != null)
-                    {
-                        glow.Visibility = Visibility.Collapsed;
-                        // no animation while not visible (uses no processor)
-                        if (glow.Effect is System.Windows.Media.Effects.DropShadowEffect old && _glowAnimated.Remove(old))
-                            old.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, null);
-                    }
-                    return;
-                }
-                // no coloured outline — only the discreet shadow
-                if (glow == null && card.Parent is Grid host)
-                {
-                    glow = new Border { Style = TryFindResource("CompGlow") as Style };
-                    Grid.SetRow(glow, Grid.GetRow(card));
-                    Grid.SetColumn(glow, Grid.GetColumn(card));
-                    Grid.SetRowSpan(glow, Grid.GetRowSpan(card));
-                    Grid.SetColumnSpan(glow, Grid.GetColumnSpan(card));
-                    System.Windows.Controls.Panel.SetZIndex(glow, -1);
-                    host.Children.Insert(0, glow);
-                    _cardGlows[card] = glow;
-                }
-                if (glow == null) return;
-                var c = (TryFindResource(brushKey) as SolidColorBrush)?.Color ?? System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44);
-                // the effect is kept between ticks (otherwise the animation would restart every second); only the colour changes
-                if (glow.Effect is not System.Windows.Media.Effects.DropShadowEffect fx)
-                {
-                    fx = new System.Windows.Media.Effects.DropShadowEffect
-                    {
-                        ShadowDepth = 0, BlurRadius = 28, Opacity = 0.38,
-                        RenderingBias = System.Windows.Media.Effects.RenderingBias.Performance,
-                    };
-                    glow.Effect = fx;
-                }
-                if (fx.Color != c) fx.Color = c;
-                // slow breathing: the shadow fades in and out smoothly (with animations off it stays fixed)
-                if (SettingsService.Current.EnableAnimations)
-                {
-                    if (!_glowAnimated.Contains(fx))
-                    {
-                        var breathe = new System.Windows.Media.Animation.DoubleAnimation(0.12, 0.40, TimeSpan.FromSeconds(2.2))
-                        {
-                            AutoReverse = true, RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever,
-                            EasingFunction = new System.Windows.Media.Animation.SineEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut },
-                        };
-                        // a blurred shadow redrawn at 60 frames a second is costly; a slow breath looks the same at 15
-                        System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(breathe, 15);
-                        fx.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, breathe);
-                        _glowAnimated.Add(fx);
-                    }
-                }
-                else if (_glowAnimated.Remove(fx))
-                    fx.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, null);
-                glow.Visibility = card.Visibility;
+                if (brushKey == null) card.ClearValue(Border.BorderBrushProperty);
+                else card.SetResourceReference(Border.BorderBrushProperty, brushKey);
             }
             catch (Exception ex) { AppLogger.Debug($"SetCardGlow: {ex.Message}"); }
         }

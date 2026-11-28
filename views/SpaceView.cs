@@ -532,18 +532,14 @@ namespace SMDWin.Views
             _btnScan.Content = S("Stop", "Stop");
             _empty.Visibility = Visibility.Collapsed;
 
-            // memorie libera putina: scanarea folder cu folder (lenta, dar cere putina memorie) in locul indexului NTFS
+            // the NTFS index is used whenever it fits in the free memory (the scanner decides from the real size of the index)
             long freeMB = RamFullScanService.GetAvailablePhysicalMB();
-            bool lowMemory = freeMB > 0 && freeMB < SpaceScanner.LowMemoryMB;
-            string slowNote = lowMemory
-                ? string.Format(S("LowMemoryNote", "little free memory ({0:F1} GB), slower scan used"), freeMB / 1024.0)
-                : "";
-            _status.Text = lowMemory ? S("Scanning", "Scanning…") + " · " + slowNote : S("Scanning", "Scanning…");
+            _status.Text = S("Scanning", "Scanning…");
             ShowScanning(true, _status.Text);
             var progress = new Progress<string>(s =>
             {
                 if (gen != _scanGen) return;
-                _status.Text = lowMemory ? s + " · " + slowNote : s;
+                _status.Text = s;
                 ShowScanning(true, _status.Text);
             });
 
@@ -560,7 +556,7 @@ namespace SMDWin.Views
             bool failed = false;
             try
             {
-                scan = await SpaceScanner.ScanInBackgroundAsync(drive.Root, lowMemory, ct, progress);
+                scan = await SpaceScanner.ScanInBackgroundAsync(drive.Root, freeMB, ct, progress);
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
@@ -584,7 +580,7 @@ namespace SMDWin.Views
                 _selCard.Visibility = Visibility.Collapsed;
                 _status.Text = string.Format(S("ScanDone", "{0} files · {1:F1} s"), scan.Root.Files.ToString("N0"), scan.Seconds)
                              + (scan.Fast ? " · " + S("FastScan", "NTFS index") : "")
-                             + (lowMemory ? " · " + slowNote : "");
+                             + (scan.MemoryLimited ? " · " + string.Format(S("LowMemoryNote", "little free memory ({0:F1} GB), slower scan used"), freeMB / 1024.0) : "");
             }
             else
                 _status.Text = stalled ? S("ScanStalled", "Scan stopped: the PC stopped responding (very little free memory). Close large programs and scan again.")

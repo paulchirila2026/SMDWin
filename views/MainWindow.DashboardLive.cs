@@ -1476,17 +1476,16 @@ namespace SMDWin.Views
         }
 
         /// <summary>
-        /// Applies a persistent red glow to <paramref name="card"/> once
+        /// Gives <paramref name="card"/> a red outline once
         /// <paramref name="isCritical"/> has been true for ≥ <see cref="AlertDelay"/>.
-        /// Reverts to the normal shadow immediately when load drops below threshold.
-        /// Uses pre-frozen Effect instances — zero allocation per tick.
+        /// Reverts to the normal outline immediately when load drops below threshold.
         /// </summary>
         private void UpdateCardAlert(Border card, bool isCritical, ref DateTime? alertSince)
         {
             if (isCritical)
             {
                 alertSince ??= DateTime.UtcNow;
-                // the coloured outline and the glow behind the row (after the delay); no Effect on the card itself, it blurs the text
+                // the coloured outline (after the delay)
                 SetDashRowAlert(card, (DateTime.UtcNow - alertSince.Value) >= AlertDelay);
             }
             else

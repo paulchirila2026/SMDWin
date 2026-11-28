@@ -21,6 +21,21 @@ namespace SMDWin.Services
         private const uint FsctlGetNtfsVolumeData = 0x00090064;
         private const int ChunkBytes = 4 * 1024 * 1024;
         private const long MaxRecords = 60_000_000;      // above this the index would need too much memory
+        private const long BytesPerRecordInMemory = 80;  // the index lists (about 30 B) + folder names + the folder tree built from it
+        private const long BaseMemoryMB = 48;            // read buffer, result tree and working space
+
+        /// <summary>
+        /// Whether the index of a volume with <paramref name="recordCount"/> records can be built without pushing the PC into paging:
+        /// the estimated size, plus half of it again and a fixed reserve, must be free. The decision rests on the real size of the
+        /// index (a 100 GB system disk needs about 60 MB), not on a fixed amount of free memory.
+        /// </summary>
+        /// <param name="availableMB">Free physical memory; 0 or less = unknown, no limit applied.</param>
+        internal static bool IndexFitsInMemory(long recordCount, long availableMB, out long estimatedMB)
+        {
+            estimatedMB = recordCount * BytesPerRecordInMemory / (1024 * 1024) + BaseMemoryMB;
+            if (availableMB <= 0) return true;
+            return availableMB >= estimatedMB + estimatedMB / 2 + 256;
+        }
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr security,
@@ -45,10 +60,17 @@ namespace SMDWin.Services
         /// <param name="keepFileNamesFrom">Size from which file names are kept (see <see cref="MftIndex"/>).</param>
         /// <param name="progress">How much has been read, 0–1.</param>
         /// <param name="reason">Why it failed (for the log), when the result is false.</param>
+        /// <param name="availableMB">Free physical memory (0 = unknown): the index is not built when it would not fit.</param>
         public static bool TryScan(string path, long keepFileNamesFrom, CancellationToken ct, IProgress<double>? progress,
-                                   out MftIndex? index, out string reason)
+                                   out MftIndex? index, out string reason, long availableMB = 0)
+            => TryScan(path, keepFileNamesFrom, ct, progress, out index, out reason, out _, availableMB);
+
+        /// <param name="tooLittleMemory">True when the only reason for returning false is the free memory.</param>
+        internal static bool TryScan(string path, long keepFileNamesFrom, CancellationToken ct, IProgress<double>? progress,
+                                     out MftIndex? index, out string reason, out bool tooLittleMemory, long availableMB)
         {
             index = null;
+            tooLittleMemory = false;
             try
             {
                 string? root = Path.GetPathRoot(Path.GetFullPath(path));
@@ -76,6 +98,8 @@ namespace SMDWin.Services
 
                 long recordCount = mftBytes / recordSize;
                 if (recordCount > MaxRecords) { reason = $"index too large ({recordCount:N0} records)"; return false; }
+                if (!IndexFitsInMemory(recordCount, availableMB, out long estimatedMB))
+                { reason = $"the index needs about {estimatedMB:N0} MB and only {availableMB:N0} MB are free ({recordCount:N0} records)"; tooLittleMemory = true; return false; }
                 long totalBytes = recordCount * recordSize;
 
                 // record 0 describes the MFT itself: where its pieces are on disk

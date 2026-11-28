@@ -334,6 +334,27 @@ namespace SMDWin.Views
             catch (Exception ex) { AppLogger.Warning(ex, "ApplyUpdateSpeed"); }
         }
 
+        // ── Cards shown in the developer window instead of Settings ─────────────
+
+        private readonly Dictionary<string, System.Windows.Controls.Panel> _borrowedCardHome = new();
+
+        /// <summary>Takes a Settings card (Sensors, Data &amp; reports) out of its hidden holder for the developer window.
+        /// The controls keep their names and handlers, so everything they read and write still works.</summary>
+        internal Border? BorrowSettingsCard(string name)
+        {
+            if (FindName(name) is not Border card || card.Parent is not System.Windows.Controls.Panel home) return null;
+            _borrowedCardHome[name] = home;
+            home.Children.Remove(card);
+            return card;
+        }
+
+        /// <summary>Puts a borrowed card back into its holder (the developer window was closed).</summary>
+        internal void ReturnSettingsCard(string name, Border card)
+        {
+            if (card.Parent is System.Windows.Controls.Panel p) p.Children.Remove(card);
+            if (_borrowedCardHome.TryGetValue(name, out var home) && !home.Children.Contains(card)) home.Children.Add(card);
+        }
+
         // ── The page columns ────────────────────────────────────────────────────
 
         /// <summary>Two columns of cards on a wide page; below 1000 px the right column moves under the left one (one column).

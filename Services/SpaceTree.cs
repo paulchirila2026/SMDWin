@@ -104,6 +104,8 @@ namespace SMDWin.Services
         public SpaceDir Root = new();
         public double Seconds;
         public bool Fast;
+        /// <summary>The NTFS index was skipped only because there was too little free memory for it (the folder scan was used).</summary>
+        public bool MemoryLimited;
         public long DriveTotal, DriveFree;
         public DateTime When = DateTime.Now;
     }
@@ -162,11 +164,6 @@ namespace SMDWin.Services
         /// <summary>Files from this size up show as separate blocks (and in the list of the largest files).</summary>
         public const long BigFileBytes = 16L * 1024 * 1024;
 
-        /// <summary>Below this much free memory (MB) the NTFS index is not used: it keeps in memory a few lists as long as the
-        /// number of files on the disk (tens to hundreds of MB), and on a PC without free memory Windows starts paging and
-        /// everything freezes (the window can stay unresponsive for tens of seconds). The folder-by-folder scan needs little.</summary>
-        public const long LowMemoryMB = 1024;
-
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         private static extern IntPtr GetCurrentThread();
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
@@ -179,7 +176,7 @@ namespace SMDWin.Services
         /// On an idle PC it is just as fast; on a busy one it lets Windows and the app window work first.
         /// If stopped, the memory it used is released immediately (not at the next .NET collection).
         /// </summary>
-        public static Task<SpaceScan> ScanInBackgroundAsync(string rootPath, bool lowMemory, CancellationToken ct, IProgress<string>? progress)
+        public static Task<SpaceScan> ScanInBackgroundAsync(string rootPath, long availableMB, CancellationToken ct, IProgress<string>? progress)
         {
             var tcs = new TaskCompletionSource<SpaceScan>(TaskCreationOptions.RunContinuationsAsynchronously);
             var thread = new Thread(() =>
@@ -187,7 +184,7 @@ namespace SMDWin.Services
                 bool background = false;
                 try { background = SetThreadPriority(GetCurrentThread(), ThreadModeBackgroundBegin); }
                 catch (Exception ex) { AppLogger.Debug("SpaceScanner background mode: " + ex.Message); }
-                try { tcs.TrySetResult(Scan(rootPath, ct, progress, lowMemory)); }
+                try { tcs.TrySetResult(Scan(rootPath, ct, progress, availableMB)); }
                 catch (OperationCanceledException)
                 {
                     tcs.TrySetCanceled(ct);
@@ -206,7 +203,10 @@ namespace SMDWin.Services
             return tcs.Task;
         }
 
-        public static SpaceScan Scan(string rootPath, CancellationToken ct, IProgress<string>? progress, bool lowMemory = false)
+        /// <param name="availableMB">Free physical memory (0 = unknown). The NTFS index keeps a few lists as long as the number of
+        /// files on the disk; it is used when its estimated size fits comfortably (see <see cref="MftScanner.IndexFitsInMemory"/>),
+        /// otherwise the folder-by-folder scan is used, which needs little memory and cannot push the PC into paging.</param>
+        public static SpaceScan Scan(string rootPath, CancellationToken ct, IProgress<string>? progress, long availableMB = 0)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string root = Path.GetFullPath(rootPath);
@@ -220,18 +220,20 @@ namespace SMDWin.Services
             catch (Exception ex) { AppLogger.Debug("SpaceScanner drive info: " + ex.Message); }
 
             SpaceDir? tree = null;
-            if (lowMemory)
-                AppLogger.Info("SpaceScanner: fast scan not used for {0} — little free memory ({1:N0} MB)", root, RamFullScanService.GetAvailablePhysicalMB());
-            else try
+            try
             {
                 var p = new Progress<double>(v => progress?.Report(string.Format(LanguageService.S("Space", "ReadingIndex", "Reading the drive's file index… {0:P0}"), v)));
-                if (MftScanner.TryScan(root, BigFileBytes, ct, p, out var index, out string reason) && index != null)
+                if (MftScanner.TryScan(root, BigFileBytes, ct, p, out var index, out string reason, out bool tooLittleMemory, availableMB) && index != null)
                 {
                     int r = index.FindDirectory(root);
                     if (r >= 0) tree = index.BuildSpaceTree(r, root, BigFileBytes, ct);
                     else AppLogger.Info("SpaceScanner: {0} not found in the drive index — standard scan", root);
                 }
-                else AppLogger.Info("SpaceScanner: fast scan not used for {0} — {1}", root, reason);
+                else
+                {
+                    scan.MemoryLimited = tooLittleMemory;
+                    AppLogger.Info("SpaceScanner: fast scan not used for {0} — {1}", root, reason);
+                }
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex) { AppLogger.Warning(ex, "SpaceScanner fast"); }

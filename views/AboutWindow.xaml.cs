@@ -63,6 +63,9 @@ namespace SMDWin.Views
         /// The opening (a short fade and a slight growth), then the logo: the segments light up from left to right, the pulse is
         /// drawn like on a monitor, and afterwards a light dot runs along the pulse every 5 s. Only with animations on in Settings.
         /// </summary>
+        /// <summary>The logo animation runs twice as fast as it is written.</summary>
+        private const double AboutAnimSpeed = 2.0;
+
         private void StartLogoAnimations()
         {
             if (!SMDWin.Services.SettingsService.Current.EnableAnimations) return;
@@ -74,7 +77,7 @@ namespace SMDWin.Views
                 CardScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, grow);
                 BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)));
 
-                PlayLogoAnimation(AboutLogo, SMDWin.Services.SettingsService.Current.DesignExperimentAboutAnim);
+                PlayLogoAnimation(AboutLogo, SMDWin.Services.SettingsService.Current.DesignExperimentAboutAnim, AboutAnimSpeed);
 
                 if (TryFindResource("GlowBreathStoryboard") is System.Windows.Media.Animation.Storyboard glow)
                 {
@@ -115,18 +118,29 @@ namespace SMDWin.Views
             return a;
         }
 
+        /// <summary>Starts an animation <paramref name="speed"/> times faster than written (durations and the start delay).</summary>
+        private static void RunAnim(SmdLogo logo, double speed, System.Windows.DependencyProperty dp, System.Windows.Media.Animation.AnimationTimeline a)
+        {
+            if (speed > 0 && Math.Abs(speed - 1.0) > 0.001)
+            {
+                a.SpeedRatio = speed;
+                if (a.BeginTime is TimeSpan b) a.BeginTime = TimeSpan.FromMilliseconds(b.TotalMilliseconds / speed);
+            }
+            logo.BeginAnimation(dp, a);
+        }
+
         /// <summary>The opening shared by most: segments 0 → 14, then the pulse drawn.</summary>
-        private static void Intro(SmdLogo logo, double beginMs = 120)
+        private static void Intro(SmdLogo logo, double beginMs = 120, double speed = 1.0)
         {
             var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut };
             logo.Level = 0; logo.PulseProgress = 0;
-            logo.BeginAnimation(SmdLogo.LevelProperty,
+            RunAnim(logo, speed, SmdLogo.LevelProperty,
                 new System.Windows.Media.Animation.DoubleAnimation(0, SmdLogo.SegmentCount, TimeSpan.FromMilliseconds(800)) { BeginTime = TimeSpan.FromMilliseconds(beginMs) });
-            logo.BeginAnimation(SmdLogo.PulseProgressProperty,
+            RunAnim(logo, speed, SmdLogo.PulseProgressProperty,
                 new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(900)) { BeginTime = TimeSpan.FromMilliseconds(beginMs + 880), EasingFunction = ease });
         }
 
-        internal static void PlayLogoAnimation(SmdLogo logo, string? key)
+        internal static void PlayLogoAnimation(SmdLogo logo, string? key, double speed = 1.0)
         {
             StopLogoAnimation(logo);
             var up = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
@@ -137,16 +151,16 @@ namespace SMDWin.Views
                 {
                     // sweep 0 → 14 fast, drop to 9, back up to 14 and settle — then every 5 s: 14 → 10 → 14 with a beat at the top
                     logo.Level = 0; logo.PulseProgress = 0;
-                    logo.BeginAnimation(SmdLogo.LevelProperty, Keys(1500, 100, false,
+                    RunAnim(logo, speed, SmdLogo.LevelProperty, Keys(1500, 100, false,
                         KF(0, 0), KF(420, 14, up), KF(760, 9, io), KF(1150, 14, up), KF(1500, 14)));
-                    logo.BeginAnimation(SmdLogo.PulseProgressProperty,
+                    RunAnim(logo, speed, SmdLogo.PulseProgressProperty,
                         new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(700)) { BeginTime = TimeSpan.FromMilliseconds(1300), EasingFunction = io });
-                    var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+                    var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5 / speed) };
                     t.Tick += (_, _) =>
                     {
-                        logo.BeginAnimation(SmdLogo.LevelProperty, Keys(900, 0, false, KF(0, 14), KF(300, 10, io), KF(650, 14, up), KF(900, 14)));
-                        var beat = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
-                        beat.Tick += (_, _) => { beat.Stop(); logo.Beat(); };
+                        RunAnim(logo, speed, SmdLogo.LevelProperty, Keys(900, 0, false, KF(0, 14), KF(300, 10, io), KF(650, 14, up), KF(900, 14)));
+                        var beat = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600 / speed) };
+                        beat.Tick += (_, _) => { beat.Stop(); logo.Beat(speed); };
                         beat.Start();
                     };
                     t.Start();
@@ -158,21 +172,21 @@ namespace SMDWin.Views
                     // segments light up, then the pulse is traced (1.1 s) and erased behind (0.8 s), a short pause, again; a glow when
                     // the trace passes the spike (~45 % of the line)
                     logo.Level = 0;
-                    logo.BeginAnimation(SmdLogo.LevelProperty,
+                    RunAnim(logo, speed, SmdLogo.LevelProperty,
                         new System.Windows.Media.Animation.DoubleAnimation(0, SmdLogo.SegmentCount, TimeSpan.FromMilliseconds(800)) { BeginTime = TimeSpan.FromMilliseconds(120) });
                     logo.PulseProgress = 0; logo.PulseStart = 0;
                     const double cyc = 2300, b = 1000;
-                    logo.BeginAnimation(SmdLogo.PulseProgressProperty, Keys(cyc, b, true, KF(0, 0), KF(1100, 1), KF(cyc, 1)));
-                    logo.BeginAnimation(SmdLogo.PulseStartProperty, Keys(cyc, b, true, KF(0, 0), KF(1100, 0), KF(1900, 1), KF(cyc, 1)));   // both reset to 0 together at the next cycle: nothing shows in the pause
-                    logo.BeginAnimation(SmdLogo.PulseGlowProperty, Keys(cyc, b, true, KF(0, 0), KF(380, 0), KF(520, 1, up), KF(900, 0, io), KF(cyc, 0)));
+                    RunAnim(logo, speed, SmdLogo.PulseProgressProperty, Keys(cyc, b, true, KF(0, 0), KF(1100, 1), KF(cyc, 1)));
+                    RunAnim(logo, speed, SmdLogo.PulseStartProperty, Keys(cyc, b, true, KF(0, 0), KF(1100, 0), KF(1900, 1), KF(cyc, 1)));   // both reset to 0 together at the next cycle: nothing shows in the pause
+                    RunAnim(logo, speed, SmdLogo.PulseGlowProperty, Keys(cyc, b, true, KF(0, 0), KF(380, 0), KF(520, 1, up), KF(900, 0, io), KF(cyc, 0)));
                     break;
                 }
                 case "Glint":
                 {
                     // the full logo; a light runs left → right over the segments every 4 s; the pulse "breathes" (3 s)
-                    Intro(logo);
-                    logo.BeginAnimation(SmdLogo.GlintProperty, Keys(4000, 2200, true, KF(0, -2), KF(1300, 16, io), KF(4000, 16)));
-                    logo.BeginAnimation(SmdLogo.PulseGlowProperty, Keys(3000, 2000, true, KF(0, 0), KF(1500, 0.55, io), KF(3000, 0, io)));
+                    Intro(logo, 120, speed);
+                    RunAnim(logo, speed, SmdLogo.GlintProperty, Keys(4000, 2200, true, KF(0, -2), KF(1300, 16, io), KF(4000, 16)));
+                    RunAnim(logo, speed, SmdLogo.PulseGlowProperty, Keys(3000, 2000, true, KF(0, 0), KF(1500, 0.55, io), KF(3000, 0, io)));
                     break;
                 }
                 case "Live":
@@ -180,17 +194,17 @@ namespace SMDWin.Views
                     // the loading spinner for 1.4 s, then the segments move like a live reading (between 9 and 14), and the
                     // pulse beats every time the reading peaks
                     logo.Level = 0; logo.PulseProgress = 0;
-                    logo.SetSpinning(true);
-                    var start = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1400) };
+                    logo.SetSpinning(true, speed);
+                    var start = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1400 / speed) };
                     start.Tick += (_, _) =>
                     {
                         start.Stop();
                         logo.SetSpinning(false);
                         logo.Spin = -1;
-                        logo.BeginAnimation(SmdLogo.PulseProgressProperty,
+                        RunAnim(logo, speed, SmdLogo.PulseProgressProperty,
                             new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(700)) { EasingFunction = io });
                         // an 8 s "reading" that loops: rises, wobbles, peaks at 14 twice
-                        logo.BeginAnimation(SmdLogo.LevelProperty, Keys(8000, 0, true,
+                        RunAnim(logo, speed, SmdLogo.LevelProperty, Keys(8000, 0, true,
                             KF(0, 0), KF(700, 11, up), KF(1500, 10, io), KF(2300, 12.5, io), KF(3000, 14, io), KF(3800, 11.5, io),
                             KF(4700, 10, io), KF(5500, 12, io), KF(6300, 14, io), KF(7200, 12, io), KF(8000, 11, io)));
                         var peaks = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
@@ -198,9 +212,9 @@ namespace SMDWin.Views
                         bool beat3 = false, beat6 = false;
                         peaks.Tick += (_, _) =>
                         {
-                            double ms = (DateTime.UtcNow - t0).TotalMilliseconds % 8000;
-                            if (ms >= 3000 && ms < 3200 && !beat3) { beat3 = true; logo.StartHeartbeatOnce(); }
-                            if (ms >= 6300 && ms < 6500 && !beat6) { beat6 = true; logo.StartHeartbeatOnce(); }
+                            double ms = (DateTime.UtcNow - t0).TotalMilliseconds * speed % 8000;
+                            if (ms >= 3000 && ms < 3200 && !beat3) { beat3 = true; logo.StartHeartbeatOnce(speed); }
+                            if (ms >= 6300 && ms < 6500 && !beat6) { beat6 = true; logo.StartHeartbeatOnce(speed); }
                             if (ms < 2900) { beat3 = false; beat6 = false; }
                         };
                         peaks.Start();
@@ -211,9 +225,9 @@ namespace SMDWin.Views
                     break;
                 }
                 default:   // "Heartbeat"
-                    Intro(logo);
+                    Intro(logo, 120, speed);
                     logo.PulseDot = -1;
-                    logo.StartHeartbeat(TimeSpan.FromMilliseconds(2000));
+                    logo.StartHeartbeat(TimeSpan.FromMilliseconds(2000 / speed), speed);
                     break;
             }
         }

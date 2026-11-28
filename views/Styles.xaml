@@ -898,13 +898,6 @@
     <!-- the card can be opened: a faint highlight under the mouse (the Windows way), instead of arrows everywhere -->
     <!-- no hover effect: the hand cursor and the "›" chevron show the card can be opened -->
   </Style>
-  <!-- alert glow behind the card (critical values) — a separate Border, with no text in it, so the shadow does not blur the
-       content. Added / removed from code: MainWindow.DashRows.cs → ApplyRowAlert -->
-  <Style x:Key="CompGlow" TargetType="Border">
-    <Setter Property="CornerRadius" Value="8"/>
-    <Setter Property="Background" Value="{DynamicResource BgCardBrush}"/>
-    <Setter Property="IsHitTestVisible" Value="False"/>
-  </Style>
   <!-- footer band: stuck to the card edges (cancels the side / bottom padding) -->
   <Style x:Key="CompFootBand" TargetType="Border">
     <Setter Property="Margin" Value="-18,0,-18,0"/>

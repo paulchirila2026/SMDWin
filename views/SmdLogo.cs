@@ -307,30 +307,31 @@ namespace SMDWin.Views
         }
 
         /// <summary>One short "beat" of the pulse line.</summary>
-        public void Beat()
+        public void Beat(double speed = 1.0)
         {
             if (!AnimationsOn) return;
             BeginAnimation(PulseScaleProperty, new DoubleAnimation(1.0, 1.14, TimeSpan.FromMilliseconds(180))
-                { AutoReverse = true, EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut } });
+                { AutoReverse = true, SpeedRatio = speed, EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut } });
         }
 
         /// <summary>
         /// A heartbeat for the pulse line: a strong beat and a smaller one right after it ("lub-dub"), each with a soft halo,
         /// then a rest — about 70 beats a minute, so it reads as calm. Runs until <see cref="StopHeartbeat"/>.
         /// </summary>
-        public void StartHeartbeat(TimeSpan? begin = null) => Heartbeat(begin, forever: true);
+        public void StartHeartbeat(TimeSpan? begin = null, double speed = 1.0) => Heartbeat(begin, forever: true, speed);
 
         /// <summary>One "lub-dub" (used when a live reading peaks).</summary>
-        public void StartHeartbeatOnce() => Heartbeat(null, forever: false);
+        public void StartHeartbeatOnce(double speed = 1.0) => Heartbeat(null, forever: false, speed);
 
-        private void Heartbeat(TimeSpan? begin, bool forever)
+        /// <param name="speed">1 = normal; 2 = twice as fast. <paramref name="begin"/> is already in real time.</param>
+        private void Heartbeat(TimeSpan? begin, bool forever, double speed = 1.0)
         {
             if (!AnimationsOn) return;
             var cycle = TimeSpan.FromMilliseconds(forever ? 1700 : 720);
             var repeat = forever ? RepeatBehavior.Forever : new RepeatBehavior(1);
             var fill = forever ? FillBehavior.HoldEnd : FillBehavior.Stop;
-            var scale = new DoubleAnimationUsingKeyFrames { Duration = cycle, RepeatBehavior = repeat, BeginTime = begin, FillBehavior = fill };
-            var glow  = new DoubleAnimationUsingKeyFrames { Duration = cycle, RepeatBehavior = repeat, BeginTime = begin, FillBehavior = fill };
+            var scale = new DoubleAnimationUsingKeyFrames { Duration = cycle, RepeatBehavior = repeat, BeginTime = begin, FillBehavior = fill, SpeedRatio = speed };
+            var glow  = new DoubleAnimationUsingKeyFrames { Duration = cycle, RepeatBehavior = repeat, BeginTime = begin, FillBehavior = fill, SpeedRatio = speed };
             var up   = new CubicEase { EasingMode = EasingMode.EaseOut };
             var down = new CubicEase { EasingMode = EasingMode.EaseInOut };
             void K(DoubleAnimationUsingKeyFrames a, double ms, double v, IEasingFunction e) =>
@@ -350,10 +351,10 @@ namespace SMDWin.Views
         }
 
         /// <summary>Loading mode on/off: two opposite segments run around the arc (about one turn per 1.6 s).</summary>
-        public void SetSpinning(bool on)
+        public void SetSpinning(bool on, double speed = 1.0)
         {
             if (!on || !AnimationsOn) { BeginAnimation(SpinProperty, null); Spin = on ? 0 : -1; return; }
-            BeginAnimation(SpinProperty, new DoubleAnimation(0, SegmentCount, TimeSpan.FromMilliseconds(1600)) { RepeatBehavior = RepeatBehavior.Forever });
+            BeginAnimation(SpinProperty, new DoubleAnimation(0, SegmentCount, TimeSpan.FromMilliseconds(1600 / speed)) { RepeatBehavior = RepeatBehavior.Forever });
         }
     }
 }

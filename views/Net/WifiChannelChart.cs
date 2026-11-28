@@ -143,6 +143,7 @@ namespace SMDWin.Views.Net
             // the hills, faint first so the loud ones (and the connected one) are on top
             int k = 0;
             double baseY = pt + ch;
+            (string text, Brush brush, double x0, double x1, double top)? hoverName = null;
             foreach (var a in _aps.Where(a => a.Band == _band).OrderBy(a => a.Connected).ThenBy(a => a.Rssi))
             {
                 bool own = WifiAnalysis.IsOwn(a, _connected);
@@ -159,9 +160,18 @@ namespace SMDWin.Views.Net
                 var pen = new Pen(stroke, a.Connected ? 2.6 : a == _hover ? 2.2 : 1.4);
                 if (own && !a.Connected) pen.DashStyle = new DashStyle(new double[] { 4, 2 }, 0);
                 dc.DrawGeometry(fill, pen, geo);
-                var name = Txt(WifiAnalysis.Name(a), stroke, 10, a.Connected);
-                dc.DrawText(name, new Point((x0 + x1 - name.Width) / 2, top - name.Height * 0.75 - 2));
+                // the names would overlap on a busy band: only the hill under the mouse is named (the tooltip has the details)
+                if (a == _hover) hoverName = (WifiAnalysis.Name(a), stroke, x0, x1, top);
                 _hits.Add((a, x0, x1, top));
+            }
+            if (hoverName is { } hn)
+            {
+                var name = Txt(hn.text, hn.brush, 10, true);
+                double nx = Math.Clamp((hn.x0 + hn.x1 - name.Width) / 2, pl, W - pr - name.Width);
+                double ny = Math.Max(pt, hn.top - name.Height - 3);
+                var plate = Res("BgCardBrush", Brushes.Black).Clone(); plate.Opacity = 0.85; plate.Freeze();
+                dc.DrawRoundedRectangle(plate, null, new Rect(nx - 3, ny - 1, name.Width + 6, name.Height + 2), 3, 3);
+                dc.DrawText(name, new Point(nx, ny));
             }
         }
 

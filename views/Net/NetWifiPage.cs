@@ -810,7 +810,6 @@ namespace SMDWin.Views.Net
                 if (hasPassword)
                 {
                     string capturedPwd = wifi.Password;
-                    string capturedSsid = wifi.Ssid;
 
                     var copyBtn = MakeActionChip("Copy", isDark,
                         WpfColor.FromArgb(50,80,130,220), WpfColor.FromArgb(80,96,165,250),
@@ -822,14 +821,6 @@ namespace SMDWin.Views.Net
                         NetWindowHelper.ShowInfo(SMDWin.Views.MainWindow.PT("Password copied!"), "SMD Win", this);
                     };
                     actPanel.Children.Add(copyBtn);
-
-                    var qrBtn = MakeActionChip("QR", isDark,
-                        WpfColor.FromArgb(50,60,160,100), WpfColor.FromArgb(80,74,222,128),
-                        WpfColor.FromArgb(40,22,163,74),  WpfColor.FromArgb(100,22,163,74),
-                        isDark ? WpfColor.FromRgb(74,222,128) : WpfColor.FromRgb(22,163,74));
-                    qrBtn.Margin = new Thickness(6,0,0,0);
-                    qrBtn.MouseLeftButtonUp += (_, _) => ShowQr(capturedSsid, capturedPwd, isDark);
-                    actPanel.Children.Add(qrBtn);
 
                     string capturedPwdRow = wifi.Password;
                     row.MouseLeftButtonDown += (_, mouseArgs) =>
@@ -882,92 +873,6 @@ namespace SMDWin.Views.Net
                 NetWindowHelper.ShowInfo("Exported: " + System.IO.Path.GetFileName(dlg.FileName), "SMD Win", this);
             }
             catch (Exception ex) { NetWindowHelper.ShowInfo("Export error: " + ex.Message, "SMD Win", this); }
-        }
-
-        private void ShowQr(string ssid, string password, bool isDark)
-        {
-            string qrData = $"WIFI:T:WPA;S:{EscapeWifiQr(ssid)};P:{EscapeWifiQr(password)};;";
-            var fgColor = isDark ? WpfColor.FromRgb(220,230,255) : WpfColor.FromRgb(10,15,40);
-            var bgColor = isDark ? WpfColor.FromRgb(12,18,32)    : WpfColor.FromRgb(248,250,255);
-
-            var dlg = new Window
-            {
-                Title = SMDWin.Views.MainWindow.PT("Wi-Fi QR Code"), SizeToContent = SizeToContent.WidthAndHeight,
-                WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize,
-                AllowsTransparency = true, Background = new SolidColorBrush(WpfColor.FromArgb(0,0,0,0)),
-                Owner = Window.GetWindow(this), WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false
-            };
-            bool closing = false;
-            void SafeClose() { if (closing) return; closing = true; dlg.Dispatcher.BeginInvoke(new Action(() => { try { if (dlg.IsLoaded) dlg.Close(); } catch (System.Exception __ignored) { SMDWin.Services.AppLogger.Swallowed(__ignored); } })); }
-            dlg.KeyDown     += (_, ke) => { if (ke.Key == System.Windows.Input.Key.Escape) { ke.Handled = true; SafeClose(); } };
-            dlg.Deactivated += (_, _) => SafeClose();
-
-            var outer = new Border { Margin = new Thickness(12), CornerRadius = new CornerRadius(NetWindowHelper.CurrentRadiusCard()),
-                Background = new SolidColorBrush(bgColor),
-                BorderBrush = new SolidColorBrush(WpfColor.FromArgb(60,100,140,255)),
-                BorderThickness = new Thickness(1.5), Padding = new Thickness(24,20,24,20) };
-
-            var root2 = new StackPanel { Width = 260 };
-            var titleGrid = new Grid();
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var titleTb = new TextBlock { Text = SMDWin.Views.MainWindow.PT("Wi-Fi QR Code"), FontSize = Ui.FontXL, FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(fgColor), VerticalAlignment = VerticalAlignment.Center };
-            Grid.SetColumn(titleTb, 0); titleGrid.Children.Add(titleTb);
-            var closeBtn = Net.NetWindowHelper.CloseIconButton(32);
-            closeBtn.Click += (_, _) => SafeClose();
-            Grid.SetColumn(closeBtn, 1); titleGrid.Children.Add(closeBtn);
-            root2.Children.Add(titleGrid);
-
-            root2.Children.Add(new TextBlock { Text = ssid, FontSize = Ui.FontL, FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(fgColor),
-                Margin = new Thickness(0,8,0,12), HorizontalAlignment = HorizontalAlignment.Center });
-
-            var qrImage = RenderQrCode(qrData, 220, isDark);
-            root2.Children.Add(new System.Windows.Controls.Image { Source = qrImage, Width = 220, Height = 220,
-                Margin = new Thickness(0,0,0,12), HorizontalAlignment = HorizontalAlignment.Center,
-                SnapsToDevicePixels = true });
-
-            root2.Children.Add(new TextBlock { Text = SMDWin.Views.MainWindow.PT("Scan with your phone to connect"),
-                FontSize = Ui.FontS, Foreground = new SolidColorBrush(WpfColor.FromRgb(100,116,139)),
-                HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center });
-
-            outer.Child = root2; dlg.Content = outer; dlg.ShowDialog();
-        }
-
-        private static string EscapeWifiQr(string s) =>
-            s.Replace("\\", "\\\\").Replace(";", "\\;").Replace(",", "\\,").Replace("\"", "\\\"");
-
-        private static BitmapSource RenderQrCode(string data, int size, bool darkTheme)
-        {
-            bool[,] matrix = QrCodeMatrix.Generate(data);
-            int modules = matrix.GetLength(0);
-            int cell = Math.Max(1, size / modules);
-            int imgSize = modules * cell;
-            var dark  = darkTheme ? WpfColor.FromRgb(220,230,255) : WpfColor.FromRgb(0,0,0);
-            var light = darkTheme ? WpfColor.FromRgb(12,18,32)    : WpfColor.FromRgb(255,255,255);
-            var bmp = new WriteableBitmap(imgSize, imgSize, 96, 96, System.Windows.Media.PixelFormats.Bgr32, null);
-            bmp.Lock();
-            unsafe
-            {
-                var ptr = (byte*)bmp.BackBuffer;
-                int stride = bmp.BackBufferStride;
-                for (int my = 0; my < modules; my++)
-                for (int mx = 0; mx < modules; mx++)
-                {
-                    var c = matrix[my, mx] ? dark : light;
-                    for (int py = 0; py < cell; py++)
-                    for (int px = 0; px < cell; px++)
-                    {
-                        int x = mx*cell+px, y = my*cell+py;
-                        byte* p = ptr + y*stride + x*4;
-                        p[0]=c.B; p[1]=c.G; p[2]=c.R; p[3]=255;
-                    }
-                }
-            }
-            bmp.AddDirtyRect(new Int32Rect(0, 0, imgSize, imgSize));
-            bmp.Unlock();
-            return bmp;
         }
     }
 }

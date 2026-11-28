@@ -729,6 +729,19 @@ namespace SMDWin.Views
                 bool isAdmin   = Environment.IsPrivilegedProcess;
                 // installed, but no processor temperature comes from it: said plainly instead of "active"
                 bool noData = installed && CpuSensorsAnswer() == false;
+                string stateText = noData ? LanguageService.S("PawnIo", "StatusNoData")
+                    : installed ? LanguageService.S("PawnIo", "StatusActive")
+                    : !isAdmin ? LanguageService.S("PawnIo", "StatusUnavailable")
+                    : LanguageService.S("PawnIo", "StatusNotInstalled");
+
+                // the LIVE badge on the Dashboard: green = the sensor driver answers, orange = missing or not answering (fixed, no blinking)
+                string liveBrush = installed && !noData ? "StatusGoodBrush" : "StatusCheckBrush";
+                if (FindName("DashLiveDot") is System.Windows.Shapes.Ellipse liveDot) liveDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, liveBrush);
+                if (FindName("DashLiveText") is System.Windows.Controls.TextBlock liveText) liveText.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, liveBrush);
+                if (FindName("DashLiveBadge") is FrameworkElement liveBadge) liveBadge.ToolTip = PT("Live readings") + "\n" + stateText;
+
+                // the Sensor driver row in Settings > Advanced is shown only while the driver is missing
+                if (FindName("SetRowSensorDriver") is FrameworkElement driverRow) driverRow.Visibility = installed ? Visibility.Collapsed : Visibility.Visible;
 
                 // Settings card LED
                 if (PawnIoLed != null)
@@ -745,17 +758,7 @@ namespace SMDWin.Views
                 if (FindName("SidebarPawnIoLed") is System.Windows.Shapes.Ellipse sLed)
                     sLed.Fill = (System.Windows.Media.Brush)FindResource(
                         installed && !noData ? "StatusOkBrush" : isAdmin ? "StatusWarnBrush" : "StatusErrorBrush");
-                if (FindName("TxtSidebarPawnIo") is System.Windows.Controls.TextBlock sTxt)
-                {
-                    if (noData)
-                        sTxt.Text = LanguageService.S("PawnIo", "StatusNoData");
-                    else if (installed)
-                        sTxt.Text = LanguageService.S("PawnIo", "StatusActive");
-                    else if (!isAdmin)
-                        sTxt.Text = LanguageService.S("PawnIo", "StatusUnavailable");
-                    else
-                        sTxt.Text = LanguageService.S("PawnIo", "StatusNotInstalled");
-                }
+                if (FindName("TxtSidebarPawnIo") is System.Windows.Controls.TextBlock sTxt) sTxt.Text = stateText;
 
                 if (PawnIoMissingBanner != null)
                     PawnIoMissingBanner.Visibility = installed ? Visibility.Collapsed : Visibility.Visible;

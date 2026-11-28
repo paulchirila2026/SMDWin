@@ -43,7 +43,7 @@ namespace SMDWin.Views.Net
         private readonly StackPanel _connBody = new();
         private readonly StackPanel _interBody = new();
         private readonly StackPanel _recoBody = new();
-        private readonly DataGrid _grid = new();
+        private readonly DataGrid _grid = NetWindowHelper.StandardDataGrid();
         private readonly CheckBox _allBands = new();
         private readonly TextBlock _tableCount = new();
 
@@ -230,10 +230,8 @@ namespace SMDWin.Views.Net
             var body = new Grid();
             body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             body.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            _grid.AutoGenerateColumns = false; _grid.IsReadOnly = true; _grid.CanUserAddRows = false;
-            _grid.HeadersVisibility = DataGridHeadersVisibility.Column; _grid.GridLinesVisibility = DataGridGridLinesVisibility.None;
-            _grid.RowHeaderWidth = 0; _grid.BorderThickness = new Thickness(0); _grid.FontSize = Ui.FontS; _grid.RowHeight = 28;
-            _grid.ColumnHeaderHeight = 32; _grid.Background = Brushes.Transparent; _grid.CanUserSortColumns = true; _grid.CanUserResizeColumns = true;
+            // the standard table of the app (the header height and padding are the same as in the other pages)
+            _grid.RowHeight = 30; _grid.CanUserSortColumns = true; _grid.CanUserResizeColumns = true;
             _grid.MaxHeight = 460; _grid.VerticalScrollBarVisibility = ScrollBarVisibility.Auto; _grid.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             void Col(string header, string path, double width, string? tip = null, string? sortPath = null, string? brushPath = null, bool bold = false)
             {
@@ -254,17 +252,17 @@ namespace SMDWin.Views.Net
             Col(PT("Network"), "Name", 170, bold: true);
             Col("BSSID", "Bssid", 128, PT("The MAC address of the access point — one router has one per band."));
             Col(PT("Manufacturer"), "Vendor", 120, PT("From the first half of the MAC address. Empty when the router uses a random MAC."));
-            Col(PT("Band"), "BandText", 64, null, "BandSort");
-            Col(PT("Channel"), "Channel", 64);
-            Col(PT("Width"), "WidthText", 70, PT("How many MHz the network takes: 20 MHz = one channel; 40 / 80 / 160 MHz join neighbouring channels — faster, but more exposed to neighbours."), "Width");
-            Col(PT("Signal"), "SignalText", 76, PT("Received power, in dBm: −50 excellent, −67 good, −75 weak, under −80 unusable."), "Rssi", "SignalBrush");
-            Col(PT("Standard"), "Standard", 76, PT("Wi-Fi 4 = 802.11n, Wi-Fi 5 = 802.11ac, Wi-Fi 6 / 6E = 802.11ax, Wi-Fi 7 = 802.11be."));
-            Col(PT("Streams"), "StreamsText", 64, PT("Spatial streams (MIMO): how many antennas transmit at the same time. 2×2 doubles the speed of 1×1."), "Streams");
-            Col(PT("Max speed"), "RateText", 86, PT("The highest link speed the access point announces, with the best signal. Real transfers are about half of it."), "Rate");
+            Col(PT("Band"), "BandText", 68, null, "BandSort");
+            Col(PT("Channel"), "Channel", 80);
+            Col(PT("Width"), "WidthText", 72, PT("How many MHz the network takes: 20 MHz = one channel; 40 / 80 / 160 MHz join neighbouring channels — faster, but more exposed to neighbours."), "Width");
+            Col(PT("Signal"), "SignalText", 80, PT("Received power, in dBm: −50 excellent, −67 good, −75 weak, under −80 unusable."), "Rssi", "SignalBrush");
+            Col(PT("Standard"), "Standard", 88, PT("Wi-Fi 4 = 802.11n, Wi-Fi 5 = 802.11ac, Wi-Fi 6 / 6E = 802.11ax, Wi-Fi 7 = 802.11be."));
+            Col(PT("Streams"), "StreamsText", 82, PT("Spatial streams (MIMO): how many antennas transmit at the same time. 2×2 doubles the speed of 1×1."), "Streams");
+            Col(PT("Max speed"), "RateText", 94, PT("The highest link speed the access point announces, with the best signal. Real transfers are about half of it."), "Rate");
             Col(PT("Security"), "Security", 130, null, null, "SecurityBrush");
-            Col(PT("Clients"), "ClientsText", 60, PT("Devices connected to it, when the router announces it (BSS Load)."), "ClientsSort");
-            Col(PT("Busy"), "BusyText", 56, PT("How much of the time the router hears its channel busy, when it announces it (BSS Load)."), "BusySort");
-            Col(PT("Seen for"), "SeenText", 80, PT("Since when this window has seen it."), "SeenSort");
+            Col(PT("Clients"), "ClientsText", 74, PT("Devices connected to it, when the router announces it (BSS Load)."), "ClientsSort");
+            Col(PT("Busy"), "BusyText", 64, PT("How much of the time the router hears its channel busy, when it announces it (BSS Load)."), "BusySort");
+            Col(PT("Seen for"), "SeenText", 88, PT("Since when this window has seen it."), "SeenSort");
 
             var head = new DockPanel { LastChildFill = false, Margin = new Thickness(0, 0, 0, 6) };
             _allBands.Content = PT("All bands"); _allBands.FontSize = Ui.FontS; _allBands.VerticalAlignment = VerticalAlignment.Center;

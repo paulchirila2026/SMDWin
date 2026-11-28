@@ -43,7 +43,14 @@ namespace SMDWin.Views.Net
         private Button    _btnStart  = null!;
         private Button    _btnStop   = null!;
         private Canvas    _chart     = null!;
+        private Canvas    _dataClip  = null!;    // clips the sliding layer to the plot (and the time labels below it)
         private Canvas    _hoverLayer = null!;   // the line and label under the mouse, over the chart (redrawn separately)
+        private Canvas    _data      = null!;    // the line, the area, the marks and the time labels: this layer slides left between two pings
+        private readonly TranslateTransform _slide = new();
+        private long      _lastDrawnIdx = -1;    // the measurement number at the last drawing (how many new pings arrived since)
+        private int       _lastDrawnWindow;
+        private double    _lastDrawnWidth;
+        private DateTime  _lastDrawnUtc = DateTime.MinValue;
         private CheckBox  _chkBackground = null!;
         private CheckBox  _chkSustainedOnly = null!;
         private StackPanel _logPanel = null!;
@@ -234,6 +241,11 @@ namespace SMDWin.Views.Net
                 DrawPingChart();
             };
             chartGrid.Children.Add(_chart);
+            _data = new Canvas { IsHitTestVisible = false, RenderTransform = _slide };
+            var dataClip = new Canvas { IsHitTestVisible = false, Background = null };
+            dataClip.Children.Add(_data);
+            _dataClip = dataClip;
+            chartGrid.Children.Add(dataClip);
             _hoverLayer = new Canvas { IsHitTestVisible = false };
             chartGrid.Children.Add(_hoverLayer);
             _chart.MouseMove  += (_, e) => { _hoverX = e.GetPosition(_chart).X; DrawHover(); };
@@ -520,6 +532,7 @@ namespace SMDWin.Views.Net
             if (w < 30 || h < 20) { DrawHover(); return; }
 
             _chart.Children.Clear();
+            _data.Children.Clear();
 
             var hist  = _owner.PingHistoryRaw;
             var ticks = _owner.PingTimeTicksRaw;
@@ -556,6 +569,17 @@ namespace SMDWin.Views.Net
                 lbl.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 Canvas.SetLeft(lbl, 2); Canvas.SetTop(lbl, y - 11); _chart.Children.Add(lbl);
             }
+
+            // the data layer shows only the plot (and, below it, the time labels): while it slides, nothing crosses the value labels
+            var clip = new GeometryGroup();
+            clip.Children.Add(new RectangleGeometry(new Rect(pL, 0, cW + pR, pT + cH + 2)));
+            clip.Children.Add(new RectangleGeometry(new Rect(0, pT + cH + 2, w, Math.Max(0, h - (pT + cH + 2)))));
+            _dataClip.Clip = clip;
+            long newPings = _lastDrawnIdx >= 0 && _lastDrawnWindow == _windowMinutes && Math.Abs(_lastDrawnWidth - w) < 0.5 ? histIdx - _lastDrawnIdx : 0;
+            var nowUtc = DateTime.UtcNow;
+            double sinceMs = _lastDrawnUtc == DateTime.MinValue ? 1000 : (nowUtc - _lastDrawnUtc).TotalMilliseconds;
+            _lastDrawnIdx = histIdx; _lastDrawnWindow = _windowMinutes; _lastDrawnWidth = w; _lastDrawnUtc = nowUtc;
+            SlideData(newPings, cW / Math.Max(1.0, windowSamples - 1.0), sinceMs);
 
             if (visibleCount < 2) { DrawHover(); return; }
 
@@ -625,7 +649,7 @@ namespace SMDWin.Views.Net
                         g.LineTo(new WpfPoint(p[^1].X, pT + cH), true, true);
                     }
                     area.Freeze();
-                    _chart.Children.Add(new System.Windows.Shapes.Path { Data = area, Fill = areaFill });
+                    _data.Children.Add(new System.Windows.Shapes.Path { Data = area, Fill = areaFill });
                     // the line: short pieces of the same colour (the colour by ping) — a single element per colour
                     int s0 = 0;
                     while (s0 < p.Count - 1)
@@ -641,7 +665,7 @@ namespace SMDWin.Views.Net
                         }
                         geo.Freeze();
                         var br = new SolidColorBrush(col); br.Freeze();
-                        _chart.Children.Add(new System.Windows.Shapes.Path { Data = geo, Stroke = br, StrokeThickness = 2.5,
+                        _data.Children.Add(new System.Windows.Shapes.Path { Data = geo, Stroke = br, StrokeThickness = 2.5,
                             StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round });
                         s0 = s1;
                     }
@@ -651,7 +675,7 @@ namespace SMDWin.Views.Net
                     var a = _buckets[run[0]];
                     var dotBr = new SolidColorBrush(PingColorGradient(a.Avg)); dotBr.Freeze();
                     var dot = new Ellipse { Width = 4, Height = 4, Fill = dotBr };
-                    Canvas.SetLeft(dot, a.X - 2); Canvas.SetTop(dot, Y(a.Avg) - 2); _chart.Children.Add(dot);
+                    Canvas.SetLeft(dot, a.X - 2); Canvas.SetTop(dot, Y(a.Avg) - 2); _data.Children.Add(dot);
                 }
                 run.Clear();
             }
@@ -661,7 +685,7 @@ namespace SMDWin.Views.Net
                 if (bk.Lost > 0)
                 {
                     var tick = new System.Windows.Shapes.Rectangle { Width = 2, Height = 6, Fill = lossBrush };
-                    Canvas.SetLeft(tick, bk.X - 1); Canvas.SetTop(tick, pT + cH - 6); _chart.Children.Add(tick);
+                    Canvas.SetLeft(tick, bk.X - 1); Canvas.SetTop(tick, pT + cH - 6); _data.Children.Add(tick);
                 }
                 if (bk.Count > 0) run.Add(b); else FlushRun();
             }
@@ -675,11 +699,32 @@ namespace SMDWin.Views.Net
                 var marker = new Ellipse { Width = 9, Height = 9, Fill = mk, StrokeThickness = 2 };
                 marker.SetResourceReference(Shape.StrokeProperty, "BgCardBrush");
                 Canvas.SetLeft(marker, lastB.X - 4.5); Canvas.SetTop(marker, Y(lastB.Avg) - 4.5);
-                _chart.Children.Add(marker);
+                _data.Children.Add(marker);
             }
 
             DrawTimeAxis(pT + cH);
             DrawHover();
+        }
+
+        /// <summary>
+        /// The chart flows continuously, like the other charts: after <paramref name="newPings"/> new measurements everything has moved
+        /// left by that many steps, so the data layer starts shifted to the right by the same distance and slides back to 0 in
+        /// the time between two pings (what was left of the previous slide is added, so a ping that came early does not jump).
+        /// </summary>
+        private void SlideData(long newPings, double stepPx, double sinceLastMs)
+        {
+            bool animate = SettingsService.Current.EnableAnimations && IsVisible && newPings > 0 && newPings <= 5 && stepPx > 0.05;
+            if (!animate)
+            {
+                _slide.BeginAnimation(TranslateTransform.XProperty, null);
+                _slide.X = 0;
+                return;
+            }
+            double rest = Math.Clamp(_slide.X, 0, stepPx * 5);
+            var anim = new System.Windows.Media.Animation.DoubleAnimation(newPings * stepPx + rest, 0,
+                TimeSpan.FromMilliseconds(Math.Clamp(sinceLastMs, 200, 3000)));
+            System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(anim, 30);
+            _slide.BeginAnimation(TranslateTransform.XProperty, anim);
         }
 
         private string TimeFormat => _windowMinutes <= 10 ? "HH:mm:ss" : "HH:mm";
@@ -704,7 +749,7 @@ namespace SMDWin.Views.Net
                 double lw = lbl.DesiredSize.Width;
                 double x = Math.Clamp(b.X - lw / 2, 0, Math.Max(0, _chart.ActualWidth - lw));
                 Canvas.SetLeft(lbl, x); Canvas.SetTop(lbl, baseY + 5);
-                _chart.Children.Add(lbl);
+                _data.Children.Add(lbl);
             }
         }
 

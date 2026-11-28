@@ -1292,22 +1292,11 @@
                       </MultiBinding>
                     </TextBlock.Text>
                   </TextBlock>
-                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" Background="Transparent" MouseLeftButtonUp="LiveBadge_MouseUp" ToolTip="Live data (uptime is in the System card)">
-                    <Ellipse x:Name="DashLiveDot" Width="6" Height="6" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,5,0">
-                      <!-- a gentle pulse: the dot fades and comes back, so "live" is felt without drawing the eye -->
-                      <Ellipse.Triggers>
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                          <BeginStoryboard>
-                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                              <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.35" Duration="0:0:0.8">
-                                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
-                              </DoubleAnimation>
-                            </Storyboard>
-                          </BeginStoryboard>
-                        </EventTrigger>
-                      </Ellipse.Triggers>
-                    </Ellipse>
-                    <TextBlock Text="LIVE" FontSize="{StaticResource FontSizeS}" FontWeight="Bold" Foreground="{DynamicResource StatusOkBrush}"/>
+                  <!-- LIVE: the dot shows the state of the sensor driver (green = installed and answering, orange = missing or not
+                       answering); the tooltip says which. Set from MainWindow.RefreshPawnIoStatus. Five clicks start the self-test. -->
+                  <StackPanel x:Name="DashLiveBadge" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" Background="Transparent" MouseLeftButtonUp="LiveBadge_MouseUp" ToolTip="Live data">
+                    <Ellipse x:Name="DashLiveDot" Width="6" Height="6" Fill="{DynamicResource StatusOkBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBlock x:Name="DashLiveText" Text="LIVE" FontSize="{StaticResource FontSizeS}" FontWeight="Bold" Foreground="{DynamicResource StatusOkBrush}"/>
                   </StackPanel>
                 </StackPanel>
               </StackPanel>

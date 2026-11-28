@@ -204,62 +204,6 @@
                   </StackPanel>
                 </Border>
               </StackPanel>
-              <StackPanel x:Name="SetPanelWidget" HorizontalAlignment="Stretch">
-                <Border x:Name="SetCardWidget" Style="{StaticResource SetCard}">
-                  <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
-                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M6.25,4 C5.01,4 4,5 4,6.25 L4,13.75 C4,14.99 5,16 6.25,16 L17.75,16 C18.99,16 20,15 20,13.75 L20,6.25 C20,5.01 19,4 17.75,4 Z M5.5,6.25 C5.5,5.84 5.84,5.5 6.25,5.5 L17.75,5.5 C18.16,5.5 18.5,5.84 18.5,6.25 L18.5,13.75 C18.5,14.16 18.16,14.5 17.75,14.5 L6.25,14.5 A0.75,0.75 0 0 1 5.5,13.75 Z M2.75,17.5 A0.75,0.75 0 0 0 2.75,19 L21.25,19 A0.75,0.75 0 0 0 21.25,17.5 Z"/></Viewbox>
-                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Widget &amp; tray"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="Live readings outside the main window"/>
-                    </StackPanel>
-                  <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
-                    <StackPanel>
-                      <DockPanel>
-                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkWidgetEnabled" Style="{StaticResource ToggleSwitchStyle}" ToolTip="Same as the Widget button in the title bar" Click="ChkWidgetEnabled_Changed"/></Border>
-                        <StackPanel VerticalAlignment="Center">
-                          <TextBlock x:Name="TxtCompactWidgetTitle" Style="{StaticResource SetRowTitle}" Text="Desktop widget"/>
-                          <TextBlock x:Name="TxtWidgetDesc" Style="{StaticResource SetRowDesc}" Text="Always-on-top window with live readings"/>
-                        </StackPanel>
-                      </DockPanel>
-                      <StackPanel x:Name="PnlCompactMetrics" Visibility="Collapsed" Margin="0,10,0,0">
-                        <DockPanel Margin="0,0,0,10">
-                          <TextBlock x:Name="TxtWidgetStyleLbl" DockPanel.Dock="Left" Text="Style" Width="70" Style="{StaticResource SetRowDesc}" Margin="0" VerticalAlignment="Center"/>
-                          <Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
-                          <RadioButton x:Name="RbWidgetStyleGauges" Content="Gauges" Tag="Gauges" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Small segmented arc per value"/>
-                          <RadioButton x:Name="RbWidgetStylePill" Content="Graphs" Tag="Pill" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Value with a small history line"/>
-                          <RadioButton x:Name="RbWidgetStyleMinimal" Content="Compact" Tag="Minimal" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Values only, on one narrow row"/></StackPanel></Border>
-                        </DockPanel>
-                        <DockPanel>
-                          <TextBlock x:Name="TxtCompactMetricsLabel" DockPanel.Dock="Left" Text="Shows" Width="70" Style="{StaticResource SetRowDesc}" Margin="0,1,0,0" VerticalAlignment="Top"/>
-                          <UniformGrid x:Name="WidgetMetricChips" Columns="3"/>
-                        </DockPanel>
-                        <CheckBox Style="{StaticResource VanillaCheckBoxStyle}" x:Name="ChkWidgetAlertOnly" Content="Show only on alert" Margin="70,8,0,0" Click="WidgetAlertOnly_Changed" ToolTip="Hidden while all readings are within limits"/>
-                      </StackPanel>
-                    </StackPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
-                    <StackPanel>
-                      <DockPanel>
-                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkTraySensors" Style="{StaticResource ToggleSwitchStyle}" ToolTip="One icon per value, up to 8" Click="ChkTraySensors_Changed"/></Border>
-                        <StackPanel VerticalAlignment="Center">
-                          <TextBlock x:Name="TxtTraySensorsTitle" Style="{StaticResource SetRowTitle}" Text="Notification area icons"/>
-                          <TextBlock x:Name="TxtTraySensorsDesc" Style="{StaticResource SetRowDesc}" Text="Up to 8 readings; hover for details"/>
-                        </StackPanel>
-                      </DockPanel>
-                      <StackPanel x:Name="PnlTrayOptions" Visibility="Collapsed" Margin="0,10,0,0">
-                        <!-- the icon preview, as it looks next to the clock (MainWindow.SettingsThumbs.cs → UpdateTrayPreview) -->
-                        <Border x:Name="TrayPreviewStrip" Background="#202226" CornerRadius="6" Padding="10,6" Margin="0,0,0,10" HorizontalAlignment="Left" Visibility="Collapsed">
-                          <StackPanel x:Name="TrayPreviewIcons" Orientation="Horizontal"/>
-                        </Border>
-                        <UniformGrid x:Name="TrayMetricChips" Columns="3"/>
-                        <TextBlock x:Name="TxtTrayMetricsLabel" Visibility="Collapsed" Text="Icons"/>
-                        <TextBlock x:Name="TxtTrayMetricsHint" Visibility="Collapsed" Text=""/>
-                      </StackPanel>
-                    </StackPanel>
-                  </Border>
-                  </StackPanel>
-                </Border>
-              </StackPanel>
               </StackPanel>
               <StackPanel x:Name="SetColRight" Grid.Column="2">
               <StackPanel x:Name="SetPanelAlerts" HorizontalAlignment="Stretch">
@@ -320,96 +264,58 @@
                   </StackPanel>
                 </Border>
               </StackPanel>
-              <StackPanel x:Name="SetPanelSensors" HorizontalAlignment="Stretch">
-                <Border x:Name="SetCardSensors" Style="{StaticResource SetCard}">
+              <StackPanel x:Name="SetPanelWidget" HorizontalAlignment="Stretch">
+                <Border x:Name="SetCardWidget" Style="{StaticResource SetCard}">
                   <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
-                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M12,2 A3.25,3.25 0 0 1 15.24,5.07 L15.25,5.25 L15.25,13.2 L15.33,13.27 A5,5 0 0 1 16.97,16.49 L16.99,16.75 L17,17 A5,5 0 1 1 8.49,13.44 L8.67,13.27 L8.75,13.2 L8.75,5.25 A3.25,3.25 0 0 1 11.63,2.02 L11.82,2.01 Z M12,3.5 C11.08,3.5 10.33,4.2 10.26,5.1 L10.25,5.25 L10.25,13.95 L9.95,14.17 A3.5,3.5 0 1 0 14.22,14.3 L14.06,14.17 L13.76,13.95 L13.75,5.25 C13.75,4.28 12.97,3.5 12,3.5 M12,8 C12.41,8 12.75,8.34 12.75,8.75 L12.75,14.61 A2.5,2.5 0 1 1 11.25,14.61 L11.25,8.75 C11.25,8.34 11.59,8 12,8"/></Viewbox>
-                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Sensors"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="How temperatures and fans are read"/>
+                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M6.25,4 C5.01,4 4,5 4,6.25 L4,13.75 C4,14.99 5,16 6.25,16 L17.75,16 C18.99,16 20,15 20,13.75 L20,6.25 C20,5.01 19,4 17.75,4 Z M5.5,6.25 C5.5,5.84 5.84,5.5 6.25,5.5 L17.75,5.5 C18.16,5.5 18.5,5.84 18.5,6.25 L18.5,13.75 C18.5,14.16 18.16,14.5 17.75,14.5 L6.25,14.5 A0.75,0.75 0 0 1 5.5,13.75 Z M2.75,17.5 A0.75,0.75 0 0 0 2.75,19 L21.25,19 A0.75,0.75 0 0 0 21.25,17.5 Z"/></Viewbox>
+                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Widget &amp; tray"/>
+                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="Live readings outside the main window"/>
                     </StackPanel>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <local:StatusMark x:Name="PawnIoLed" DockPanel.Dock="Left" Width="14" Height="14" Margin="3,0,19,0" VerticalAlignment="Center" Fill="{DynamicResource StatusWarnBrush}"/>
-                      <Border Style="{StaticResource SetRowControl}"><ui:Button x:Name="BtnInstallPawnIo" Appearance="Primary" Content="Install" Padding="14,5" Click="BtnInstallPawnIo_Click"/></Border>
-                      <StackPanel VerticalAlignment="Center" ToolTip="PawnIO lets SMD Win read CPU temperature, fans and power limits on most PCs. Signed driver, used only while the program runs.">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor driver"/>
-                        <TextBlock x:Name="TxtPawnIoStatus" Style="{StaticResource SetRowDesc}" Text="Checking…"/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.75,11.5 A0.75,0.75 0 0 0 8.75,13 L15.25,13 A0.75,0.75 0 0 0 15.25,11.5 Z M8.75,14.25 A0.75,0.75 0 0 0 8.75,15.75 L15.25,15.75 A0.75,0.75 0 0 0 15.25,14.25 Z M8.75,17 A0.75,0.75 0 0 0 8.75,18.5 L15.25,18.5 A0.75,0.75 0 0 0 15.25,17 Z M13.59,2.59 L19.4,8.4 A2,2 0 0 1 20,9.83 L20,20 A2,2 0 0 1 18,22 L6,22 A2,2 0 0 1 4,20 L4,4 C4,2.9 4.9,2 6,2 L12.17,2 C12.69,2 13.22,2.22 13.59,2.59 M18,20.5 A0.5,0.5 0 0 0 18.5,20 L18.5,10 L14,10 A2,2 0 0 1 12,8 L12,3.5 L6,3.5 A0.5,0.5 0 0 0 5.5,4 L5.5,20 C5.5,20.27 5.72,20.5 6,20.5 Z M17.38,8.5 L13.5,4.62 L13.5,8 C13.5,8.28 13.72,8.5 14,8.5 Z"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Open folder" Padding="14,5" Click="OpenSensorLogFolder_Click"/><Border Width="12"/><CheckBox x:Name="TglSensorLogger" Style="{DynamicResource ToggleSwitchStyle}" Checked="TglSensorLogger_Checked" Unchecked="TglSensorLogger_Unchecked" VerticalAlignment="Center"/></StackPanel></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor logging"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Save readings to a daily CSV file (Data › Logs)"/>
-                        <TextBlock x:Name="TxtLoggerPath" Visibility="Collapsed" Text=""/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M17,2.5 A3.5,3.5 0 1 1 14.4,8.35 L9.84,10.95 A3.5,3.5 0 0 1 9.84,13.05 L14.4,15.65 A3.5,3.5 0 0 1 20.5,18 A3.5,3.5 0 1 1 13.66,16.95 L9.1,14.35 A3.5,3.5 0 0 1 3,12 A3.5,3.5 0 0 1 9.1,9.65 L13.66,7.05 A3.5,3.5 0 0 1 17,2.5 M17,16 A2,2 0 0 0 17,20 A2,2 0 0 0 17,16 M6.5,10 A2,2 0 0 0 6.5,14 A2,2 0 0 0 6.5,10 M17,4 A2,2 0 0 0 17,8 A2,2 0 0 0 17,4"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkExportSensorsReg" Style="{StaticResource ToggleSwitchStyle}" ToolTip="Writes the values to HKCU\Software\SMDWin\Sensors every 5 seconds." Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor data sharing"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Make readings available to other programs (e.g. Rainmeter)"/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  </StackPanel>
-                </Border>
-              </StackPanel>
-              <StackPanel x:Name="SetPanelData" HorizontalAlignment="Stretch">
-                <Border x:Name="SetCardData" Style="{StaticResource SetCard}">
-                  <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
-                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Viewbox>
-                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Data &amp; reports"/>
-                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="Folders, reports and backups"/>
-                    </StackPanel>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M10.55,2.53 C11.39,1.83 12.61,1.83 13.45,2.53 L20.2,8.23 C20.7,8.65 21,9.28 21,9.94 L21,19.25 C21,20.22 20.22,21 19.25,21 L15.75,21 C14.78,21 14,20.22 14,19.25 L14,14.25 A0.25,0.25 0 0 0 13.75,14 L10.25,14 A0.25,0.25 0 0 0 10,14.25 L10,19.25 C10,20.22 9.22,21 8.25,21 L4.75,21 C3.78,21 3,20.22 3,19.25 L3,9.95 C3,9.28 3.3,8.65 3.8,8.22 Z M12.48,3.68 A0.75,0.75 0 0 0 11.52,3.68 L4.77,9.38 A0.8,0.8 0 0 0 4.5,9.94 L4.5,19.25 C4.5,19.39 4.61,19.5 4.75,19.5 L8.25,19.5 Q8.48,19.49 8.5,19.25 L8.5,14.25 C8.5,13.28 9.28,12.5 10.25,12.5 L13.75,12.5 C14.72,12.5 15.5,13.28 15.5,14.25 L15.5,19.25 Q15.52,19.48 15.75,19.5 L19.25,19.5 Q19.48,19.49 19.5,19.25 L19.5,9.95 Q19.5,9.59 19.23,9.37 Z"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkWorkshopMode" Style="{StaticResource ToggleSwitchStyle}" Click="WorkshopMode_Click"/></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Include service details in reports"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Adds the service name and contact information to all reports"/>
-                      </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border x:Name="PnlWorkshop" Visibility="Collapsed" Style="{StaticResource SetRow}" Padding="36,10,0,14">
+                  <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
                     <StackPanel>
-                      <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
-                        <StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Name" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopName" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="80" TextChanged="TxtWorkshopName_TextChanged" LostFocus="TxtWorkshopName_LostFocus" KeyDown="TxtWorkshopName_KeyDown" ToolTip="Press Enter to save."/></StackPanel>
-                        <Border Grid.Column="2"><StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Phone" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopPhone" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="40" LostFocus="WorkshopField_LostFocus" KeyDown="WorkshopField_KeyDown" ToolTip="Shown next to the name. Press Enter to save."/></StackPanel></Border>
-                      </Grid>
-                      <StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Address or website" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopContact" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="120" LostFocus="WorkshopField_LostFocus" KeyDown="WorkshopField_KeyDown" ToolTip="Shown under the name on HTML reports and in the diagnostic package. Press Enter to save."/></StackPanel>
-                      <TextBlock x:Name="TxtWorkshopSaved" Margin="0,8,0,0" Style="{StaticResource SetRowDesc}" TextTrimming="CharacterEllipsis" Text="Shown on: Hardware report PDF · Stress test PDF · diagnostic package · Health report" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                      <DockPanel>
+                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkWidgetEnabled" Style="{StaticResource ToggleSwitchStyle}" ToolTip="Same as the Widget button in the title bar" Click="ChkWidgetEnabled_Changed"/></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock x:Name="TxtCompactWidgetTitle" Style="{StaticResource SetRowTitle}" Text="Desktop widget"/>
+                          <TextBlock x:Name="TxtWidgetDesc" Style="{StaticResource SetRowDesc}" Text="Always-on-top window with live readings"/>
+                        </StackPanel>
+                      </DockPanel>
+                      <StackPanel x:Name="PnlCompactMetrics" Visibility="Collapsed" Margin="0,10,0,0">
+                        <DockPanel Margin="0,0,0,10">
+                          <TextBlock x:Name="TxtWidgetStyleLbl" DockPanel.Dock="Left" Text="Style" Width="70" Style="{StaticResource SetRowDesc}" Margin="0" VerticalAlignment="Center"/>
+                          <Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
+                          <RadioButton x:Name="RbWidgetStyleGauges" Content="Gauges" Tag="Gauges" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Small segmented arc per value"/>
+                          <RadioButton x:Name="RbWidgetStylePill" Content="Graphs" Tag="Pill" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Value with a small history line"/>
+                          <RadioButton x:Name="RbWidgetStyleMinimal" Content="Compact" Tag="Minimal" GroupName="WidgetStyleGroup" Style="{StaticResource SegmentChipStyle}" Checked="WidgetStyle_Click" ToolTip="Values only, on one narrow row"/></StackPanel></Border>
+                        </DockPanel>
+                        <DockPanel>
+                          <TextBlock x:Name="TxtCompactMetricsLabel" DockPanel.Dock="Left" Text="Shows" Width="70" Style="{StaticResource SetRowDesc}" Margin="0,1,0,0" VerticalAlignment="Top"/>
+                          <UniformGrid x:Name="WidgetMetricChips" Columns="3"/>
+                        </DockPanel>
+                        <CheckBox Style="{StaticResource VanillaCheckBoxStyle}" x:Name="ChkWidgetAlertOnly" Content="Show only on alert" Margin="70,8,0,0" Click="WidgetAlertOnly_Changed" ToolTip="Hidden while all readings are within limits"/>
+                      </StackPanel>
                     </StackPanel>
                   </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.75,11.5 A0.75,0.75 0 0 0 8.75,13 L15.25,13 A0.75,0.75 0 0 0 15.25,11.5 Z M8.75,14.25 A0.75,0.75 0 0 0 8.75,15.75 L15.25,15.75 A0.75,0.75 0 0 0 15.25,14.25 Z M8.75,17 A0.75,0.75 0 0 0 8.75,18.5 L15.25,18.5 A0.75,0.75 0 0 0 15.25,17 Z M13.59,2.59 L19.4,8.4 A2,2 0 0 1 20,9.83 L20,20 A2,2 0 0 1 18,22 L6,22 A2,2 0 0 1 4,20 L4,4 C4,2.9 4.9,2 6,2 L12.17,2 C12.69,2 13.22,2.22 13.59,2.59 M18,20.5 A0.5,0.5 0 0 0 18.5,20 L18.5,10 L14,10 A2,2 0 0 1 12,8 L12,3.5 L6,3.5 A0.5,0.5 0 0 0 5.5,4 L5.5,20 C5.5,20.27 5.72,20.5 6,20.5 Z M17.38,8.5 L13.5,4.62 L13.5,8 C13.5,8.28 13.72,8.5 14,8.5 Z"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Create file" Padding="14,5" Click="ReportProblem_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Open log" Padding="14,5" Click="OpenAppLog_Click"/></StackPanel></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Diagnostic package"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Collect the application log and system details into a single file"/>
+                  <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                    <StackPanel>
+                      <DockPanel>
+                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkTraySensors" Style="{StaticResource ToggleSwitchStyle}" ToolTip="One icon per value, up to 8" Click="ChkTraySensors_Changed"/></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock x:Name="TxtTraySensorsTitle" Style="{StaticResource SetRowTitle}" Text="Notification area icons"/>
+                          <TextBlock x:Name="TxtTraySensorsDesc" Style="{StaticResource SetRowDesc}" Text="Up to 8 readings; hover for details"/>
+                        </StackPanel>
+                      </DockPanel>
+                      <StackPanel x:Name="PnlTrayOptions" Visibility="Collapsed" Margin="0,10,0,0">
+                        <!-- the icon preview, as it looks next to the clock (MainWindow.SettingsThumbs.cs → UpdateTrayPreview) -->
+                        <Border x:Name="TrayPreviewStrip" Background="#202226" CornerRadius="6" Padding="10,6" Margin="0,0,0,10" HorizontalAlignment="Left" Visibility="Collapsed">
+                          <StackPanel x:Name="TrayPreviewIcons" Orientation="Horizontal"/>
+                        </Border>
+                        <UniformGrid x:Name="TrayMetricChips" Columns="3"/>
+                        <TextBlock x:Name="TxtTrayMetricsLabel" Visibility="Collapsed" Text="Icons"/>
+                        <TextBlock x:Name="TxtTrayMetricsHint" Visibility="Collapsed" Text=""/>
                       </StackPanel>
-                    </DockPanel>
-                  </Border>
-                  <Border Style="{StaticResource SetRow}">
-                    <DockPanel>
-                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,4.5 A7.5,7.5 0 1 1 4.58,10.9 C4.65,10.44 4.32,10 3.86,10 C3.49,10 3.16,10.26 3.1,10.62 Q3,11.3 3,12 A9,9 0 1 0 6,5.3 L6,4.24 A0.75,0.75 0 0 0 4.5,4.24 L4.5,7.24 C4.5,7.65 4.84,7.99 5.25,7.99 L8.25,7.99 A0.75,0.75 0 0 0 8.25,6.49 L6.9,6.49 A7.5,7.5 0 0 1 12,4.49"/></Viewbox>
-                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Export" Padding="14,5" Click="SettingsExport_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Import" Padding="14,5" Click="SettingsImport_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Reset" Padding="14,5" Click="SettingsReset_Click"/></StackPanel></Border>
-                      <StackPanel VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Settings backup"/>
-                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Export, import or restore default settings"/>
-                      </StackPanel>
-                    </DockPanel>
+                    </StackPanel>
                   </Border>
                   </StackPanel>
                 </Border>
@@ -423,6 +329,16 @@
                       <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Advanced"/>
                       <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="For technicians — the defaults suit most PCs"/>
                     </StackPanel>
+                    <Border x:Name="SetRowSensorDriver" Visibility="Collapsed" Style="{StaticResource SetRow}" Padding="0,8,0,8">
+                      <DockPanel>
+                        <local:StatusMark x:Name="PawnIoLed" DockPanel.Dock="Left" Width="14" Height="14" Margin="3,0,19,0" VerticalAlignment="Center" Fill="{DynamicResource StatusWarnBrush}"/>
+                        <Border Style="{StaticResource SetRowControl}"><ui:Button x:Name="BtnInstallPawnIo" Appearance="Primary" Content="Install" Padding="14,5" Click="BtnInstallPawnIo_Click"/></Border>
+                        <StackPanel VerticalAlignment="Center" ToolTip="PawnIO lets SMD Win read CPU temperature, fans and power limits on most PCs. Signed driver, used only while the program runs.">
+                          <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor driver"/>
+                          <TextBlock x:Name="TxtPawnIoStatus" Style="{StaticResource SetRowDesc}" Text="Checking…"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
                     <Border Style="{StaticResource SetRow}" Padding="0,8,0,8">
                       <DockPanel>
                         <Border Style="{StaticResource SetRowControl}"><Border Style="{StaticResource SegmentTrackStyle}"><StackPanel Orientation="Horizontal">
@@ -457,6 +373,94 @@
                           <TextBlock x:Name="TxtDriverSearchDesc" Style="{StaticResource SetRowDesc}" Text="Used by “Search online” on the Drivers page"/>
                         </StackPanel>
                       </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SetRow}">
+                      <DockPanel>
+                        <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M10.55,2.53 C11.39,1.83 12.61,1.83 13.45,2.53 L20.2,8.23 C20.7,8.65 21,9.28 21,9.94 L21,19.25 C21,20.22 20.22,21 19.25,21 L15.75,21 C14.78,21 14,20.22 14,19.25 L14,14.25 A0.25,0.25 0 0 0 13.75,14 L10.25,14 A0.25,0.25 0 0 0 10,14.25 L10,19.25 C10,20.22 9.22,21 8.25,21 L4.75,21 C3.78,21 3,20.22 3,19.25 L3,9.95 C3,9.28 3.3,8.65 3.8,8.22 Z M12.48,3.68 A0.75,0.75 0 0 0 11.52,3.68 L4.77,9.38 A0.8,0.8 0 0 0 4.5,9.94 L4.5,19.25 C4.5,19.39 4.61,19.5 4.75,19.5 L8.25,19.5 Q8.48,19.49 8.5,19.25 L8.5,14.25 C8.5,13.28 9.28,12.5 10.25,12.5 L13.75,12.5 C14.72,12.5 15.5,13.28 15.5,14.25 L15.5,19.25 Q15.52,19.48 15.75,19.5 L19.25,19.5 Q19.48,19.49 19.5,19.25 L19.5,9.95 Q19.5,9.59 19.23,9.37 Z"/></Viewbox>
+                        <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkWorkshopMode" Style="{StaticResource ToggleSwitchStyle}" Click="WorkshopMode_Click"/></Border>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock Style="{StaticResource SetRowTitle}" Text="Include service details in reports"/>
+                          <TextBlock Style="{StaticResource SetRowDesc}" Text="Adds the service name and contact information to all reports"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
+                    <Border x:Name="PnlWorkshop" Visibility="Collapsed" Style="{StaticResource SetRow}" Padding="36,10,0,14">
+                      <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+                          <StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Name" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopName" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="80" TextChanged="TxtWorkshopName_TextChanged" LostFocus="TxtWorkshopName_LostFocus" KeyDown="TxtWorkshopName_KeyDown" ToolTip="Press Enter to save."/></StackPanel>
+                          <Border Grid.Column="2"><StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Phone" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopPhone" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="40" LostFocus="WorkshopField_LostFocus" KeyDown="WorkshopField_KeyDown" ToolTip="Shown next to the name. Press Enter to save."/></StackPanel></Border>
+                        </Grid>
+            <!-- Cards that are not part of Settings for now: the developer window shows them (Settings > Moved here). They stay in the
+                 tree, collapsed, so that the code that reads and writes their controls keeps working. -->
+            <StackPanel x:Name="SetMovedHolder" Visibility="Collapsed">
+              <StackPanel x:Name="SetPanelSensors" HorizontalAlignment="Stretch">
+                <Border x:Name="SetCardSensors" Style="{StaticResource SetCard}">
+                  <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
+                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M12,2 A3.25,3.25 0 0 1 15.24,5.07 L15.25,5.25 L15.25,13.2 L15.33,13.27 A5,5 0 0 1 16.97,16.49 L16.99,16.75 L17,17 A5,5 0 1 1 8.49,13.44 L8.67,13.27 L8.75,13.2 L8.75,5.25 A3.25,3.25 0 0 1 11.63,2.02 L11.82,2.01 Z M12,3.5 C11.08,3.5 10.33,4.2 10.26,5.1 L10.25,5.25 L10.25,13.95 L9.95,14.17 A3.5,3.5 0 1 0 14.22,14.3 L14.06,14.17 L13.76,13.95 L13.75,5.25 C13.75,4.28 12.97,3.5 12,3.5 M12,8 C12.41,8 12.75,8.34 12.75,8.75 L12.75,14.61 A2.5,2.5 0 1 1 11.25,14.61 L11.25,8.75 C11.25,8.34 11.59,8 12,8"/></Viewbox>
+                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Sensors"/>
+                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="How temperatures and fans are read"/>
+                    </StackPanel>
+                  <Border Style="{StaticResource SetRow}">
+                    <DockPanel>
+                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.75,11.5 A0.75,0.75 0 0 0 8.75,13 L15.25,13 A0.75,0.75 0 0 0 15.25,11.5 Z M8.75,14.25 A0.75,0.75 0 0 0 8.75,15.75 L15.25,15.75 A0.75,0.75 0 0 0 15.25,14.25 Z M8.75,17 A0.75,0.75 0 0 0 8.75,18.5 L15.25,18.5 A0.75,0.75 0 0 0 15.25,17 Z M13.59,2.59 L19.4,8.4 A2,2 0 0 1 20,9.83 L20,20 A2,2 0 0 1 18,22 L6,22 A2,2 0 0 1 4,20 L4,4 C4,2.9 4.9,2 6,2 L12.17,2 C12.69,2 13.22,2.22 13.59,2.59 M18,20.5 A0.5,0.5 0 0 0 18.5,20 L18.5,10 L14,10 A2,2 0 0 1 12,8 L12,3.5 L6,3.5 A0.5,0.5 0 0 0 5.5,4 L5.5,20 C5.5,20.27 5.72,20.5 6,20.5 Z M17.38,8.5 L13.5,4.62 L13.5,8 C13.5,8.28 13.72,8.5 14,8.5 Z"/></Viewbox>
+                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Open folder" Padding="14,5" Click="OpenSensorLogFolder_Click"/><Border Width="12"/><CheckBox x:Name="TglSensorLogger" Style="{DynamicResource ToggleSwitchStyle}" Checked="TglSensorLogger_Checked" Unchecked="TglSensorLogger_Unchecked" VerticalAlignment="Center"/></StackPanel></Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor logging"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Save readings to a daily CSV file (Data › Logs)"/>
+                        <TextBlock x:Name="TxtLoggerPath" Visibility="Collapsed" Text=""/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  <Border Style="{StaticResource SetRow}">
+                    <DockPanel>
+                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M17,2.5 A3.5,3.5 0 1 1 14.4,8.35 L9.84,10.95 A3.5,3.5 0 0 1 9.84,13.05 L14.4,15.65 A3.5,3.5 0 0 1 20.5,18 A3.5,3.5 0 1 1 13.66,16.95 L9.1,14.35 A3.5,3.5 0 0 1 3,12 A3.5,3.5 0 0 1 9.1,9.65 L13.66,7.05 A3.5,3.5 0 0 1 17,2.5 M17,16 A2,2 0 0 0 17,20 A2,2 0 0 0 17,16 M6.5,10 A2,2 0 0 0 6.5,14 A2,2 0 0 0 6.5,10 M17,4 A2,2 0 0 0 17,8 A2,2 0 0 0 17,4"/></Viewbox>
+                      <Border Style="{StaticResource SetRowControl}"><CheckBox x:Name="ChkExportSensorsReg" Style="{StaticResource ToggleSwitchStyle}" ToolTip="Writes the values to HKCU\Software\SMDWin\Sensors every 5 seconds." Checked="Settings_Changed" Unchecked="Settings_Changed"/></Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Sensor data sharing"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Make readings available to other programs (e.g. Rainmeter)"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+              <StackPanel x:Name="SetPanelData" HorizontalAlignment="Stretch">
+                <Border x:Name="SetCardData" Style="{StaticResource SetCard}">
+                  <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
+                      <Viewbox Width="17" Height="17" Margin="0,0,10,0" VerticalAlignment="Center"><Path Width="24" Height="24" Fill="{DynamicResource TextSecondaryBrush}" Data="F1 M3.5,6.25 L3.5,8 L8.13,8 Q8.44,8 8.66,7.78 L10.19,6.25 L8.66,4.72 A0.8,0.8 0 0 0 8.13,4.5 L5.25,4.5 C4.28,4.5 3.5,5.28 3.5,6.25 M2,6.25 C2,4.45 3.46,3 5.25,3 L8.13,3 C8.73,3 9.3,3.24 9.72,3.66 L11.56,5.5 L18.75,5.5 C20.55,5.5 22,6.96 22,8.75 L22,17.75 C22,19.55 20.54,21 18.75,21 L5.25,21 A3.25,3.25 0 0 1 2,17.75 Z M3.5,9.5 L3.5,17.75 C3.5,18.72 4.28,19.5 5.25,19.5 L18.75,19.5 C19.72,19.5 20.5,18.72 20.5,17.75 L20.5,8.75 C20.5,7.78 19.72,7 18.75,7 L11.56,7 L9.72,8.84 C9.3,9.26 8.72,9.5 8.12,9.5 Z"/></Viewbox>
+                      <TextBlock Style="{StaticResource SetCardTitle}" Margin="0" FontSize="15" VerticalAlignment="Center" Text="Data &amp; reports"/>
+                      <TextBlock Style="{StaticResource SetRowDesc}" Margin="12,2,0,0" VerticalAlignment="Center" Text="Folders, reports and backups"/>
+                    </StackPanel>
+                  <Border Style="{StaticResource SetRow}">
+                    <DockPanel>
+                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M8.75,11.5 A0.75,0.75 0 0 0 8.75,13 L15.25,13 A0.75,0.75 0 0 0 15.25,11.5 Z M8.75,14.25 A0.75,0.75 0 0 0 8.75,15.75 L15.25,15.75 A0.75,0.75 0 0 0 15.25,14.25 Z M8.75,17 A0.75,0.75 0 0 0 8.75,18.5 L15.25,18.5 A0.75,0.75 0 0 0 15.25,17 Z M13.59,2.59 L19.4,8.4 A2,2 0 0 1 20,9.83 L20,20 A2,2 0 0 1 18,22 L6,22 A2,2 0 0 1 4,20 L4,4 C4,2.9 4.9,2 6,2 L12.17,2 C12.69,2 13.22,2.22 13.59,2.59 M18,20.5 A0.5,0.5 0 0 0 18.5,20 L18.5,10 L14,10 A2,2 0 0 1 12,8 L12,3.5 L6,3.5 A0.5,0.5 0 0 0 5.5,4 L5.5,20 C5.5,20.27 5.72,20.5 6,20.5 Z M17.38,8.5 L13.5,4.62 L13.5,8 C13.5,8.28 13.72,8.5 14,8.5 Z"/></Viewbox>
+                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Create file" Padding="14,5" Click="ReportProblem_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Open log" Padding="14,5" Click="OpenAppLog_Click"/></StackPanel></Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Diagnostic package"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Collect the application log and system details into a single file"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  <Border Style="{StaticResource SetRow}">
+                    <DockPanel>
+                      <Viewbox Style="{StaticResource SetRowIcon}"><Path Width="24" Height="24" Style="{StaticResource CompIcon}" Data="F1 M12,4.5 A7.5,7.5 0 1 1 4.58,10.9 C4.65,10.44 4.32,10 3.86,10 C3.49,10 3.16,10.26 3.1,10.62 Q3,11.3 3,12 A9,9 0 1 0 6,5.3 L6,4.24 A0.75,0.75 0 0 0 4.5,4.24 L4.5,7.24 C4.5,7.65 4.84,7.99 5.25,7.99 L8.25,7.99 A0.75,0.75 0 0 0 8.25,6.49 L6.9,6.49 A7.5,7.5 0 0 1 12,4.49"/></Viewbox>
+                      <Border Style="{StaticResource SetRowControl}"><StackPanel Orientation="Horizontal"><ui:Button Appearance="Secondary" Content="Export" Padding="14,5" Click="SettingsExport_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Import" Padding="14,5" Click="SettingsImport_Click"/><Border Width="8"/><ui:Button Appearance="Secondary" Content="Reset" Padding="14,5" Click="SettingsReset_Click"/></StackPanel></Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SetRowTitle}" Text="Settings backup"/>
+                        <TextBlock Style="{StaticResource SetRowDesc}" Text="Export, import or restore default settings"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </StackPanel>
+                        <StackPanel><TextBlock Style="{StaticResource SetRowDesc}" Text="Address or website" Margin="0,0,0,4"/><TextBox x:Name="TxtWorkshopContact" Style="{StaticResource VanillaTextBoxStyle}" Height="32" Padding="9,0" VerticalContentAlignment="Center" MaxLength="120" LostFocus="WorkshopField_LostFocus" KeyDown="WorkshopField_KeyDown" ToolTip="Shown under the name on HTML reports and in the diagnostic package. Press Enter to save."/></StackPanel>
+                        <TextBlock x:Name="TxtWorkshopSaved" Margin="0,8,0,0" Style="{StaticResource SetRowDesc}" TextTrimming="CharacterEllipsis" Text="Shown on: Hardware report PDF · Stress test PDF · diagnostic package · Health report" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                      </StackPanel>
                     </Border>
                   </StackPanel>
                 </Border>

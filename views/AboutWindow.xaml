@@ -23,7 +23,7 @@
     <!-- the glow at the top: a slow, barely visible breathing -->
     <Storyboard x:Key="GlowBreathStoryboard" RepeatBehavior="Forever" AutoReverse="True">
       <DoubleAnimation Storyboard.TargetName="HeroGlow" Storyboard.TargetProperty="Opacity"
-                       From="0.75" To="1" Duration="0:0:3">
+                       From="0.52" To="0.7" Duration="0:0:3">
         <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
       </DoubleAnimation>
     </Storyboard>
@@ -79,7 +79,7 @@
       <Grid>
         <!-- the soft glow at the top (data colour → its violet end), faded radially -->
         <Ellipse x:Name="HeroGlow" Width="520" Height="300" VerticalAlignment="Top" HorizontalAlignment="Center"
-                 Margin="-60,-150,-60,0" IsHitTestVisible="False" Opacity="0.85">
+                 Margin="-60,-150,-60,0" IsHitTestVisible="False" Opacity="0.6">
           <Ellipse.Fill>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
               <GradientStop Color="{DynamicResource DataColor}" Offset="0.2"/>

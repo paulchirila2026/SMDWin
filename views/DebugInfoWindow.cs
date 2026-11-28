@@ -30,7 +30,7 @@ namespace SMDWin.Views
     public partial class DebugInfoWindow : Window
     {
         // ── Navigation ───────────────────────────────────────────────────────
-        private const int TabCount = 5;
+        private const int TabCount = 6;
         private readonly Button[]    _navBtns  = new Button[TabCount];
         private readonly Border[]    _navLines = new Border[TabCount];
         private readonly UIElement[] _pages    = new UIElement[TabCount];
@@ -216,7 +216,7 @@ namespace SMDWin.Views
             navBar.SetResourceReference(Border.BorderBrushProperty, "BorderBrush2");
 
             var navRow = new StackPanel { Orientation = Orientation.Horizontal };
-            string[] labels = { "Status", "Self-Test", "Design", "Experimental", "Databases" };
+            string[] labels = { "Status", "Self-Test", "Design", "Experimental", "Databases", "Moved settings" };
 
             for (int i = 0; i < TabCount; i++)
             {
@@ -330,7 +330,8 @@ namespace SMDWin.Views
                         1 => BuildSelfTestPage(),
                         2 => BuildDesignPage(),
                         3 => BuildExperimentalPage(),
-                        _ => BuildDatabasesPage(),
+                        4 => BuildDatabasesPage(),
+                        _ => BuildMovedSettingsPage(),
                     };
                     holder.Children.Add(page);
                     PolishButtons(page);
