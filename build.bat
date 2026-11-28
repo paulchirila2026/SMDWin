@@ -45,8 +45,9 @@ echo.
 
 echo  [3/3] Looking for the executable...
 set EXE=
-for /r "%~dp0bin\Release" %%f in (SMDWin.exe) do (
-    if not defined EXE set EXE=%%f
+rem for /r with a plain name only builds paths, it does not check they exist, so use dir
+for /f "delims=" %%f in ('dir /s /b "%~dp0bin\Release\SMDWin.exe" 2^>nul') do (
+    if not defined EXE set "EXE=%%f"
 )
 if not defined EXE (
     echo  [ERROR] SMDWin.exe was not found in bin\Release\

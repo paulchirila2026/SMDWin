@@ -3167,6 +3167,8 @@
     "the_storage_test_could_not_run": "Le test de stockage n'a pas pu s'exécuter.",
     "storage_test_skipped": "Test de stockage ignoré",
     "welcome_to_smd_win": "Bienvenue dans SMD Win",
+    "application_busiest_destination": "Application · destination la plus active",
+    "connections": "Connexions",
     "live_readings": "Données en direct",
     "channel_analysis": "Analyse des canaux",
     "channels_and_signal": "Canaux et signal",

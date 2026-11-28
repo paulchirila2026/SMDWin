@@ -183,7 +183,7 @@ namespace SMDWin.Views
                               Risk: g.Any(x => x.HasRiskFlag), Pid: g.First().Pid))
                 .OrderByDescending(x => x.Count).ToList();
             int appCount = top.Count, connCount = top.Sum(x => x.Count);
-            top = top.Take(8).ToList();
+            top = top.Take(7).ToList();
 
             var root = new StackPanel();
             var head = new Grid { Margin = new Thickness(0, 0, 0, 10) };
@@ -209,23 +209,63 @@ namespace SMDWin.Views
                 none.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
                 root.Children.Add(none);
             }
+            if (top.Count > 0)
+            {
+                // column captions, aligned with the rows below (same idea as the Adapters card)
+                var cols = new Grid { Margin = new Thickness(11, 0, 11, 6) };
+                cols.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
+                cols.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                cols.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+                var c1 = new TextBlock { Text = PT("Application · busiest destination"), FontSize = Ui.FontXS };
+                var c2 = new TextBlock { Text = PT("Connections"), FontSize = Ui.FontXS, TextAlignment = TextAlignment.Right };
+                c1.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                c2.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+                Grid.SetColumn(c1, 1); Grid.SetColumn(c2, 2);
+                cols.Children.Add(c1); cols.Children.Add(c2);
+                root.Children.Add(cols);
+            }
             foreach (var t in top)
             {
-                var row = new Grid { Margin = new Thickness(0, 0, 0, 6), Background = System.Windows.Media.Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
+                var box = new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 7, 10, 7), Margin = new Thickness(0, 0, 0, 6),
+                    BorderThickness = new Thickness(1), Cursor = System.Windows.Input.Cursors.Hand };
+                box.SetResourceReference(Border.BackgroundProperty, "BgHoverBrush");
+                box.SetResourceReference(Border.BorderBrushProperty, "CardBorderBrush");
+                var row = new Grid();
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(46) });
-                var nm = new TextBlock { Text = (t.Risk ? "⚠ " : "") + t.Name, FontSize = Ui.FontM, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis,
-                    ToolTip = t.Risk ? SMDWin.Services.LiteralTexts.Translate("Unsigned program or unusual location") : t.Name };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+
+                // letter tile standing in for the app icon
+                var tile = new Border { Width = 20, Height = 20, CornerRadius = new CornerRadius(5), HorizontalAlignment = System.Windows.HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+                tile.SetResourceReference(Border.BackgroundProperty, "AccentBrush");
+                tile.Child = new TextBlock { Text = t.Name.Length > 0 ? t.Name.Substring(0, 1).ToUpperInvariant() : "?", FontSize = Ui.FontXS, FontWeight = FontWeights.Bold,
+                    Foreground = System.Windows.Media.Brushes.White, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+
+                var texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                var nameLine = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
+                var nm = new TextBlock { Text = t.Name, FontSize = Ui.FontM, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, ToolTip = t.Name };
                 nm.SetResourceReference(TextBlock.ForegroundProperty, t.Risk ? "StatusWarnBrush" : "TextPrimaryBrush");
-                var rm = new TextBlock { Text = t.Remote, FontSize = Ui.FontS, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+                nameLine.Children.Add(nm);
+                if (t.Risk)
+                {
+                    var dot = new System.Windows.Shapes.Ellipse { Width = 8, Height = 8, Margin = new Thickness(7, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
+                        ToolTip = SMDWin.Services.LiteralTexts.Translate("Unsigned program or unusual location") };
+                    dot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "StatusWarnBrush");
+                    nameLine.Children.Add(dot);
+                }
+                var rm = new TextBlock { Text = t.Remote, FontSize = Ui.FontXS, TextTrimming = TextTrimming.CharacterEllipsis };
                 rm.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-                var ct = new TextBlock { Text = t.Count.ToString(), FontSize = Ui.FontM, FontWeight = FontWeights.SemiBold, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
+                texts.Children.Add(nameLine); texts.Children.Add(rm);
+
+                var ct = new TextBlock { Text = t.Count.ToString(), FontSize = Ui.FontM, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
                 ct.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
-                Grid.SetColumn(rm, 1); Grid.SetColumn(ct, 2);
-                row.Children.Add(nm); row.Children.Add(rm); row.Children.Add(ct);
-                row.MouseLeftButtonUp += (_, _) => ShowNetTool("Apps", null);
-                root.Children.Add(row);
+
+                Grid.SetColumn(texts, 1); Grid.SetColumn(ct, 2);
+                row.Children.Add(tile); row.Children.Add(texts); row.Children.Add(ct);
+                box.Child = row;
+                box.MouseLeftButtonUp += (_, _) => ShowNetTool("Apps", null);
+                root.Children.Add(box);
             }
             NetTopAppsCard.Child = root;
         }

@@ -6,6 +6,8 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Network › Overview: the "Active connections" card now looks like the Adapters card (rows with an app tile, the busiest destination under the name, connection count on the right, amber dot for risky programs).
+- build.bat: finds the real SMDWin.exe (it used to point to a file that did not exist).
 - Ping monitor chart now glides smoothly like the other charts.
 - Space usage uses the NTFS index again; it falls back to file-by-file scanning only when the estimated index size really does not fit in free memory.
 - Wi-Fi channel analysis: fixed the cut-off table header, network names on the hills chart appear only on hover; removed the QR button from saved Wi-Fi passwords.
