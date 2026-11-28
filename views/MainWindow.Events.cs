@@ -177,6 +177,7 @@ namespace SMDWin.Views
             foreach (var b in levelBtns)
                 SetTabButtonActive(b, b == btn);
 
+            RefreshEventCalendarLevel();   // the year map follows the level too
             await RunEventScan();
         }
 

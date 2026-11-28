@@ -108,8 +108,6 @@ namespace SMDWin.Views.Net
                 var t = Txt(d.ToString(CultureInfo.InvariantCulture), fg2);
                 dc.DrawText(t, new Point(pl - 6 - t.Width, Y(d) - t.Height / 2));
             }
-            var l67 = Txt(MainWindow.PT("−67 dBm · good enough for video calls and roaming"), fg2, 9);
-            dc.DrawText(l67, new Point(W - pr - l67.Width, Y(-67) - l67.Height - 1));
             // 1 / 6 / 11
             if (_band == "2.4")
             {

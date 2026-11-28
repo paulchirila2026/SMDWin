@@ -1264,6 +1264,9 @@ namespace SMDWin.Models
                                    : Site.Length > 0 ? Site : Service.Length > 0 ? Service : "—";
         public int    ConnectionCount { get; set; } = 1;   // total connections for this process
         public int    EstablishedCount { get; set; }       // only the open (ESTABLISHED) ones
+        public int    Instances { get; set; } = 1;          // >1 on a grouped row: how many processes (PIDs) of the same program
+        public string NameDisplay => Instances > 1 ? $"{ProcessName} ×{Instances}" : ProcessName;
+        public string PidDisplay  => Instances > 1 ? $"{Instances} PIDs" : Pid.ToString();
 
         // 5.5 — App category for grouping
         public string AppCategory => SMDWin.Services.AppKinds.Label(Kind);

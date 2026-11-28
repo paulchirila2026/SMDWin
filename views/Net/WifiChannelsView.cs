@@ -60,10 +60,7 @@ namespace SMDWin.Views.Net
             BuildLocationNote();
             stack.Children.Add(_locationNote);
 
-            // row 1: the chart + your connection
-            var row1 = new Grid { Margin = new Thickness(0, 0, 0, 12) };
-            row1.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            row1.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
+            // row 1: the chart, on the whole width
             var chartStack = new StackPanel();
             _chartSub.FontSize = Ui.FontXS; _chartSub.Foreground = R("TextSecondaryBrush"); _chartSub.TextWrapping = TextWrapping.Wrap; _chartSub.Margin = new Thickness(0, -6, 0, 8);
             chartStack.Children.Add(_chartSub);
@@ -71,22 +68,23 @@ namespace SMDWin.Views.Net
             chartStack.Children.Add(_chart);
             chartStack.Children.Add(Legend());
             var chartCard = NetWindowHelper.CardWithHead(PT("Channels and signal"), null, chartStack);
-            chartCard.Margin = new Thickness(0, 0, 12, 0);
-            row1.Children.Add(chartCard);
-            var conn = NetWindowHelper.CardWithHead(PT("Your connection"), null, _connBody);
-            Grid.SetColumn(conn, 1); row1.Children.Add(conn);
-            stack.Children.Add(row1);
+            chartCard.Margin = new Thickness(0, 0, 0, 12);
+            stack.Children.Add(chartCard);
 
-            // row 2: interference + recommendations
+            // row 2: your connection + interference + recommendations
             var row2 = new Grid { Margin = new Thickness(0, 0, 0, 12) };
+            row2.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) });
             row2.ColumnDefinitions.Add(new ColumnDefinition());
             row2.ColumnDefinitions.Add(new ColumnDefinition());
+            var conn = NetWindowHelper.CardWithHead(PT("Your connection"), null, _connBody);
+            conn.Margin = new Thickness(0, 0, 6, 0);
+            row2.Children.Add(conn);
             var inter = NetWindowHelper.CardWithHead(PT("Interference"), null, _interBody);
-            inter.Margin = new Thickness(0, 0, 6, 0);
-            row2.Children.Add(inter);
+            inter.Margin = new Thickness(6, 0, 6, 0);
+            Grid.SetColumn(inter, 1); row2.Children.Add(inter);
             var reco = NetWindowHelper.CardWithHead(PT("Recommendations"), null, _recoBody);
             reco.Margin = new Thickness(6, 0, 0, 0);
-            Grid.SetColumn(reco, 1); row2.Children.Add(reco);
+            Grid.SetColumn(reco, 2); row2.Children.Add(reco);
             stack.Children.Add(row2);
 
             // row 3: every access point

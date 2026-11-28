@@ -6,6 +6,9 @@ Dates are in day.month.year format.
 ## [0.4.2 Beta] — November 2026
 
 ### Changed
+- Network › Apps: new "Group by program" button — all processes of the same program (for example several ffmpeg) become one row with the traffic and connections added up.
+- Network › Wi-Fi › Channel analysis: the channel map now uses the whole width; the "Your connection" card moved next to Interference and Recommendations; the −67 dBm caption was removed (the line stays).
+- Event Viewer: the year map follows the level buttons — Critical, Error or Warning show only the days with that kind of event.
 - Network › Overview: the "Active connections" card now looks like the Adapters card (rows with an app tile, the busiest destination under the name, connection count on the right, amber dot for risky programs).
 - build.bat: finds the real SMDWin.exe (it used to point to a file that did not exist).
 - Ping monitor chart now glides smoothly like the other charts.

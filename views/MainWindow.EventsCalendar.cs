@@ -32,6 +32,7 @@ namespace SMDWin.Views
         private EventCalendarRaw? _evCalRaw;
         private Dictionary<DateTime, CalendarDay>? _evCalDays;
         private DateTime _evCalReadAt;
+        private List<DateTime> _evCalDumps = new();
         private DateTime? _evCalSelected;
         private Border? _evSegCal, _evSegRange;
         private static readonly SolidColorBrush EvOrange = FreezeBrush(Color.FromRgb(0xF9, 0x73, 0x16));
@@ -129,12 +130,24 @@ namespace SMDWin.Views
                     catch (Exception ex) { AppLogger.Debug($"EventCalendar dumps: {ex.Message}"); return new List<DateTime>(); }
                 });
                 _evCalRaw = raw;
-                _evCalDays = EventCalendar.Build(raw, dumps);
+                _evCalDumps = dumps;
+                _evCalDays = EventCalendar.Build(raw, dumps, CalendarLevelFilter());
                 _evCalReadAt = DateTime.Now;
                 if (_evCalView) DrawEventCalendar();
             }
             catch (Exception ex) { AppLogger.Warning(ex, "LoadEventCalendarAsync"); }
             finally { _evCalLoading = false; }
+        }
+
+        /// <summary>The level chosen in the toolbar when it narrows the map to one kind of event (otherwise null = the usual map).</summary>
+        private string? CalendarLevelFilter() => _selectedEventLevel is "Critical" or "Error" or "Warning" ? _selectedEventLevel : null;
+
+        /// <summary>The level buttons changed: the map shows only that level; rebuilt from the data already read.</summary>
+        private void RefreshEventCalendarLevel()
+        {
+            if (_evCalRaw == null) return;
+            _evCalDays = EventCalendar.Build(_evCalRaw, _evCalDumps, CalendarLevelFilter());
+            if (_evCalView) DrawEventCalendar();
         }
 
         private void DrawEventCalendar()
@@ -263,6 +276,8 @@ namespace SMDWin.Views
             Key(EvOrange, 0.45, PT("small problems"));
             Key(EvOrange, 1, PT("serious errors"));
             Key(TryFindResource("StatusCritBrush") as Brush ?? Brushes.IndianRed, 1, PT("blue screen"));
+            if (CalendarLevelFilter() is string only)
+                foot.Children.Add(FootText(PT("Showing only {0} events", PT(only)), "AccentBrush", true));
             foot.Children.Add(new Border { Width = 12 });
 
             // when the problems started and how often they come back

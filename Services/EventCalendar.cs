@@ -111,15 +111,24 @@ namespace SMDWin.Services
         }
 
         /// <summary>The days from the raw counts (+ the dates of the crash dumps found on disk, which also mean a blue screen).</summary>
-        public static Dictionary<DateTime, CalendarDay> Build(EventCalendarRaw raw, IEnumerable<DateTime> dumpTimes)
+        /// <param name="onlyLevel">
+        /// null = the normal calendar (every error / critical event, weighed by what it means). "Critical", "Error" or "Warning" =
+        /// only events of that Windows level are counted (a blue screen counts as critical and as an error): a day with any of
+        /// them is orange (full orange when the event database calls it serious or it is critical, light orange otherwise).
+        /// </param>
+        public static Dictionary<DateTime, CalendarDay> Build(EventCalendarRaw raw, IEnumerable<DateTime> dumpTimes, string? onlyLevel = null)
         {
+            byte? want = onlyLevel switch { "Critical" => (byte)1, "Error" => (byte)2, "Warning" => (byte)3, _ => null };
             var days = new Dictionary<DateTime, CalendarDay>();
             var kinds = new Dictionary<(string, long, byte), CalendarDayLevel>();
             CalendarDay Day(DateTime d) => days.TryGetValue(d, out var x) ? x : days[d] = new CalendarDay { Date = d };
             foreach (var (k, n) in raw.Counts)
             {
+                if (want.HasValue && k.level != want.Value) continue;
                 var kk = (k.source, k.id, k.level);
                 if (!kinds.TryGetValue(kk, out var kind)) kinds[kk] = kind = Classify(k.source, k.id, k.level);
+                if (want.HasValue && kind != CalendarDayLevel.BlueScreen)
+                    kind = want == 1 || kind == CalendarDayLevel.Serious ? CalendarDayLevel.Serious : CalendarDayLevel.Minor;
                 switch (kind)
                 {
                     case CalendarDayLevel.BlueScreen: Day(k.day).BlueScreens += n; break;
@@ -130,6 +139,7 @@ namespace SMDWin.Services
             // a dump written without the 1001 event (the log was cleared, or the PC restarted before Windows could write it)
             foreach (var t in dumpTimes)
             {
+                if (want == 3) break;   // a blue screen is not a warning
                 var d = Day(t.Date);
                 if (d.BlueScreens == 0) d.BlueScreens = 1;
             }

@@ -33,9 +33,11 @@ namespace SMDWin.Views.Net
         private Button    _btnRefresh    = null!;
         private TextBox   _txtSearch     = null!;
         private Button    _btnListenOnly = null!;
+        private Button    _btnGroup      = null!;
 
         private List<SMDWin.Models.NetAppEntry> _allEntries = new();
         private bool _listenOnly = false;
+        private bool _grouped = false;     // one row per program instead of one per process
         private System.Windows.Threading.DispatcherTimer? _liveTimer;
 
         public NetAppsPage(MainWindow owner)
@@ -87,6 +89,18 @@ namespace SMDWin.Views.Net
                 ApplyFilter();
             };
             actions.Children.Add(_btnListenOnly);
+
+            _btnGroup = NetWindowHelper.SecondaryButton(MainWindow.PT("Group by program"),
+                MainWindow.PT("One row per program: all its processes (for example several ffmpeg) are added together"));
+            _btnGroup.Click += (_, _) =>
+            {
+                _grouped = !_grouped;
+                _btnGroup.Content = _grouped ? MainWindow.PT("Grouped · on") : MainWindow.PT("Group by program");
+                _btnGroup.Foreground = _grouped
+                    ? NetWindowHelper.Res("AccentBrush") : NetWindowHelper.Res("TextPrimaryBrush");
+                ApplyFilter();
+            };
+            actions.Children.Add(_btnGroup);
 
             _txtStatus = new TextBlock { FontSize = Ui.FontS, Foreground = NetWindowHelper.Res("TextSecondaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8,0,12,0) };
@@ -142,10 +156,10 @@ namespace SMDWin.Views.Net
             riskCol.CellTemplate = riskTpl;
             _grid.Columns.Add(riskCol);
 
-            _grid.Columns.Add(new DataGridTextColumn { Header = "Process", Binding = new System.Windows.Data.Binding("ProcessName"), Width = new DataGridLength(1, DataGridLengthUnitType.Star), MinWidth = 150, FontWeight = FontWeights.SemiBold });
+            _grid.Columns.Add(new DataGridTextColumn { Header = "Process", Binding = new System.Windows.Data.Binding("NameDisplay"), Width = new DataGridLength(1, DataGridLengthUnitType.Star), MinWidth = 150, FontWeight = FontWeights.SemiBold });
             // the fixed columns added for ETW left no room for the two star columns: "Process" shrank to nothing at
             // 1680 px. Process keeps 150 px at least; the "Blocked" column went (the Firewall button shows it); the fixed ones are narrower; if the window is still too narrow, the grid scrolls.
-            _grid.Columns.Add(new DataGridTextColumn { Header = "PID", Binding = new System.Windows.Data.Binding("Pid"), Width = new DataGridLength(60) });
+            _grid.Columns.Add(new DataGridTextColumn { Header = "PID", Binding = new System.Windows.Data.Binding("PidDisplay"), Width = new DataGridLength(70) });
 
             // Blocked icon
             var blockedCol = new DataGridTemplateColumn { Header = "Blocked", Width = new DataGridLength(76) };
@@ -258,6 +272,7 @@ namespace SMDWin.Views.Net
                 filtered = filtered.Where(en => en.State == "LISTEN");
 
             var list = filtered.ToList();
+            if (_grouped) list = GroupByProgram(list);
             int? selPid = (_grid.SelectedItem as SMDWin.Models.NetAppEntry)?.Pid;
             _grid.ItemsSource = list;
             if (selPid != null) _grid.SelectedItem = list.FirstOrDefault(x => x.Pid == selPid);
@@ -267,6 +282,38 @@ namespace SMDWin.Views.Net
                 ? $"Traffic counted from Windows' network events (TCP + UDP, IPv4 + IPv6) since {mon.StartedUtc.ToLocalTime():HH:mm:ss}"
                 : "Traffic from the TCP connection counters only (UDP and IPv6 not counted)" +
                   (mon.LastError.Length > 0 ? $" — the network event session did not start: {mon.LastError}" : "");
+        }
+
+        /// <summary>
+        /// One row per program (same exe path, else same name): traffic and connection counts are added up; the other columns
+        /// come from the busiest process, with "+N" when the program talks to more than one address.
+        /// </summary>
+        private static List<SMDWin.Models.NetAppEntry> GroupByProgram(List<SMDWin.Models.NetAppEntry> list)
+        {
+            var result = new List<SMDWin.Models.NetAppEntry>();
+            foreach (var g in list.GroupBy(e => (e.ProcessPath.Length > 0 ? e.ProcessPath : e.ProcessName).ToLowerInvariant()))
+            {
+                var rows = g.OrderByDescending(e => e.SendKBs + e.RecvKBs).ThenByDescending(e => e.State == "ESTABLISHED").ToList();
+                var top = rows[0];
+                if (rows.Count == 1) { result.Add(top); continue; }
+                int remotes = rows.Select(e => e.RemoteEndpoint).Where(r => r.Length > 0 && r != "*:*").Distinct().Count();
+                result.Add(new SMDWin.Models.NetAppEntry
+                {
+                    ProcessName = top.ProcessName, ProcessPath = top.ProcessPath, Pid = top.Pid,
+                    Instances = rows.Select(e => e.Pid).Distinct().Count(),
+                    Protocol = string.Join("+", rows.Select(e => e.Protocol).Distinct()),
+                    LocalEndpoint = top.LocalEndpoint,
+                    RemoteEndpoint = remotes > 1 ? $"{top.RemoteEndpoint} (+{remotes - 1})" : top.RemoteEndpoint,
+                    State = rows.Any(e => e.State == "ESTABLISHED") ? "ESTABLISHED" : top.State,
+                    SendKBs = rows.Sum(e => e.SendKBs), RecvKBs = rows.Sum(e => e.RecvKBs),
+                    TotalSentMB = rows.Sum(e => e.TotalSentMB), TotalRecvMB = rows.Sum(e => e.TotalRecvMB),
+                    GeoCountry = top.GeoCountry, GeoCity = top.GeoCity,
+                    IsBlocked = rows.Any(e => e.IsBlocked), Site = top.Site, Service = top.Service,
+                    ConnectionCount = rows.Sum(e => e.ConnectionCount), EstablishedCount = rows.Sum(e => e.EstablishedCount),
+                    IsUnsigned = rows.Any(e => e.IsUnsigned), IsSuspiciousLocation = rows.Any(e => e.IsSuspiciousLocation),
+                });
+            }
+            return result.OrderByDescending(e => e.SendKBs + e.RecvKBs).ToList();
         }
 
         private void Grid_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e)
