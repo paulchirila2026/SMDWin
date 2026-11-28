@@ -13,7 +13,7 @@
     <Authors>Paul Chirilă</Authors>
     <Copyright>© Paul Chirilă — GPL-3.0-or-later</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
-    <Version>0.4.2</Version>
+    <Version>0.4.3</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\smdwin.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
